@@ -66,12 +66,15 @@ namespace AFPParser
                     foreach (KeyValuePair<byte, string> mapping in Mappings)
                         bitsAndDescriptions.Add(mapping.Key, mapping.Value.Split('|').ToArray());
 
-                    // Get the position of the bit, and determine which description to display
+                    // Display in big Endian if not already
                     BitArray bitInfo = new BitArray(new[] { data });
+                    if (BitConverter.IsLittleEndian)
+                        bitInfo = new BitArray(bitInfo.Cast<bool>().Reverse().ToArray());
+
+                    // Get the position of the bit, and determine which description to display
                     foreach (KeyValuePair<byte, string[]> kvp in bitsAndDescriptions)
                     {
-                        // MO:DCA Refers to the leftmost bit as position 0. This is the opposite of BitArray, so subtract position from 7
-                        int descIndex = Convert.ToInt32(bitInfo[7 - kvp.Key]); // 0 or 1
+                        int descIndex = Convert.ToInt32(bitInfo[kvp.Key]); // 0 or 1
                         sb.AppendLine();
                         sb.Append(kvp.Value[descIndex]);
                     }

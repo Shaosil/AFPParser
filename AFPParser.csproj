@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Custom Parsing\CustomDataParser.cs" />
+    <Compile Include="Custom Parsing\Identifiers\PTX.cs" />
     <Compile Include="Custom Parsing\Triplets\X62.cs" />
     <Compile Include="Custom Parsing\Triplets\X72.cs" />
     <Compile Include="Custom Parsing\Triplets\X71.cs" />
