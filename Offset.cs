@@ -1,0 +1,88 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+
+namespace AFPParser
+{
+    [DebuggerDisplay("{StartingIndex}:{DataType}:{Description}")]
+    public class Offset
+    {
+        public int StartingIndex { get; set; }
+        public string DataType { get; set; }
+        public string Description { get; set; }
+        
+        public Dictionary<byte, string> Mappings { get; set; }
+
+        public Offset(int startingIdx, string dataType, string description)
+        {
+            StartingIndex = startingIdx;
+            DataType = dataType;
+            Description = description;
+            Mappings = new Dictionary<byte, string>();
+        }
+
+        public string DisplayDataByType(byte[] data)
+        {
+            switch (DataType)
+            {
+                case "UBIN":
+                    // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
+                    bool isOdd = data.Length == 3;
+
+                    // AFP is Big Endian
+                    if (BitConverter.IsLittleEndian)
+                        data = data.Skip(Convert.ToInt32(isOdd)).Reverse().ToArray();
+                    else if (isOdd)
+                        data = data.Take(data.Length - 1).ToArray();
+
+                    return data.Length == 1 ? data[0].ToString()
+                        : data.Length == 2 ? BitConverter.ToUInt16(data, 0).ToString()
+                        : data.Length == 4 ? BitConverter.ToUInt32(data, 0).ToString()
+                        : "(Unknown Numeric Value)";
+
+                case "CHAR":
+                case "CODE":
+                    string decoded = Encoding.GetEncoding("IBM037").GetString(data);
+                    return string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded;
+
+                default:
+                    string hexValue = BitConverter.ToString(data).Replace("-", " ");
+                    return $"({hexValue})";
+            }
+        }
+
+        public string DisplayMappedInfo(byte data)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            switch (DataType)
+            {
+                case "BITS":
+                    // Mappings correspond to bit positions
+                    Dictionary<byte, string[]> bitsAndDescriptions = new Dictionary<byte, string[]>();
+                    foreach (KeyValuePair<byte, string> mapping in Mappings)
+                        bitsAndDescriptions.Add(mapping.Key, mapping.Value.Split('|').ToArray());
+
+                    // Get the position of the bit, and determine which description to display
+                    BitArray bitInfo = new BitArray(new[] { data });
+                    foreach (KeyValuePair<byte, string[]> kvp in bitsAndDescriptions)
+                    {
+                        // MO:DCA Refers to the leftmost bit as position 0. This is the opposite of BitArray, so subtract position from 7
+                        int descIndex = Convert.ToInt32(bitInfo[7 - kvp.Key]); // 0 or 1
+                        sb.AppendLine();
+                        sb.Append(kvp.Value[descIndex]);
+                    }
+                    break;
+
+                default:
+                    sb.Append(Mappings[data]);
+                    break;
+            }
+
+            return sb.ToString();
+        }
+    }
+}

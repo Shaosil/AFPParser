@@ -1,0 +1,84 @@
+# First line: Colon, then hex value (only first six characters matter)
+# Second line: Description
+# Third+ line: Colon separated groups of (Starting index, length, data type, description, and mappings) If triplets, no description is necessary
+#	Mappings: Comma separated values of (HEX-Mapped value) If there is a range, it will read 'RHEXHEX' (Range, first hex to second hex)
+
+:D3A090 - TLE
+Assigns an attribute name and value to a page or group.
+0:TRIPS:
+
+:D3A6AF - PGD
+Specifies the size and attributes of a page or overlay presentation space.
+0:CODE:X Axis Base:00-10 Inches,01-10 Centimeters
+1:CODE:Y Axis Base:00-10 Inches,01-10 Centimeters
+2:UBIN:Units Per X Base
+4:UBIN:Units Per Y Base
+6:UBIN:Page X Size
+9:UBIN:Page Y Size
+12::
+15:TRIPS:
+
+:D3A69B - PTD-1
+Specifies the size of a text object presentation space and the measurement units used for size and for all linear measurements within the text object.
+0:CODE:X Axis Unit Base:00-10 Inches
+1:CODE:Y Axis Unit Base:00-10 Inches
+2:UBIN:X Units Per X Unit Base
+4:UBIN:Y Units Per Y Unit Base
+6:UBIN:X Axis Space Extent
+8:UBIN:Y Axis Space Extent
+10::
+
+:D3A89B - BPT
+Begins a presentation text object, which becomes the current data object.
+0:CHAR:Name
+8:TRIPS:
+
+:D3A8A8 - BDT
+The Begin Document structured field names and begins the document.
+0:CHAR:Name
+8::
+10:TRIPS:
+
+:D3A8AD - BNG
+Begins a page group, which is a named logical grouping of sequential pages. A page group may contain nested page groups.
+0:CHAR:Name
+8:TRIPS:
+
+:D3A8AF - BPG
+Begins a presentation page, which contains an active environment group used to establish parameters.
+0:CHAR:Page Name
+8:TRIPS:
+
+:D3A8C9 - BAG
+Begins an active environment group, which establishes the environment parameters for the page or overlay.
+0:CHAR:Name
+8:TRIPS:
+
+:D3A9C9 - EAG
+Terminates the definition of an active environment group initiated by a BAG field.
+0:CHAR:Name
+
+:D3ABCC - IMM
+Identifies the medium map that is to become active for the document, and affects the current environment until a new map is invoked.
+0:CHAR:Name
+8:TRIPS:
+
+:D3B18A - MCF-1
+Identifies the correspondence between external font names and resource local identifiers.
+4:RSTART:
+0:UBIN:Coded Font ID
+1::
+2:CODE:Font section ID:00-Single byte coded font,R41FE-Double byte coded font
+3::
+4:CHAR:Coded Font Name
+12:CHAR:Code Page Name
+20:CHAR:Font Character Set Name
+28:CODE:Character Rotation (Need 2 byte mapping support!)
+
+:D3EE9B - PTX
+Contains the data for a presentation text data object
+0:CUSTOM:
+
+:D3EEEE - NOP
+The data in the No Operation structured field is untyped and undefined. Although not recommended, custom data streams can be utilized in the data field.
+0:CHAR:Unused Data

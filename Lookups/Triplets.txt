@@ -1,0 +1,261 @@
+# First line: Colon, then triplet hex value (only first two characters matter)
+# Second line: Title
+# Second line: Description
+# Third+ line: Colon separated groups of (Starting index, data type, description, and mappings). The first two offsets are always predictable, so will not be specified here.
+#	Mappings: Comma separated values of (Hex value - Description). Triplet offset specific
+#		BITS Mappings: Comma separated values of each position of the byte (Off meaning|On Meaning)
+
+:01
+GCSGID/CPGID/CCSID
+Used to establish the values of the code page/char set for all field parameters having a CHAR data type.
+2:CODE:GCSGID:
+4:CODE:CCSID:
+
+:02
+Fully Qualified Name
+Enables referencing of objects using Global Identifiers (GIDs).
+2:CODE:Type:01-Replace first GID name,07-Font family name,08-Font typeface name,09-MODCA Resource,0A-Begin resource group,0B-Attribute GID,0C-Process Element GID,0D-Begin Page Group Reference,11-Media Type,12-Media Destination,41-Color Management Resource,6E-Data object Font Base Font Identifier,7E-Data object Font Linked Font Identifier,83-Begin Document,84-Resource Object,85-Code Page Name,86-Font Character Set Name,87-Begin Page,8D-Begin Medium Map,8E-Coded Font Name,98-Begin Document Index,B0-Begin Overlay,BE-Data Object Internal Resource,CA-Index Element GID,CE-Other Object Data,DE-Data Object External Resource
+3:CODE:Format:00-Character string,10-Object Identifier (OID),20-URL
+4:CODE:Name
+
+:04
+Mapping Option
+Mapping Option
+
+:10
+Object Classification
+Object Classification
+
+:18
+MODCA Interchange Set
+MODCA Interchange Set
+
+:1F
+Font Descriptor Specification
+Font Descriptor Specification
+
+:20
+Coded Graphic Character Set Global Identifier
+Coded Graphic Character Set Global Identifier
+
+:21
+Object Function Set Specification
+Object Function Set Specification
+
+:22
+Extended Resource Local Identifier
+Extended Resource Local Identifier
+
+:24
+Resource Local Identifier
+Resource Local Identifier
+
+:25
+Resource Section Number
+Resource Section Number
+
+:26
+Character Rotation
+Character Rotation
+
+:2D
+Object Byte Offset
+Object Byte Offset
+
+:36
+Attribute Value
+Specifies a value for a document attribute
+2:::
+4:CHAR:Attribute Value:
+
+:43
+Descriptor Position
+Descriptor Position
+
+:45
+Media Eject Control
+Media Eject Control
+
+:46
+Page Overlay Conditional Processing
+Page Overlay Conditional Processing
+
+:47
+Resource Usage Attribute
+Resource Usage Attribute
+
+:4B
+Measurement Units
+Measurement Units
+
+:4C
+Object Area Size
+Object Area Size
+
+:4D
+Area Definition
+Area Definition
+
+:4E
+Color Specification
+Specifies a color value and defines the color space and encoding for that value.
+2:::
+3:CODE:Color Space:01-RGB,04-CMYK,06-Highlight color space,08-CIELAB,40-Standard OCA color space
+4:::
+8:UBIN:Component 1 bits
+9:UBIN:Component 2 bits
+10:UBIN:Component 3 bits
+11:UBIN:Component 4 bits
+12::Color
+
+:50
+Encoding Scheme ID
+Encoding Scheme ID
+
+:56
+Medium Map Page Number
+Specifies the sequence number of the page in the set of pages whose presentation is controlled by the most recently activated medium map.
+2:UBIN:Page number
+
+:57
+Object Byte Extent
+Object Byte Extent
+
+:58
+Object Structured Field Offset
+Object Structured Field Offset
+
+:59
+Object Structured Field Extent
+Object Structured Field Extent
+
+:5A
+Object Offset
+Object Offset
+
+:5D
+Font Horizontal Scale Factor
+Font Horizontal Scale Factor
+
+:5E
+Object Count
+Object Count
+
+:62
+Object Date and Time Stamp
+Specifies a date and time stamp to be associated with an object.
+2:CUSTOM:
+
+:65
+Comment
+Used to include comments for documentation purposes.
+2:CHAR:Comment
+
+:68
+Medium Orientation
+Medium Orientation
+
+:6C
+Resource Object Include
+Resource Object Include
+
+:70
+Presentation Space Reset Mixing
+Specifies the resulting appearance when data in a new presentation space is merged with data in an exising one.
+2:BITS:Background Mixing Flags:0-Do NOT reset the color of the medium before placing data|Reset the color of the medium before placing data
+
+:71
+Presentation Space Mixing Rule
+Specifies the rules for establishing the color attribute of areas formed by the intersection of two presentation spaces.
+2:CUSTOM:
+
+:72
+Universal Date and Time Stamp
+Specifies a date and time in accordance with the format defined in ISO 8601: 1988 (E).
+2:CUSTOM:
+
+:74
+Toner Saver
+Toner Saver
+
+:75
+Color Fidelity
+Color Fidelity
+
+:78
+Font Fidelity
+Font Fidelity
+
+:80
+Attribute Qualifier
+Attribute Qualifier
+
+:81
+Page Position Information
+Tags a page with the Page Position (PGP) structured field repeating group info that is used to present the page.
+2:UBIN:PGPRG Number
+
+:82
+Parameter Value
+Parameter Value
+
+:83
+Presentation Control
+Specifies flags that control the presentation of an object.
+2:BITS:PRS Flag:0-Intended for viewing|Not intended for viewing,1-Intended to be indexed|Not intended to be indexed
+
+:84
+Font Resolution and Metric Technology
+Font Resolution and Metric Technology
+
+:85
+Finishing Operation
+Finishing Operation
+
+:86
+Text Fidelity
+Text Fidelity
+
+:87
+Media Fidelity
+Media Fidelity
+
+:88
+Finishing Fidelity
+Finishing Fidelity
+
+:8B
+Data-Object Font Descriptor
+Data-Object Font Descriptor
+
+:8C
+Locale Selector
+Locale Selector
+
+:8E
+UP3i Finishing Operation
+UP3i Finishing Operation
+
+:91
+Color Management Resource Descriptor
+Color Management Resource Descriptor
+
+:95
+Rendering Intent
+Rendering Intent
+
+:96
+CMR Tag Fidelity
+CMR Tag Fidelity
+
+:97
+Device Appearance
+Device Appearance
+
+:9A
+Image Resolution
+Image Resolution
+
+:9C
+Object Container Presentation Space Size
+Object Container Presentation Space Size
