@@ -24,7 +24,15 @@ Mapping Option
 
 :10
 Object Classification
-Object Classification
+Used to classify and identify object data.
+2:::
+3:CODE:Class:01-Time invariant paginated presentation object,10-Time variant,20-Executable program,30-Set up file,40-Secondary resource,41-Data object font
+4:::
+6:BITS:Structure Flags (NEED MULTI-BYTE BITS PARSING SUPPORT)
+8:CODE:Registered Object ID
+24:CHAR:Object Type Name
+56:CHAR:Object Level/Version Number
+64:CHAR:Company Name
 
 :18
 MODCA Interchange Set
@@ -40,7 +48,9 @@ Coded Graphic Character Set Global Identifier
 
 :21
 Object Function Set Specification
-Object Function Set Specification
+Identifies the type of object enveloped by the BRS and ERS fields.
+2:CODE:Object Type:03-Graphics,05-Bar Code,06-Image,40-Font Character Set,41-Code Page,42-Coded Font,92-Object Container,A8-Document,FB-Page Segment,FC-Overlay,FD-Reserved,FE-Form Map
+3:CODE:
 
 :22
 Extended Resource Local Identifier

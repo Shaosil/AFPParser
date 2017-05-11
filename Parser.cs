@@ -10,19 +10,20 @@ namespace AFPParser
 {
     public class Parser
     {
-        public List<Identifier> Identifiers { get; set; }
+        private Dictionary<string, Identifier> _identifiers { get; set; }
+
         public BindingList<StructuredField> AfpFile { get; set; }
 
         private void LoadIdentifierInfo()
         {
             // Load the list of basic Hex/Abbreviation/Description into memory
             List<string> identifierFileLines = Resources.Field_Identifiers.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            Identifiers = new List<Identifier>();
+            _identifiers = new Dictionary<string, Identifier>();
 
             foreach (string identifier in identifierFileLines)
             {
                 List<string> values = identifier.Split(',').ToList();
-                Identifiers.Add(new Identifier(abbreviation: values[0], hexCode: values[1], title: values[2]));
+                _identifiers.Add(values[1], new Identifier(abbreviation: values[0], hexCode: values[1], title: values[2]));
             }
 
             // Load the list of identifier semantics into memory
@@ -34,7 +35,7 @@ namespace AFPParser
                 nextIdx = stringIdentifierInfos.IndexOf(stringIdentifierInfos.Skip(curIdx + 1).FirstOrDefault(i => i[0] == ':'));
 
                 // Find identifier with this hex code
-                Identifier target = Identifiers.First(i => i.HexCode == stringIdentifierInfos[curIdx].Substring(1, 6));
+                Identifier target = _identifiers[stringIdentifierInfos[curIdx].Substring(1, 6)];
 
                 // Set description based on constant line number
                 target.Semantics.Description = stringIdentifierInfos[curIdx + 1];
@@ -176,7 +177,7 @@ namespace AFPParser
             {
                 if (byteList[curIdx] != 0x5A)
                 {
-                    MessageBox.Show($"Unexpected byte at offset 0x{curIdx.ToString("X")}. Is it a true AFP file?", "AFP Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Unexpected byte at offset 0x{curIdx.ToString("X").PadLeft(8, '0')}. Is it a true AFP file?", "AFP Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
@@ -188,7 +189,10 @@ namespace AFPParser
 
                 // *** Use the length to determine where the rest of the data resides ***
                 string hexIdentifier = BitConverter.ToString(takeFromSkippedArray(3)).Replace("-", "");
-                field.Identifier = Identifiers.FirstOrDefault(i => i.HexCode == hexIdentifier);
+                if (_identifiers.ContainsKey(hexIdentifier))
+                    field.Identifier = _identifiers[hexIdentifier];
+                else
+                    field.Identifier = new Identifier("UNKNOWN HEX CODE", hexIdentifier, "---");
                 field.Flag = takeFromSkippedArray(1)[0];
                 field.Sequence = BitConverter.ToInt16(getProperEndianArray(2), 0);
                 field.Data = takeFromSkippedArray(field.Length - 8);

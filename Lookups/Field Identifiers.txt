@@ -49,7 +49,7 @@ EPG,D3A9AF,End Page
 EPM,D3A9CB,End Page Map
 DPS,D3A95F,End Page Segment
 EPT,D3A99B,End Presentation Text
-ER,D3A9CE,End Resource
+ERS,D3A9CE,End Resource
 ERG,D3A9C6,End Resource Group
 ESG,D3A9D9,End Resource Environment Group
 FDS,D3AAEC,Fixed Data Size
@@ -108,3 +108,23 @@ PTX,D3EE9B,Presentation Text Data
 RCD,D3A68D,Record Descriptor
 TLE,D3A090,Tag Logical Element
 XMD,D3A68E,XML Descriptor
+
+BCF,D3A88A,Begin Coded Font
+BCP,D3A887,Begin Code Page
+BFN,D3A889,Begin Font
+CFC,D3A78A,Coded Font Control
+CFI,D38C8A,Coded Font Index
+CPC,D3A787,Code Page Control
+CPD,D3A687,Code Page Descriptor
+CPI,D38C87,Code Page Index
+ECF,D3A98A,End Coded Font
+ECP,D3A987,End Code Page
+EFN,D3A989,End Font
+FNC,D3A789,Font Control
+FND,D3A689,Font Descriptor
+FNG,D3EE89,Font Patterns
+FNI,D38C89,Font Index
+FNM,D3A289,Font Patterns Map
+FNN,D3AB89,Font Names (Outline Fonts Only)
+FNO,D3AE89,Font Orientation
+FNP,D3AC89,Font Position

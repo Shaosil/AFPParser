@@ -54,9 +54,19 @@ Begins an active environment group, which establishes the environment parameters
 0:CHAR:Name
 8:TRIPS:
 
+:D3A8CE - BRS
+Begins an envelope that is used to carry resource objects in print file level resource groups.
+0:CHAR:Identifier
+8::
+10:TRIPS:
+
 :D3A9C9 - EAG
 Terminates the definition of an active environment group initiated by a BAG field.
 0:CHAR:Name
+
+:D3A9CE - ERS
+Terminates an envelope that is used to carry resource objects in print file level resource groups.
+0:CHAR:Identifier
 
 :D3ABCC - IMM
 Identifies the medium map that is to become active for the document, and affects the current environment until a new map is invoked.

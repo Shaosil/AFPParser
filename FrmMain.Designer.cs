@@ -31,14 +31,14 @@
             this.components = new System.ComponentModel.Container();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.dgvFields = new System.Windows.Forms.DataGridView();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.lblParsedData = new System.Windows.Forms.Label();
-            this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.IdentifierAbbr = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IdentifierHexCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IdentifierTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.lblParsedData = new System.Windows.Forms.Label();
             this.flagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sequenceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFields)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.afpFileBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -82,34 +82,6 @@
             this.dgvFields.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFields_CellDoubleClick);
             this.dgvFields.SelectionChanged += new System.EventHandler(this.dgvFields_SelectionChanged);
             // 
-            // txtDescription
-            // 
-            this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtDescription.BackColor = System.Drawing.SystemColors.Window;
-            this.txtDescription.Location = new System.Drawing.Point(646, 41);
-            this.txtDescription.Multiline = true;
-            this.txtDescription.Name = "txtDescription";
-            this.txtDescription.ReadOnly = true;
-            this.txtDescription.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtDescription.Size = new System.Drawing.Size(576, 609);
-            this.txtDescription.TabIndex = 3;
-            // 
-            // lblParsedData
-            // 
-            this.lblParsedData.AutoSize = true;
-            this.lblParsedData.Location = new System.Drawing.Point(643, 22);
-            this.lblParsedData.Name = "lblParsedData";
-            this.lblParsedData.Size = new System.Drawing.Size(66, 13);
-            this.lblParsedData.TabIndex = 4;
-            this.lblParsedData.Text = "Parsed Data";
-            // 
-            // afpFileBindingSource
-            // 
-            this.afpFileBindingSource.DataMember = "AfpFile";
-            this.afpFileBindingSource.DataSource = typeof(AFPParser.Parser);
-            // 
             // IdentifierAbbr
             // 
             this.IdentifierAbbr.DataPropertyName = "IdentifierAbbr";
@@ -137,6 +109,30 @@
             this.IdentifierTitle.ReadOnly = true;
             this.IdentifierTitle.Width = 302;
             // 
+            // txtDescription
+            // 
+            this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtDescription.BackColor = System.Drawing.SystemColors.Window;
+            this.txtDescription.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDescription.Location = new System.Drawing.Point(646, 41);
+            this.txtDescription.Multiline = true;
+            this.txtDescription.Name = "txtDescription";
+            this.txtDescription.ReadOnly = true;
+            this.txtDescription.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtDescription.Size = new System.Drawing.Size(576, 609);
+            this.txtDescription.TabIndex = 3;
+            // 
+            // lblParsedData
+            // 
+            this.lblParsedData.AutoSize = true;
+            this.lblParsedData.Location = new System.Drawing.Point(643, 22);
+            this.lblParsedData.Name = "lblParsedData";
+            this.lblParsedData.Size = new System.Drawing.Size(66, 13);
+            this.lblParsedData.TabIndex = 4;
+            this.lblParsedData.Text = "Parsed Data";
+            // 
             // flagDataGridViewTextBoxColumn
             // 
             this.flagDataGridViewTextBoxColumn.DataPropertyName = "Flag";
@@ -154,6 +150,11 @@
             this.sequenceDataGridViewTextBoxColumn.Name = "sequenceDataGridViewTextBoxColumn";
             this.sequenceDataGridViewTextBoxColumn.ReadOnly = true;
             this.sequenceDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // afpFileBindingSource
+            // 
+            this.afpFileBindingSource.DataMember = "AfpFile";
+            this.afpFileBindingSource.DataSource = typeof(AFPParser.Parser);
             // 
             // FrmMain
             // 
