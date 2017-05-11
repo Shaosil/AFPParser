@@ -93,13 +93,8 @@ namespace AFPParser
                                 // Skip non descriptive offsets
                                 if (!string.IsNullOrWhiteSpace(offsetData[i].Description))
                                 {
-                                    sb.Append($"{offsetData[i].Description}: ");
-
-                                    // Display data (mapping or regular)
-                                    if (offsetData[i].Mappings.Any())
-                                        sb.AppendLine(offsetData[i].DisplayMappedInfo(sectionedData[0]));
-                                    else
-                                        sb.AppendLine(offsetData[i].DisplayDataByType(sectionedData));
+                                    // Write out this offset's description
+                                    sb.AppendLine(offsetData[i].DisplayDataByType(sectionedData));
                                 }
                                 break;
                         }

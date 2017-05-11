@@ -10,89 +10,9 @@ namespace AFPParser
 {
     public class Parser
     {
-        private Dictionary<string, Identifier> _identifiers { get; set; }
-
         public BindingList<StructuredField> AfpFile { get; set; }
 
-        private void LoadIdentifierInfo()
-        {
-            // Load the list of basic Hex/Abbreviation/Description into memory
-            List<string> identifierFileLines = Resources.Field_Identifiers.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            _identifiers = new Dictionary<string, Identifier>();
-
-            foreach (string identifier in identifierFileLines)
-            {
-                List<string> values = identifier.Split(',').ToList();
-                _identifiers.Add(values[1], new Identifier(abbreviation: values[0], hexCode: values[1], title: values[2]));
-            }
-
-            // Load the list of identifier semantics into memory
-            List<string> stringIdentifierInfos = Resources.Identifier_Info.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            int curIdx = 0, nextIdx = 0;
-            while (curIdx >= 0)
-            {
-                curIdx = stringIdentifierInfos.IndexOf(stringIdentifierInfos.Skip(curIdx).FirstOrDefault(i => i[0] == ':'));
-                nextIdx = stringIdentifierInfos.IndexOf(stringIdentifierInfos.Skip(curIdx + 1).FirstOrDefault(i => i[0] == ':'));
-
-                // Find identifier with this hex code
-                Identifier target = _identifiers[stringIdentifierInfos[curIdx].Substring(1, 6)];
-
-                // Set description based on constant line number
-                target.Semantics.Description = stringIdentifierInfos[curIdx + 1];
-
-                // Get the list of lines that are offsets
-                List<string> offsetRows = new List<string>();
-                for (int i = curIdx + 2; i < stringIdentifierInfos.Count; i++)
-                {
-                    if (stringIdentifierInfos[i][0] == ':') break;
-                    offsetRows.Add(stringIdentifierInfos[i]);
-                }
-
-                target.Semantics.Offsets = LoadOffsets(offsetRows, target.Semantics);
-
-                curIdx = nextIdx;
-            }
-        }
-
-        private void LoadTriplets()
-        {
-            Triplets.All = new Dictionary<byte, SemanticsInfo>();
-
-            // Load the list of triplet semantics into memory
-            List<string> tripletFileLines = Resources.Triplets.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            int curIdx = 0, nextIdx = 0;
-            while (curIdx >= 0)
-            {
-                curIdx = tripletFileLines.IndexOf(tripletFileLines.Skip(curIdx).FirstOrDefault(i => i[0] == ':'));
-                nextIdx = tripletFileLines.IndexOf(tripletFileLines.Skip(curIdx + 1).FirstOrDefault(i => i[0] == ':'));
-
-                // Create new dictionary entry with current triplet info
-                SemanticsInfo semantics = new SemanticsInfo();
-                byte convertedByte = byte.Parse(tripletFileLines[curIdx].Substring(1, 2), System.Globalization.NumberStyles.HexNumber);
-                Triplets.All.Add(convertedByte, semantics);
-
-                // Set title and description based on constant line number
-                if (curIdx + 1 < tripletFileLines.Count)
-                    semantics.Title = tripletFileLines[curIdx + 1];
-                if (curIdx + 2 < tripletFileLines.Count)
-                    semantics.Description = tripletFileLines[curIdx + 2];
-                curIdx += 3;
-
-                // Get the list of lines that are offsets
-                List<string> offsetRows = new List<string>();
-                for (int i = curIdx; i < tripletFileLines.Count; i++)
-                {
-                    if (tripletFileLines[i][0] == ':') break;
-                    offsetRows.Add(tripletFileLines[i]);
-                }
-
-                semantics.Offsets = LoadOffsets(offsetRows, semantics);
-
-                curIdx = nextIdx;
-            }
-        }
-
-        private List<Offset> LoadOffsets(List<string> rows, SemanticsInfo semantics)
+        public static List<Offset> LoadOffsets(List<string> rows, SemanticsInfo semantics)
         {
             List<Offset> offsets = new List<Offset>();
 
@@ -148,9 +68,10 @@ namespace AFPParser
 
         public void Parse(string fileName)
         {
-            // First, load all identifiers and triplets from text files
-            LoadIdentifierInfo();
-            LoadTriplets();
+            // First, load all semantics from text files
+            Identifier.Load();
+            Triplets.Load();
+            PTXCSIFunctions.Load();
 
             // Then, read all AFP file bytes into memory
             byte[] byteList = File.ReadAllBytes(fileName);
@@ -189,8 +110,8 @@ namespace AFPParser
 
                 // *** Use the length to determine where the rest of the data resides ***
                 string hexIdentifier = BitConverter.ToString(takeFromSkippedArray(3)).Replace("-", "");
-                if (_identifiers.ContainsKey(hexIdentifier))
-                    field.Identifier = _identifiers[hexIdentifier];
+                if (Identifier.All.ContainsKey(hexIdentifier))
+                    field.Identifier = Identifier.All[hexIdentifier];
                 else
                     field.Identifier = new Identifier("UNKNOWN HEX CODE", hexIdentifier, "---");
                 field.Flag = takeFromSkippedArray(1)[0];

@@ -1,6 +1,6 @@
 # First line: Colon, then hex value (only first six characters matter)
 # Second line: Description
-# Third+ line: Colon separated groups of (Starting index, length, data type, description, and mappings) If triplets, no description is necessary
+# Third+ line: Colon separated groups of (Starting index, data type, description, and mappings) If triplets, no description is necessary
 #	Mappings: Comma separated values of (HEX-Mapped value) If there is a range, it will read 'RHEXHEX' (Range, first hex to second hex)
 
 :D3A090 - TLE

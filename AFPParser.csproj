@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Custom Parsing\CustomDataParser.cs" />
     <Compile Include="Custom Parsing\Identifiers\PTX.cs" />
+    <Compile Include="Custom Parsing\PTXCSIFunctions.cs" />
     <Compile Include="Custom Parsing\Triplets\X62.cs" />
     <Compile Include="Custom Parsing\Triplets\X72.cs" />
     <Compile Include="Custom Parsing\Triplets\X71.cs" />
@@ -90,19 +91,19 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Lookups\Field Identifiers.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Lookups\Field Identifiers.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Lookups\Identifier Info.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Lookups\Identifier Info.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Lookups\Triplets.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Lookups\Triplets.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Lookups\PTX Control Sequences.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Custom Parsing\PTX Control Sequences\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace AFPParser.Properties
-{
-
-
+namespace AFPParser.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -86,15 +86,15 @@ namespace AFPParser.Properties
         /// <summary>
         ///   Looks up a localized string similar to # First line: Colon, then hex value (only first six characters matter)
         ///# Second line: Description
-        ///# Third+ line: Colon separated groups of (Starting index, data type, and description) If triplets, a comma separated list of applicable options
+        ///# Third+ line: Colon separated groups of (Starting index, length, data type, description, and mappings) If triplets, no description is necessary
+        ///#	Mappings: Comma separated values of (HEX-Mapped value) If there is a range, it will read &apos;RHEXHEX&apos; (Range, first hex to second hex)
         ///
-        ///:D3ABCC - IMM
-        ///Identifies the medium map that is to become active for the document, and affects the current environment until a new map is invoked.
-        ///0:CHAR:Name
-        ///8:TRIPS:01
+        ///:D3A090 - TLE
+        ///Assigns an attribute name and value to a page or group.
+        ///0:TRIPS:
         ///
-        ///:D3EEEE - NOP
-        ///The data in the No Operation structured field is untyped and undefined. Al [rest of string was truncated]&quot;;.
+        ///:D3A6AF - PGD
+        ///Specifies the size and attribu [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Identifier_Info {
             get {
@@ -105,15 +105,32 @@ namespace AFPParser.Properties
         /// <summary>
         ///   Looks up a localized string similar to # First line: Colon, then hex value (only first six characters matter)
         ///# Second line: Description
-        ///# Third+ line: Colon separated groups of (Starting index, data type, and description) If triplets, a comma separated list of applicable options
+        ///# Third+ line: Colon separated groups of (Starting index, length, data type, description, and mappings) If triplets, no description is necessary
+        ///#	Mappings: Comma separated values of (HEX-Mapped value) If there is a range, it will read &apos;RHEXHEX&apos; (Range, first hex to second hex)
         ///
-        ///:D3ABCC - IMM
-        ///Identifies the medium map that is to become active for the document, and affects the current environment until a new map is invoked.
-        ///0:CHAR:Name
-        ///8:TRIPS:01
+        ///:D3A090 - TLE
+        ///Assigns an attribute name and value to a page or group.
+        ///0:TRIPS:
         ///
-        ///:D3EEEE - NOP
-        ///The data in the No Operation structured field is untyped and undefined. Al [rest of string was truncated]&quot;;.
+        ///:D3A6AF - PGD
+        ///Specifies the size and attribu [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string PTX_Control_Sequences {
+            get {
+                return ResourceManager.GetString("PTX_Control_Sequences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to # First line: Colon, then triplet hex value (only first two characters matter)
+        ///# Second line: Title
+        ///# Second line: Description
+        ///# Third+ line: Colon separated groups of (Starting index, data type, description, and mappings). The first two offsets are always predictable, so will not be specified here.
+        ///#	Mappings: Comma separated values of (Hex value - Description). Triplet offset specific
+        ///#		BITS Mappings: Comma separated values of each position of the byte (Off meaning|On Meaning)
+        ///
+        ///:01
+        ///GCSGID/CPGID/C [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Triplets {
             get {

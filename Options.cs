@@ -8,6 +8,11 @@ public class Options
 {
     public string LastDirectory { get; set; }
 
+    Options()
+    {
+        LastDirectory = Environment.CurrentDirectory;
+    }
+
     public static Options LoadSettings(string path)
     {
         Options loadedOpts = new Options();

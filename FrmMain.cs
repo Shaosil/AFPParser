@@ -39,7 +39,9 @@ namespace AFPParser
                     afpParser.Parse(dialog.FileName);
 
                     // Databind the list box
+                    afpFileBindingSource.DataSource = null;
                     afpFileBindingSource.DataSource = afpParser.AfpFile;
+                    dgvFields.Focus();
                 }
                 finally
                 {
@@ -50,8 +52,11 @@ namespace AFPParser
 
         private void dgvFields_SelectionChanged(object sender, EventArgs e)
         {
-            StructuredField sf = (StructuredField)dgvFields.CurrentRow.DataBoundItem;
-            txtDescription.Text = sf.BuildDescription();
+            if (dgvFields.CurrentRow != null)
+            {
+                StructuredField sf = (StructuredField)dgvFields.CurrentRow.DataBoundItem;
+                txtDescription.Text = sf.BuildDescription();
+            }
         }
 
         private void dgvFields_CellDoubleClick(object sender, DataGridViewCellEventArgs e)

@@ -26,35 +26,45 @@ namespace AFPParser
 
         public string DisplayDataByType(byte[] data)
         {
-            switch (DataType)
-            {
-                case "UBIN":
-                    // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
-                    bool isOdd = data.Length == 3;
+            StringBuilder sb = new StringBuilder($"{Description}: ");
 
-                    // AFP is Big Endian
-                    if (BitConverter.IsLittleEndian)
-                        data = data.Skip(Convert.ToInt32(isOdd)).Reverse().ToArray();
-                    else if (isOdd)
-                        data = data.Take(data.Length - 1).ToArray();
+            if (Mappings.Any())
+                sb.Append(DisplayMappedInfo(data[0]));
+            else
+                switch (DataType)
+                {
+                    case "UBIN":
+                        // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
+                        bool isOdd = data.Length == 3;
 
-                    return data.Length == 1 ? data[0].ToString()
-                        : data.Length == 2 ? BitConverter.ToUInt16(data, 0).ToString()
-                        : data.Length == 4 ? BitConverter.ToUInt32(data, 0).ToString()
-                        : "(Unknown Numeric Value)";
+                        // AFP is Big Endian
+                        if (BitConverter.IsLittleEndian)
+                            data = data.Skip(Convert.ToInt32(isOdd)).Reverse().ToArray();
+                        else if (isOdd)
+                            data = data.Take(data.Length - 1).ToArray();
 
-                case "CHAR":
-                case "CODE":
-                    string decoded = Encoding.GetEncoding("IBM037").GetString(data);
-                    return string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded;
+                        sb.Append(data.Length == 1 ? data[0].ToString()
+                            : data.Length == 2 ? BitConverter.ToUInt16(data, 0).ToString()
+                            : data.Length == 4 ? BitConverter.ToUInt32(data, 0).ToString()
+                            : "(Unknown Numeric Value)");
+                        break;
 
-                default:
-                    string hexValue = BitConverter.ToString(data).Replace("-", " ");
-                    return $"({hexValue})";
-            }
+                    case "CHAR":
+                    case "CODE":
+                        string decoded = Encoding.GetEncoding("IBM037").GetString(data);
+                        sb.Append(string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded);
+                        break;
+
+                    default:
+                        string hexValue = BitConverter.ToString(data).Replace("-", " ");
+                        sb.Append($"({hexValue})");
+                        break;
+                }
+
+            return sb.ToString();
         }
 
-        public string DisplayMappedInfo(byte data)
+        private string DisplayMappedInfo(byte data)
         {
             StringBuilder sb = new StringBuilder();
 
