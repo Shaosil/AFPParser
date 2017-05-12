@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Custom Parsing\CustomDataParser.cs" />
     <Compile Include="Custom Parsing\Identifiers\PTX.cs" />
+    <Compile Include="Custom Parsing\PTX Control Sequences\F6_F7.cs" />
     <Compile Include="Custom Parsing\PTXCSIFunctions.cs" />
     <Compile Include="Custom Parsing\Triplets\X62.cs" />
     <Compile Include="Custom Parsing\Triplets\X72.cs" />
@@ -102,9 +103,7 @@
   <ItemGroup>
     <None Include="Lookups\PTX Control Sequences.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Custom Parsing\PTX Control Sequences\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

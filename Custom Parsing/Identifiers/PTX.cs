@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -71,7 +70,7 @@ namespace AFPParser
             private List<ControlSequence> GetCSIs(byte[] data)
             {
                 CSIs = new List<ControlSequence>();
-                
+
                 // The first two bytes of the CSI data are always 2B D3, so skip them
                 int curIndex = 2;
                 while (curIndex < data.Length)

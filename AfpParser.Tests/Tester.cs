@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AfpParser.Tests
 {

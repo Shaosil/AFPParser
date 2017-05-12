@@ -75,7 +75,7 @@ Set Extended Text Color (SEC)
 
 :F0-F1
 Set Coded Font Local (SCFL)
-0:CODE:Identifier
+0::Identifier
 
 :F2-F3
 Begin Suppression (BSU)
