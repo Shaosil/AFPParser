@@ -11,17 +11,71 @@ namespace AFPParser
     public class Offset
     {
         public int StartingIndex { get; set; }
-        public string DataType { get; set; }
+        public Lookups.DataTypes DataType { get; set; }
         public string Description { get; set; }
         
         public Dictionary<byte, string> Mappings { get; set; }
 
-        public Offset(int startingIdx, string dataType, string description)
+        public Offset(int startingIdx, Lookups.DataTypes dataType, string description)
         {
             StartingIndex = startingIdx;
             DataType = dataType;
             Description = description;
             Mappings = new Dictionary<byte, string>();
+        }
+
+        public static List<Offset> Load(List<string> rows, SemanticsInfo semantics)
+        {
+            List<Offset> offsets = new List<Offset>();
+
+            if (rows.Count > 0)
+            {
+                // First, create a list of split offset string info
+                List<string[]> splitOffsetStrings = new List<string[]>();
+                splitOffsetStrings.AddRange(rows.Select(r => r.Split(':')));
+
+                // If this is a repeating group of offsets, store the RG info on the identifier
+                if (splitOffsetStrings[0][1] == "RSTART")
+                {
+                    semantics.IsRepeatingGroup = true;
+                    semantics.RepeatingGroupStart = int.Parse(splitOffsetStrings[0][0]);
+                    splitOffsetStrings.RemoveAt(0);
+                }
+
+                // Load any other offsets normally
+                foreach (string[] offsetStrings in splitOffsetStrings)
+                {
+                    Offset oSet = new Offset(int.Parse(offsetStrings[0]), offsetStrings[1], offsetStrings[2]);
+                    if (offsetStrings.Length > 3 && !string.IsNullOrWhiteSpace(offsetStrings[3]))
+                    {
+                        // Get mappings
+                        Dictionary<byte, string> mappings = new Dictionary<byte, string>();
+                        List<string> rawMappings = offsetStrings[3].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                        foreach (string m in rawMappings)
+                        {
+                            List<string> mapping = m.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                            // If there is a range, add each byte in between
+                            if (mapping[0][0] == 'R' && mapping[0].Length == 5)
+                            {
+                                byte begin = byte.Parse(mapping[0].Substring(1, 2), System.Globalization.NumberStyles.HexNumber);
+                                byte end = byte.Parse(mapping[0].Substring(3, 2), System.Globalization.NumberStyles.HexNumber);
+
+                                while (begin < end)
+                                    mappings.Add(begin++, mapping[1]);
+                            }
+                            // Else just add the single byte map
+                            else
+                                mappings.Add(byte.Parse(mapping[0], System.Globalization.NumberStyles.HexNumber), mapping[1]);
+                        }
+
+                        oSet.Mappings = mappings;
+                    }
+                    offsets.Add(oSet);
+                }
+            }
+
+            return offsets;
         }
 
         public string DisplayDataByType(byte[] data)

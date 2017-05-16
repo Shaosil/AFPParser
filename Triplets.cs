@@ -42,7 +42,7 @@ namespace AFPParser
                     offsetRows.Add(tripletFileLines[i]);
                 }
 
-                semantics.Offsets = Parser.LoadOffsets(offsetRows, semantics);
+                semantics.Offsets = Offset.Load(offsetRows, semantics);
 
                 curIdx = nextIdx;
             }

@@ -1,29 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace AFPParser
 {
-    public class StructuredField
+    [DebuggerDisplay("{string.IsNullOrWhiteSpace(Abbreviation) ? HexCode : Abbreviation}")]
+    public abstract class StructuredField
     {
+        // Properties directly converted from raw hex data
         public int Length { get; set; }
-        public Identifier Identifier { get; set; }
-        public string IdentifierHexCode { get { return Identifier?.HexCode; } }
-        public string IdentifierAbbr { get { return Identifier?.Abbreviation; } }
-        public string IdentifierTitle { get { return Identifier?.Semantics?.Title; } }
+        public string HexCode { get; set; }
         public byte Flag { get; set; }
         public int Sequence { get; set; }
         public byte[] Data { get; set; }
+        
+        // Abstract properties derived from hardcoded individual structured field information
+        public abstract string Abbreviation { get; }
+        public SemanticsInfo Semantics { get; private set; }
+
+        // Dynamically calculated properties
         public string DataHex { get { return BitConverter.ToString(Data).Replace("-", " "); } }
         public string DataEBCDIC { get { return Encoding.GetEncoding("IBM037").GetString(Data); } }
+
+        public StructuredField()
+        {
+            Semantics = LoadSemantics();
+        }
+
+        protected abstract SemanticsInfo LoadSemantics();
 
         public string BuildDescription()
         {
             StringBuilder sb = new StringBuilder();
-            SemanticsInfo semantics = Identifier.Semantics;
 
-            if (string.IsNullOrWhiteSpace(semantics.Description))
+            if (string.IsNullOrWhiteSpace(Semantics.Description))
             {
                 sb.AppendLine("Not yet implemented...");
                 sb.AppendLine();
@@ -37,30 +49,30 @@ namespace AFPParser
             }
             else
             {
-                sb.AppendLine(semantics.Description);
+                sb.AppendLine(Semantics.Description);
                 sb.AppendLine();
 
                 // If this is a repeating group identifier, loop through each subsection of offsets
                 int sectionIncrement = 1;
-                int rgStartOffset = semantics.RepeatingGroupStart;
+                int rgStartOffset = Semantics.RepeatingGroupStart;
                 int skip = rgStartOffset;
                 int rgLength = Data.Length;
                 do
                 {
-                    if (semantics.IsRepeatingGroup)
+                    if (Semantics.IsRepeatingGroup)
                     {
                         sb.AppendLine($"SECTION {sectionIncrement++}");
                     }
 
-                    for (int i = 0; i < semantics.Offsets.Count; i++)
+                    for (int i = 0; i < Semantics.Offsets.Count; i++)
                     {
-                        List<Offset> offsetData = semantics.Offsets;
+                        List<Offset> offsetData = Semantics.Offsets;
 
                         // Get the rest of the data, skipping already processed info
                         byte[] skippedData = Data.Skip(skip).ToArray();
 
                         // Get the length of the current repeating group (or just the length of the data if not repeating)
-                        if (semantics.IsRepeatingGroup)
+                        if (Semantics.IsRepeatingGroup)
                         {
                             // If it is fixed, it will be the first byte of data overall. Otherwise, it will be the first byte of the current segment
                             rgLength = rgStartOffset == 0 ? skippedData[0] : Data[0];
@@ -79,7 +91,7 @@ namespace AFPParser
                         {
                             // Call our custom parser with this hex code
                             case "CUSTOM":
-                                sb.AppendLine(CustomDataParser.ParseData(IdentifierHexCode, offsetData[i], sectionedData));
+                                sb.AppendLine(CustomDataParser.ParseData(HexCode, offsetData[i], sectionedData));
                                 break;
 
                             // For triplets, call the triplet parser

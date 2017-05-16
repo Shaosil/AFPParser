@@ -56,7 +56,7 @@ namespace AFPParser
                     offsetRows.Add(stringIdentifierInfos[i]);
                 }
 
-                target.Semantics.Offsets = Parser.LoadOffsets(offsetRows, target.Semantics);
+                target.Semantics.Offsets = Offset.Load(offsetRows, target.Semantics);
 
                 curIdx = nextIdx;
             }

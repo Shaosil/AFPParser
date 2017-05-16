@@ -27,7 +27,7 @@ namespace AFPParser
                 List<string> currentSection = csiFile.Skip(curIndex).Take(take).ToList();
                 SemanticsInfo semantics = new SemanticsInfo();
                 semantics.Description = currentSection[1];
-                semantics.Offsets = Parser.LoadOffsets(currentSection.Skip(2).ToList(), semantics);
+                semantics.Offsets = Offset.Load(currentSection.Skip(2).ToList(), semantics);
 
                 // Insert one or two entries into our dictionary depending on if both chained/unchained function bytes are present
                 List<byte> functions = currentSection[0].Substring(1).Split('-').Select(s => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToList();
