@@ -55,7 +55,7 @@ namespace AFPParser
             if (dgvFields.CurrentRow != null)
             {
                 StructuredField sf = (StructuredField)dgvFields.CurrentRow.DataBoundItem;
-                txtDescription.Text = sf.BuildDescription();
+                txtDescription.Text = sf.BuildDescription().Trim();
             }
         }
 

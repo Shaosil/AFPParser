@@ -40,6 +40,16 @@ namespace AFPParser
                 sb.AppendLine();
             }
 
+            sb.Append(BuildOffsetDescriptions());
+
+            return sb.ToString();
+        }
+        
+        // This method can be overridden if it is complicated to parse
+        protected virtual string BuildOffsetDescriptions()
+        {
+            StringBuilder sb = new StringBuilder();
+
             if (Offsets.Count == 0)
             {
                 sb.AppendLine("Not yet implemented...");
@@ -49,19 +59,8 @@ namespace AFPParser
                 sb.AppendLine();
                 sb.AppendLine("Raw data (EBCDIC):");
                 sb.Append(DataEBCDIC);
+                return sb.ToString();
             }
-            else
-            {
-                sb.Append(BuildOffsetDescriptions());
-            }
-
-            return sb.ToString();
-        }
-        
-        // This method can be overridden if it is complicated to parse
-        protected virtual string BuildOffsetDescriptions()
-        {
-            StringBuilder sb = new StringBuilder();
 
             // If this is a repeating group identifier, loop through each subsection of offsets
             int sectionIncrement = 1;
