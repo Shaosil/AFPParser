@@ -31,14 +31,14 @@
             this.components = new System.ComponentModel.Container();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.dgvFields = new System.Windows.Forms.DataGridView();
+            this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.lblParsedData = new System.Windows.Forms.Label();
             this.IdentifierAbbr = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IdentifierHexCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IdentifierTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.lblParsedData = new System.Windows.Forms.Label();
             this.flagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sequenceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFields)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.afpFileBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -82,32 +82,10 @@
             this.dgvFields.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFields_CellDoubleClick);
             this.dgvFields.SelectionChanged += new System.EventHandler(this.dgvFields_SelectionChanged);
             // 
-            // IdentifierAbbr
+            // afpFileBindingSource
             // 
-            this.IdentifierAbbr.DataPropertyName = "IdentifierAbbr";
-            this.IdentifierAbbr.FillWeight = 5F;
-            this.IdentifierAbbr.HeaderText = "Identifier";
-            this.IdentifierAbbr.Name = "IdentifierAbbr";
-            this.IdentifierAbbr.ReadOnly = true;
-            this.IdentifierAbbr.Width = 60;
-            // 
-            // IdentifierHexCode
-            // 
-            this.IdentifierHexCode.DataPropertyName = "IdentifierHexCode";
-            this.IdentifierHexCode.FillWeight = 8F;
-            this.IdentifierHexCode.HeaderText = "Hex Code";
-            this.IdentifierHexCode.Name = "IdentifierHexCode";
-            this.IdentifierHexCode.ReadOnly = true;
-            this.IdentifierHexCode.Width = 97;
-            // 
-            // IdentifierTitle
-            // 
-            this.IdentifierTitle.DataPropertyName = "IdentifierTitle";
-            this.IdentifierTitle.FillWeight = 25F;
-            this.IdentifierTitle.HeaderText = "Description";
-            this.IdentifierTitle.Name = "IdentifierTitle";
-            this.IdentifierTitle.ReadOnly = true;
-            this.IdentifierTitle.Width = 302;
+            this.afpFileBindingSource.DataMember = "AfpFile";
+            this.afpFileBindingSource.DataSource = typeof(AFPParser.Parser);
             // 
             // txtDescription
             // 
@@ -133,6 +111,33 @@
             this.lblParsedData.TabIndex = 4;
             this.lblParsedData.Text = "Parsed Data";
             // 
+            // IdentifierAbbr
+            // 
+            this.IdentifierAbbr.DataPropertyName = "Abbreviation";
+            this.IdentifierAbbr.FillWeight = 5F;
+            this.IdentifierAbbr.HeaderText = "Identifier";
+            this.IdentifierAbbr.Name = "IdentifierAbbr";
+            this.IdentifierAbbr.ReadOnly = true;
+            this.IdentifierAbbr.Width = 60;
+            // 
+            // IdentifierHexCode
+            // 
+            this.IdentifierHexCode.DataPropertyName = "ID";
+            this.IdentifierHexCode.FillWeight = 8F;
+            this.IdentifierHexCode.HeaderText = "Hex Code";
+            this.IdentifierHexCode.Name = "IdentifierHexCode";
+            this.IdentifierHexCode.ReadOnly = true;
+            this.IdentifierHexCode.Width = 97;
+            // 
+            // IdentifierTitle
+            // 
+            this.IdentifierTitle.DataPropertyName = "Title";
+            this.IdentifierTitle.FillWeight = 25F;
+            this.IdentifierTitle.HeaderText = "Description";
+            this.IdentifierTitle.Name = "IdentifierTitle";
+            this.IdentifierTitle.ReadOnly = true;
+            this.IdentifierTitle.Width = 302;
+            // 
             // flagDataGridViewTextBoxColumn
             // 
             this.flagDataGridViewTextBoxColumn.DataPropertyName = "Flag";
@@ -150,11 +155,6 @@
             this.sequenceDataGridViewTextBoxColumn.Name = "sequenceDataGridViewTextBoxColumn";
             this.sequenceDataGridViewTextBoxColumn.ReadOnly = true;
             this.sequenceDataGridViewTextBoxColumn.Width = 85;
-            // 
-            // afpFileBindingSource
-            // 
-            this.afpFileBindingSource.DataMember = "AfpFile";
-            this.afpFileBindingSource.DataSource = typeof(AFPParser.Parser);
             // 
             // FrmMain
             // 

@@ -4,16 +4,19 @@ namespace AFPParser
 {
     public class SemanticsInfo
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public List<Offset> Offsets { get; set; }
+        public string Title { get; private set; }
+        public string Description { get; private set; }
+        public bool IsRepeatingGroup { get; private set; }
+        public int RepeatingGroupStart { get; private set; }
+        public IReadOnlyList<Offset> Offsets { get; private set; }
 
-        public bool IsRepeatingGroup { get; set; }
-        public int RepeatingGroupStart { get; set; }
-
-        public SemanticsInfo()
+        public SemanticsInfo(string title, string description, bool isRg, int rgStart, List<Offset> offsets)
         {
-            Offsets = new List<Offset>();
+            Title = title;
+            Description = description;
+            IsRepeatingGroup = isRg;
+            RepeatingGroupStart = rgStart;
+            Offsets = offsets;
         }
     }
 }

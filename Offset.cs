@@ -11,12 +11,12 @@ namespace AFPParser
     public class Offset
     {
         public int StartingIndex { get; set; }
-        public string DataType { get; set; }
+        public Lookups.DataTypes DataType { get; set; }
         public string Description { get; set; }
         
         public Dictionary<byte, string> Mappings { get; set; }
 
-        public Offset(int startingIdx, string dataType, string description)
+        public Offset(int startingIdx, Lookups.DataTypes dataType, string description)
         {
             StartingIndex = startingIdx;
             DataType = dataType;
@@ -33,7 +33,7 @@ namespace AFPParser
             else
                 switch (DataType)
                 {
-                    case "UBIN":
+                    case Lookups.DataTypes.UBIN:
                         // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
                         bool isOdd = data.Length == 3;
 
@@ -49,8 +49,8 @@ namespace AFPParser
                             : "(Unknown Numeric Value)");
                         break;
 
-                    case "CHAR":
-                    case "CODE":
+                    case Lookups.DataTypes.CHAR:
+                    case Lookups.DataTypes.CODE:
                         string decoded = Encoding.GetEncoding("IBM037").GetString(data);
                         sb.Append(string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded);
                         break;
@@ -70,7 +70,7 @@ namespace AFPParser
 
             switch (DataType)
             {
-                case "BITS":
+                case Lookups.DataTypes.BITS:
                     // Mappings correspond to bit positions
                     Dictionary<byte, string[]> bitsAndDescriptions = new Dictionary<byte, string[]>();
                     foreach (KeyValuePair<byte, string> mapping in Mappings)
