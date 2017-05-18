@@ -10,6 +10,7 @@ namespace AFPParser
         // Properties which must be implemented by individual triplets
         protected abstract string Description { get; }
         protected abstract List<Offset> Offsets { get; }
+        protected override string StructureName => "Triplet";
         
         public Triplet(byte[] allData) : base (allData[0], allData[1].ToString("X"), 2)
         {
@@ -53,12 +54,9 @@ namespace AFPParser
             return sb.ToString();
         }
 
-        // Complicated triplets can override this method
-        protected virtual string GetDescription()
+        protected override string GetOffsetDescriptions()
         {
             StringBuilder sb = new StringBuilder();
-            
-            sb.AppendLine($"{Semantics.Title} (Triplet 0x{ID})");
 
             if (Offsets.Any())
                 foreach (Offset oSet in Offsets)
@@ -79,7 +77,9 @@ namespace AFPParser
                     }
                 }
             else
-                sb.AppendLine("Not yet implemented...");
+            {
+                sb.AppendLine($"Not yet implemented...{Environment.NewLine}Raw Data: {DataHex}");
+            }
 
             return sb.ToString();
         }

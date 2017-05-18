@@ -22,7 +22,7 @@ namespace AFPParser
                 string className = GetType().Name;
                 string spacedName = string.Empty;
                 for (int i = 0; i < className.Length; i++)
-                    spacedName += i > 0 && char.IsUpper(className[i]) != char.IsUpper(className[i - 1])
+                    spacedName += i > 0 && char.IsUpper(className[i]) && !char.IsUpper(className[i - 1])
                         ? $" {className[i]}"
                         : className[i].ToString();
 
@@ -30,11 +30,26 @@ namespace AFPParser
             }
         }
 
+        protected abstract string StructureName { get; }
+
         public DataStructure(int length, string id, int introducerLength)
         {
             Length = length;
             ID = id;
             Data = new byte[Length - introducerLength];
         }
+
+        public virtual string GetDescription()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"{Semantics.Title} ({StructureName} 0x{ID})");
+            sb.Append(GetOffsetDescriptions());
+
+            return sb.ToString();
+        }
+
+        // This method should be overwritten by inheriting classes
+        protected abstract string GetOffsetDescriptions();
     }
 }

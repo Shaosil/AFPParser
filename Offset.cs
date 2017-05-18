@@ -28,38 +28,43 @@ namespace AFPParser
         {
             StringBuilder sb = new StringBuilder($"{Description}: ");
 
-            if (Mappings.Any())
-                sb.Append(DisplayMappedInfo(data[0]));
+            if (data.Length > 0)
+            {
+                if (Mappings.Any())
+                    sb.Append(DisplayMappedInfo(data[0]));
+                else
+                    switch (DataType)
+                    {
+                        case Lookups.DataTypes.UBIN:
+                            // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
+                            bool isOdd = data.Length == 3;
+
+                            // AFP is Big Endian
+                            if (BitConverter.IsLittleEndian)
+                                data = data.Skip(Convert.ToInt32(isOdd)).Reverse().ToArray();
+                            else if (isOdd)
+                                data = data.Take(data.Length - 1).ToArray();
+
+                            sb.Append(data.Length == 1 ? data[0].ToString()
+                                : data.Length == 2 ? BitConverter.ToUInt16(data, 0).ToString()
+                                : data.Length == 4 ? BitConverter.ToUInt32(data, 0).ToString()
+                                : "(Unknown Numeric Value)");
+                            break;
+
+                        case Lookups.DataTypes.CHAR:
+                        case Lookups.DataTypes.CODE:
+                            string decoded = Encoding.GetEncoding("IBM037").GetString(data);
+                            sb.Append(string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded);
+                            break;
+
+                        default:
+                            string hexValue = BitConverter.ToString(data).Replace("-", " ");
+                            sb.Append($"({hexValue})");
+                            break;
+                    }
+            }
             else
-                switch (DataType)
-                {
-                    case Lookups.DataTypes.UBIN:
-                        // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
-                        bool isOdd = data.Length == 3;
-
-                        // AFP is Big Endian
-                        if (BitConverter.IsLittleEndian)
-                            data = data.Skip(Convert.ToInt32(isOdd)).Reverse().ToArray();
-                        else if (isOdd)
-                            data = data.Take(data.Length - 1).ToArray();
-
-                        sb.Append(data.Length == 1 ? data[0].ToString()
-                            : data.Length == 2 ? BitConverter.ToUInt16(data, 0).ToString()
-                            : data.Length == 4 ? BitConverter.ToUInt32(data, 0).ToString()
-                            : "(Unknown Numeric Value)");
-                        break;
-
-                    case Lookups.DataTypes.CHAR:
-                    case Lookups.DataTypes.CODE:
-                        string decoded = Encoding.GetEncoding("IBM037").GetString(data);
-                        sb.Append(string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded);
-                        break;
-
-                    default:
-                        string hexValue = BitConverter.ToString(data).Replace("-", " ");
-                        sb.Append($"({hexValue})");
-                        break;
-                }
+                sb.Append("(BLANK)");
 
             return sb.ToString();
         }

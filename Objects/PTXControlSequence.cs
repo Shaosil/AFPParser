@@ -11,7 +11,8 @@ namespace AFPParser
         public abstract string Abbreviation { get; }
         protected abstract string Description { get; }
         protected abstract List<Offset> Offsets { get; }
-        
+        protected override string StructureName => "Control Sequence";
+
         public PTXControlSequence(byte[] allData) : base (allData[0], allData[1].ToString("X"), 2)
         {
             // Control sequences never have repeating groups
@@ -22,18 +23,18 @@ namespace AFPParser
                 Data[i] = allData[2 + i];
         }
 
-        // Complicated control sequences can override this method
-        public string GetDescription()
+        public override string GetDescription()
         {
             StringBuilder sb = new StringBuilder();
-            
-            sb.AppendLine($"{Semantics.Title} (Control Sequence 0x{ID})");
+
+            // Use description instead of title
+            sb.AppendLine($"{Semantics.Description} ({StructureName} 0x{ID})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();
         }
 
-        protected virtual string GetOffsetDescriptions()
+        protected override string GetOffsetDescriptions()
         {
             StringBuilder sb = new StringBuilder();
 

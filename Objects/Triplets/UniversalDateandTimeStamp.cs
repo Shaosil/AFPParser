@@ -9,12 +9,12 @@ namespace AFPParser.Triplets
     {
         private static string _desc = "Specifies a date and time in accordance with the format defined in ISO 8601: 1988 (E).";
 
-        protected override string Description { get { return _desc; } }
-        protected override List<Offset> Offsets { get { return null; } }
+        protected override string Description => _desc;
+        protected override List<Offset> Offsets => new List<Offset>();
 
         public UniversalDateandTimeStamp(byte[] allData) : base(allData) { }
 
-        protected override string GetDescription()
+        public override string GetDescription()
         {
             // Offset is NULL since we are handling the whole data section (only one offset defined)
 

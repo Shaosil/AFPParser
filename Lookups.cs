@@ -8,8 +8,9 @@ namespace AFPParser
 {
     public static class Lookups
     {
-        public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, UBIN };
+        public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, UBIN, COLOR };
 
+        #region Structured Fields
         public static Dictionary<string, Type> StructuredFields = new Dictionary<string, Type>()
         {
             { "D3A8C9", typeof(BAG) }, // Begin Active Environment Group
@@ -104,7 +105,7 @@ namespace AFPParser
             { "D3ABD8", typeof(MPO) }, // Map Page Overlay
             { "D3B15F", typeof(MPS) }, // Map Page Segment
             { "D3ABEA", typeof(MSU) }, // Map Suppression
-            { "D3EEEE", typeof(NOP) }, // No Operation
+            { "D3EEEE", typeof(StructuredFields.NOP) }, // No Operation
             { "D3A66B", typeof(OBD) }, // Object Area Descriptor
             { "D3AC6B", typeof(OBP) }, // Object Area Position
             { "D3EE92", typeof(OCD) }, // Object Container Data
@@ -141,73 +142,129 @@ namespace AFPParser
             { "D3AE89", typeof(FNO) }, // Font Orientation
             { "D3AC89", typeof(FNP) }  // Font Position
         };
+        #endregion
 
+        #region Triplets
         public static Dictionary<byte, Type> Triplets = new Dictionary<byte, Type>()
         {
-            //{ 0x01, typeof(GCSGID_CPGID_CCSID) },
-            //{ 0x02, typeof(FullyQualifiedName) },
-            //{ 0x04, typeof(MappingOption) },
-            //{ 0x10, typeof(ObjectClassification) },
-            //{ 0x18, typeof(MODCAInterchangeSet) },
-            //{ 0x1F, typeof(FontDescriptorSpecification) },
-            //{ 0x20, typeof(CodedGraphicCharacterSetGlobalIdentifier) },
-            //{ 0x21, typeof(ObjectFunctionSetSpecification) },
-            //{ 0x22, typeof(ExtendedResourceLocalIdentifier) },
-            //{ 0x24, typeof(ResourceLocalIdentifier) },
-            //{ 0x25, typeof(ResourceSectionNumber) },
-            //{ 0x26, typeof(CharacterRotation) },
-            //{ 0x2D, typeof(ObjectByteOffset) },
-            //{ 0x36, typeof(AttributeValue) },
-            //{ 0x43, typeof(DescriptorPosition) },
-            //{ 0x45, typeof(MediaEjectControl) },
-            //{ 0x46, typeof(PageOverlayConditionalProcessing) },
-            //{ 0x47, typeof(ResourceUsageAttribute) },
-            //{ 0x4B, typeof(MeasurementUnits) },
-            //{ 0x4C, typeof(ObjectAreaSize) },
-            //{ 0x4D, typeof(AreaDefinition) },
-            //{ 0x4E, typeof(ColorSpecification) },
-            //{ 0x50, typeof(EncodingSchemeID) },
-            //{ 0x56, typeof(MediumMapPageNumber) },
-            //{ 0x57, typeof(ObjectByteExtent) },
-            //{ 0x58, typeof(ObjectStructuredFieldOffset) },
-            //{ 0x59, typeof(ObjectStructuredFieldExtent) },
-            //{ 0x5A, typeof(ObjectOffset) },
-            //{ 0x5D, typeof(FontHorizontalScaleFactor) },
-            //{ 0x5E, typeof(ObjectCount) },
+            { 0x01, typeof(GCSGID_CPGID_CCSID) },
+            { 0x02, typeof(FullyQualifiedName) },
+            { 0x04, typeof(MappingOption) },
+            { 0x10, typeof(ObjectClassification) },
+            { 0x18, typeof(MODCAInterchangeSet) },
+            { 0x1F, typeof(FontDescriptorSpecification) },
+            { 0x20, typeof(CodedGraphicCharacterSetGlobalIdentifier) },
+            { 0x21, typeof(ObjectFunctionSetSpecification) },
+            { 0x22, typeof(ExtendedResourceLocalIdentifier) },
+            { 0x24, typeof(ResourceLocalIdentifier) },
+            { 0x25, typeof(ResourceSectionNumber) },
+            { 0x26, typeof(CharacterRotation) },
+            { 0x2D, typeof(ObjectByteOffset) },
+            { 0x36, typeof(AttributeValue) },
+            { 0x43, typeof(DescriptorPosition) },
+            { 0x45, typeof(MediaEjectControl) },
+            { 0x46, typeof(PageOverlayConditionalProcessing) },
+            { 0x47, typeof(ResourceUsageAttribute) },
+            { 0x4B, typeof(MeasurementUnits) },
+            { 0x4C, typeof(ObjectAreaSize) },
+            { 0x4D, typeof(AreaDefinition) },
+            { 0x4E, typeof(ColorSpecification) },
+            { 0x50, typeof(EncodingSchemeID) },
+            { 0x56, typeof(MediumMapPageNumber) },
+            { 0x57, typeof(ObjectByteExtent) },
+            { 0x58, typeof(ObjectStructuredFieldOffset) },
+            { 0x59, typeof(ObjectStructuredFieldExtent) },
+            { 0x5A, typeof(ObjectOffset) },
+            { 0x5D, typeof(FontHorizontalScaleFactor) },
+            { 0x5E, typeof(ObjectCount) },
             { 0x62, typeof(ObjectDateandTimeStamp) },
-            //{ 0x65, typeof(Comment) },
-            //{ 0x68, typeof(MediumOrientation) },
-            //{ 0x6C, typeof(ResourceObjectInclude) },
-            //{ 0x70, typeof(PresentationSpaceResetMixing) },
+            { 0x65, typeof(Comment) },
+            { 0x68, typeof(MediumOrientation) },
+            { 0x6C, typeof(ResourceObjectInclude) },
+            { 0x70, typeof(PresentationSpaceResetMixing) },
             { 0x71, typeof(PresentationSpaceMixingRule) },
             { 0x72, typeof(UniversalDateandTimeStamp) },
-            //{ 0x74, typeof(TonerSaver) },
-            //{ 0x75, typeof(ColorFidelity) },
-            //{ 0x78, typeof(FontFidelity) },
-            //{ 0x80, typeof(AttributeQualifier) },
-            //{ 0x81, typeof(PagePositionInformation) },
-            //{ 0x82, typeof(ParameterValue) },
-            //{ 0x83, typeof(PresentationControl) },
-            //{ 0x84, typeof(FontResolutionandMetricTechnology) },
-            //{ 0x85, typeof(FinishingOperation) },
-            //{ 0x86, typeof(TextFidelity) },
-            //{ 0x87, typeof(MediaFidelity) },
-            //{ 0x88, typeof(FinishingFidelity) },
-            //{ 0x8B, typeof(ObjectFontDescriptorData) },
-            //{ 0x8C, typeof(LocaleSelector) },
-            //{ 0x8E, typeof(UP3iFinishingOperation) },
-            //{ 0x91, typeof(ColorManagementResourceDescriptor) },
-            //{ 0x95, typeof(RenderingIntent) },
-            //{ 0x96, typeof(CMRTagFidelity) },
-            //{ 0x97, typeof(DeviceAppearance) },
-            //{ 0x9A, typeof(ImageResolution) },
-            //{ 0x9C, typeof(ObjectContainerPresentationSpaceSize) }
+            { 0x74, typeof(TonerSaver) },
+            { 0x75, typeof(ColorFidelity) },
+            { 0x78, typeof(FontFidelity) },
+            { 0x80, typeof(AttributeQualifier) },
+            { 0x81, typeof(PagePositionInformation) },
+            { 0x82, typeof(ParameterValue) },
+            { 0x83, typeof(PresentationControl) },
+            { 0x84, typeof(FontResolutionandMetricTechnology) },
+            { 0x85, typeof(FinishingOperation) },
+            { 0x86, typeof(TextFidelity) },
+            { 0x87, typeof(MediaFidelity) },
+            { 0x88, typeof(FinishingFidelity) },
+            { 0x8B, typeof(ObjectFontDescriptorData) },
+            { 0x8C, typeof(LocaleSelector) },
+            { 0x8E, typeof(UP3iFinishingOperation) },
+            { 0x91, typeof(ColorManagementResourceDescriptor) },
+            { 0x95, typeof(RenderingIntent) },
+            { 0x96, typeof(CMRTagFidelity) },
+            { 0x97, typeof(DeviceAppearance) },
+            { 0x9A, typeof(ImageResolution) },
+            { 0x9C, typeof(ObjectContainerPresentationSpaceSize) }
         };
+        #endregion
 
+        #region PTX Control Sequences
         public static Dictionary<byte, Type> PTXControlSequences = new Dictionary<byte, Type>()
         {
+            { 0xC0, typeof(SIM) },
+            { 0xC1, typeof(SIM) },
+            { 0xC2, typeof(SIA) },
+            { 0xC3, typeof(SIA) },
+            { 0xC4, typeof(SVI) },
+            { 0xC5, typeof(SVI) },
+            { 0xC6, typeof(AMI) },
+            { 0xC7, typeof(AMI) },
+            { 0xC8, typeof(RMI) },
+            { 0xC9, typeof(RMI) },
+            { 0xD0, typeof(SBI) },
+            { 0xD1, typeof(SBI) },
+            { 0xD2, typeof(AMB) },
+            { 0xD3, typeof(AMB) },
+            { 0xD4, typeof(RMB) },
+            { 0xD5, typeof(RMB) },
+            { 0xD8, typeof(BLN) },
+            { 0xD9, typeof(BLN) },
+            { 0x6A, typeof(UCT) },
+            { 0x6D, typeof(GLC) },
+            { 0x8B, typeof(GIR) },
+            { 0x8C, typeof(GAR) },
+            { 0x8D, typeof(GAR) },
+            { 0x8E, typeof(GOR) },
+            { 0x8F, typeof(GOR) },
+            { 0xDA, typeof(TRN) },
+            { 0xDB, typeof(TRN) },
+            { 0xEE, typeof(RPS) },
+            { 0xEF, typeof(RPS) },
             { 0xF6, typeof(STO) },
-            { 0xF7, typeof(STO) }
+            { 0xF7, typeof(STO) },
+            { 0xF8, typeof(PTXControlSequences.NOP) },
+            { 0xF9, typeof(PTXControlSequences.NOP) },
+            { 0xE4, typeof(DIR) },
+            { 0xE5, typeof(DIR) },
+            { 0xE6, typeof(DBR) },
+            { 0xE7, typeof(DBR) },
+            { 0x74, typeof(STC) },
+            { 0x75, typeof(STC) },
+            { 0x80, typeof(SEC) },
+            { 0x81, typeof(SEC) },
+            { 0xF0, typeof(SCFL) },
+            { 0xF1, typeof(SCFL) },
+            { 0xF2, typeof(BSU) },
+            { 0xF3, typeof(BSU) },
+            { 0xF4, typeof(ESU) },
+            { 0xF5, typeof(ESU) },
+            { 0x72, typeof(OVS) },
+            { 0x73, typeof(OVS) },
+            { 0x76, typeof(USC) },
+            { 0x77, typeof(USC) },
+            { 0x78, typeof(TBM) },
+            { 0x79, typeof(TBM) },
         };
+        #endregion
     }
 }

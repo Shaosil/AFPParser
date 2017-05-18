@@ -23,7 +23,7 @@ namespace AFPParser.StructuredFields
 
         public PTX(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
 
-        protected override string BuildOffsetDescriptions()
+        protected override string GetOffsetDescriptions()
         {
             StringBuilder sb = new StringBuilder();
 

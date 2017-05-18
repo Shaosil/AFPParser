@@ -20,6 +20,7 @@ namespace AFPParser
         protected abstract bool IsRepeatingGroup { get; }
         protected abstract int RepeatingGroupStart { get; }
         protected abstract List<Offset> Offsets { get; }
+        protected override string StructureName => "Structured Field";
 
         public StructuredField(int length, string id, byte flag, int sequence) : base (length, id, 8)
         {
@@ -29,24 +30,24 @@ namespace AFPParser
             Semantics = new SemanticsInfo(Title, Description, IsRepeatingGroup, RepeatingGroupStart, Offsets);
         }
 
-        public string BuildDescription()
+        public override string GetDescription()
         {
             StringBuilder sb = new StringBuilder();
 
-            // Show description
+            // Show description instead of title
             if (!string.IsNullOrWhiteSpace(Description))
             {
                 sb.AppendLine(Description);
                 sb.AppendLine();
             }
 
-            sb.Append(BuildOffsetDescriptions());
+            sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();
         }
         
         // This method can be overridden if it is complicated to parse
-        protected virtual string BuildOffsetDescriptions()
+        protected override string GetOffsetDescriptions()
         {
             StringBuilder sb = new StringBuilder();
 
