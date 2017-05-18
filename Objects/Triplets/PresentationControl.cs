@@ -5,11 +5,9 @@ namespace AFPParser.Triplets
 	public class PresentationControl : Triplet
 	{
 		private static string _desc = "Specifies flags that control the presentation of an object.";
-
-		protected override string Description => _desc;
-		protected override List<Offset> Offsets => new List<Offset>()
+		private static List<Offset> _oSets = new List<Offset>()
 		{
-			new Offset(2, Lookups.DataTypes.BITS, "PRS Flag")
+			new Offset(0, Lookups.DataTypes.BITS, "PRS Flag")
 			{
 				Mappings = new Dictionary<byte, string>()
 				{
@@ -18,6 +16,9 @@ namespace AFPParser.Triplets
 				}
 			}
 		};
+
+		protected override string Description => _desc;
+        protected override List<Offset> Offsets => _oSets;
 
 		public PresentationControl(byte[] allData) : base(allData) { }
 	}

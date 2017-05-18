@@ -5,11 +5,9 @@ namespace AFPParser.Triplets
 	public class PresentationSpaceResetMixing : Triplet
 	{
 		private static string _desc = "Specifies the resulting appearance when data in a new presentation space is merged with data in an exising one.";
-
-		protected override string Description => _desc;
-		protected override List<Offset> Offsets => new List<Offset>()
+		private static List<Offset> _oSets = new List<Offset>()
 		{
-			new Offset(2, Lookups.DataTypes.BITS, "Background Mixing Flags")
+			new Offset(0, Lookups.DataTypes.BITS, "Background Mixing Flags")
 			{
 				Mappings = new Dictionary<byte, string>()
 				{
@@ -17,6 +15,9 @@ namespace AFPParser.Triplets
 				}
 			}
 		};
+
+		protected override string Description => _desc;
+        protected override List<Offset> Offsets => _oSets;
 
 		public PresentationSpaceResetMixing(byte[] allData) : base(allData) { }
 	}

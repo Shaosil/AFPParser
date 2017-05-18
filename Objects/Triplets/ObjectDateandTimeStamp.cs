@@ -8,9 +8,10 @@ namespace AFPParser.Triplets
     public class ObjectDateandTimeStamp : Triplet
     {
         private static string _desc = "Specifies a date and time stamp to be associated with an object.";
+        private static List<Offset> _oSets = new List<Offset>();
 
         protected override string Description => _desc;
-        protected override List<Offset> Offsets => new List<Offset>();
+        protected override List<Offset> Offsets => _oSets;
 
         public ObjectDateandTimeStamp(byte[] allData) : base(allData) { }
 

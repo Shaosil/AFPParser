@@ -5,10 +5,11 @@ namespace AFPParser.Triplets
 	public class ObjectCount : Triplet
 	{
 		private static string _desc = "";
+        private static List<Offset> _oSets = new List<Offset>();
 
-		protected override string Description => _desc;
-		protected override List<Offset> Offsets => new List<Offset>();
+        protected override string Description => _desc;
+        protected override List<Offset> Offsets => _oSets;
 
-		public ObjectCount(byte[] allData) : base(allData) { }
+        public ObjectCount(byte[] allData) : base(allData) { }
 	}
 }

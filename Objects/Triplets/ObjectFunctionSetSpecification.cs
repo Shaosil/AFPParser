@@ -5,11 +5,9 @@ namespace AFPParser.Triplets
 	public class ObjectFunctionSetSpecification : Triplet
 	{
 		private static string _desc = "Identifies the type of object enveloped by the BRS and ERS fields.";
-
-		protected override string Description => _desc;
-		protected override List<Offset> Offsets => new List<Offset>()
+		private static List<Offset> _oSets = new List<Offset>()
 		{
-			new Offset(2, Lookups.DataTypes.CODE, "Object Type")
+			new Offset(0, Lookups.DataTypes.CODE, "Object Type")
 			{
 				Mappings = new Dictionary<byte, string>()
 				{
@@ -27,8 +25,11 @@ namespace AFPParser.Triplets
 					{ 0xFE, "Form Map" }
 				}
 			},
-			new Offset(3, Lookups.DataTypes.CODE, "")
+			new Offset(1, Lookups.DataTypes.CODE, "")
 		};
+
+		protected override string Description => _desc;
+        protected override List<Offset> Offsets => _oSets;
 
 		public ObjectFunctionSetSpecification(byte[] allData) : base(allData) { }
 	}

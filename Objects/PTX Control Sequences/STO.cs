@@ -10,10 +10,11 @@ namespace AFPParser.PTXControlSequences
     {
         private static string _abbr = "STO";
         private static string _desc = "Set Text Orientation";
+        private static List<Offset> _oSets = new List<Offset>();
 
         public override string Abbreviation => _abbr;
         protected override string Description => _desc;
-        protected override List<Offset> Offsets => null;
+        protected override List<Offset> Offsets => _oSets;
 
         public STO(byte[] data) : base(data) { }
 

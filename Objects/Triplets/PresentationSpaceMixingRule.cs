@@ -6,9 +6,10 @@ namespace AFPParser.Triplets
     public class PresentationSpaceMixingRule : Triplet
     {
         private static string _desc = "Specifies the rules for establishing the color attribute of areas formed by the intersection of two presentation spaces.";
+        private static List<Offset> _oSets = new List<Offset>();
 
         protected override string Description => _desc;
-        protected override List<Offset> Offsets => new List<Offset>();
+        protected override List<Offset> Offsets => _oSets;
 
         public PresentationSpaceMixingRule(byte[] allData) : base(allData) { }
 
