@@ -5,6 +5,8 @@ namespace AFPParser
 {
     public abstract class DataStructure
     {
+        public const string EBCDIC = "IBM037";
+
         // Properties directly converted from raw hex data
         public int Length { get; private set; }
         public string ID { get; private set; }
@@ -13,7 +15,7 @@ namespace AFPParser
 
         // Dynamically calculated properties
         public string DataHex { get { return BitConverter.ToString(Data).Replace("-", " "); } }
-        public string DataEBCDIC { get { return Encoding.GetEncoding("IBM037").GetString(Data); } }
+        public string DataEBCDIC { get { return Encoding.GetEncoding(EBCDIC).GetString(Data); } }
         protected string SpacedClassName
         {
             get
@@ -51,5 +53,19 @@ namespace AFPParser
 
         // This method should be overwritten by inheriting classes
         protected abstract string GetOffsetDescriptions();
+        
+        protected byte[] GetSectionedData(int startIndex, int length)
+        {
+            byte[] sectionedData = new byte[length];
+            for (int i = 0; i < length; i++)
+                sectionedData[i] = Data[startIndex + i];
+
+            return sectionedData;
+        }
+
+        protected string GetReadableDataPiece(int startIndex, int length)
+        {
+            return Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length));
+        }
     }
 }

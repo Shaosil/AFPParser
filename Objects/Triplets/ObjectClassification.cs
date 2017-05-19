@@ -21,7 +21,7 @@ namespace AFPParser.Triplets
 				}
 			},
 			new Offset(2, Lookups.DataTypes.EMPTY, ""),
-			new Offset(4, Lookups.DataTypes.BITS, "Structure Flags (NEED MULTI-BYTE BITS PARSING SUPPORT)"),
+			new Offset(4, Lookups.DataTypes.EMPTY, "Structure Flags (NEED MULTI-BYTE BITS PARSING SUPPORT)"),
 			new Offset(6, Lookups.DataTypes.CODE, "Registered Object ID"),
 			new Offset(22, Lookups.DataTypes.CHAR, "Object Type Name"),
 			new Offset(54, Lookups.DataTypes.CHAR, "Object Level/Version Number"),

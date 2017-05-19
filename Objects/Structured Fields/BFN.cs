@@ -6,8 +6,12 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "BFN";
 		private static string _title = "Begin Font";
-		private static string _desc = "";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Begins the font character set object.";
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Font Character Set Name"),
+            new Offset(8, Lookups.DataTypes.TRIPS, "")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

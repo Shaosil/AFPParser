@@ -14,9 +14,9 @@ namespace AFPParser.StructuredFields
             {
                 Mappings = new Dictionary<byte, string>()
                 {
-                    { 0x00, "Invalid Coded Character|Valid Coded Character" },
-                    { 0x01, "Not to be printed|To be printed" },
-                    { 0x02, "Not to be incremented|To be incremented" }
+                    { 0x00, "Valid Coded Character|Invalid Coded Character" },
+                    { 0x01, "To be printed|Not to be printed" },
+                    { 0x02, "To be incremented|Not to be incremented" }
                 }
             },
             new Offset(9, Lookups.DataTypes.CODE, "CPI Repeating Group Length")
@@ -35,8 +35,8 @@ namespace AFPParser.StructuredFields
             {
                 Mappings = new Dictionary<byte, string>()
                 {
-                    { 0x00, "Sorted in ascending code point order|Sorted in ascending character ID order" },
-                    { 0x04, "Variable Spacing Enabled|Variable Spacing Disabled" }
+                    { 0x00, "Sorted in ascending character ID order|Sorted in ascending code point order" },
+                    { 0x04, "Variable Spacing Disabled|Variable Spacing Enabled" }
                 }
             },
             new Offset(13, Lookups.DataTypes.UBIN, "Unicode scalar value mapped to Default GCGID")

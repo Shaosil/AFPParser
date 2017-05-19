@@ -32,7 +32,7 @@ namespace AFPParser.Triplets
             sb.AppendLine($"Stamp Type: {stampType}");
 
             // Get an EBCDIC string of the rest of the data
-            string ebcdic = Encoding.GetEncoding("IBM037").GetString(Data.Skip(1).ToArray());
+            string ebcdic = Encoding.GetEncoding(DataStructure.EBCDIC).GetString(Data.Skip(1).ToArray());
 
             // Determine whether it's the 1900s or 2000s
             string year = ebcdic.Substring(0, 1);

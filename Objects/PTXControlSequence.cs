@@ -44,13 +44,11 @@ namespace AFPParser
                     if (!string.IsNullOrWhiteSpace(oSet.Description))
                     {
                         // Get sectioned data
-                        byte[] sectionedData = Data.Skip(oSet.StartingIndex).ToArray();
-                        if (oSet != Offsets.Last())
-                        {
-                            int nextIndex = Offsets.IndexOf(oSet) + 1;
-                            int bytesToTake = Offsets[nextIndex].StartingIndex - oSet.StartingIndex;
-                            sectionedData = sectionedData.Take(bytesToTake).ToArray();
-                        }
+                        int nextIndex = Offsets.IndexOf(oSet) + 1;
+                        int bytesToTake = oSet == Offsets.Last()
+                            ? Data.Length - oSet.StartingIndex
+                            : Offsets[nextIndex].StartingIndex - oSet.StartingIndex;
+                        byte[] sectionedData = GetSectionedData(oSet.StartingIndex, bytesToTake);
 
                         // Write out this offset's description
                         sb.AppendLine(oSet.DisplayDataByType(sectionedData));

@@ -40,7 +40,7 @@ namespace AFPParser
 
                     // Databind the list box
                     afpFileBindingSource.DataSource = null;
-                    afpFileBindingSource.DataSource = afpParser.AfpFile;
+                    afpFileBindingSource.DataSource = Parser.AfpFile;
                     dgvFields.Focus();
                 }
                 finally

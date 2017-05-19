@@ -16,7 +16,7 @@ namespace AFPParser
 
         // Mappings are looked up by byte (corresponding to big endian bit position)
         // and flag-checked. The description contains info for both positions, such as
-        // "On condition|Off condition", respectively, separated by pipe
+        // "Off condition|On condition", respectively, separated by pipe
         public Dictionary<byte, string> Mappings { get; set; }
 
         public Offset(int startingIdx, Lookups.DataTypes dataType, string description)
@@ -56,7 +56,7 @@ namespace AFPParser
 
                         case Lookups.DataTypes.CHAR:
                         case Lookups.DataTypes.CODE:
-                            string decoded = Encoding.GetEncoding("IBM037").GetString(data);
+                            string decoded = Encoding.GetEncoding(DataStructure.EBCDIC).GetString(data);
                             sb.Append(string.IsNullOrWhiteSpace(decoded) ? "(BLANK)" : decoded);
                             break;
 

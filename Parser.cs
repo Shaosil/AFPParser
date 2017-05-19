@@ -9,7 +9,7 @@ namespace AFPParser
 {
     public class Parser
     {
-        public BindingList<StructuredField> AfpFile { get; set; }
+        public static BindingList<StructuredField> AfpFile { get; set; }
 
         public void Parse(string fileName)
         {
@@ -39,7 +39,7 @@ namespace AFPParser
             {
                 if (byteList[curIdx] != 0x5A)
                 {
-                    MessageBox.Show($"Unexpected byte at offset 0x{curIdx.ToString("X").PadLeft(8, '0')}. Is it a true AFP file?", "AFP Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Unexpected byte at offset 0x{curIdx.ToString("X8")}. Is it a true AFP file?", "AFP Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 

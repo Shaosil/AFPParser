@@ -220,7 +220,8 @@ namespace AFPParser.StructuredFields
 		protected override string Description => _desc;
 		protected override bool IsRepeatingGroup => true;
 		protected override int RepeatingGroupStart => 4;
-		protected override List<Offset> Offsets => _oSets;
+        protected override int RepeatingGroupLength => Data[0];
+        protected override List<Offset> Offsets => _oSets;
 
 		public MCF1(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
 	}

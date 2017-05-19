@@ -6,8 +6,11 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "ECP";
 		private static string _title = "End Code Page";
-		private static string _desc = "";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Ends the Code Page object.";
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Code Page Name")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

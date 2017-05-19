@@ -220,6 +220,7 @@
     <Compile Include="Objects\Triplets\Comment.cs" />
     <Compile Include="Objects\Triplets\DescriptorPosition.cs" />
     <Compile Include="Objects\Triplets\DeviceAppearance.cs" />
+    <Compile Include="Objects\Triplets\ExtensionFont.cs" />
     <Compile Include="Objects\Triplets\EncodingSchemeID.cs" />
     <Compile Include="Objects\Triplets\ExtendedResourceLocalIdentifier.cs" />
     <Compile Include="Objects\Triplets\FinishingFidelity.cs" />
@@ -241,6 +242,7 @@
     <Compile Include="Objects\Triplets\MODCAInterchangeSet.cs" />
     <Compile Include="Objects\Triplets\ObjectAreaSize.cs" />
     <Compile Include="Objects\Triplets\ObjectByteExtent.cs" />
+    <Compile Include="Objects\Triplets\ObjectOriginIdentifier.cs" />
     <Compile Include="Objects\Triplets\ObjectByteOffset.cs" />
     <Compile Include="Objects\Triplets\ObjectClassification.cs" />
     <Compile Include="Objects\Triplets\ObjectContainerPresentationSpaceSize.cs" />
@@ -261,6 +263,7 @@
     <Compile Include="Objects\Triplets\ResourceSectionNumber.cs" />
     <Compile Include="Objects\Triplets\ResourceUsageAttribute.cs" />
     <Compile Include="Objects\Triplets\TextFidelity.cs" />
+    <Compile Include="Objects\Triplets\CRCResourceManagement.cs" />
     <Compile Include="Objects\Triplets\TonerSaver.cs" />
     <Compile Include="Objects\Triplets\UNKNOWN.cs" />
     <Compile Include="Objects\Triplets\ObjectDateandTimeStamp.cs" />
