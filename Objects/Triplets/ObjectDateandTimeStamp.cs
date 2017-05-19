@@ -21,18 +21,18 @@ namespace AFPParser.Triplets
 
             StringBuilder sb = new StringBuilder();
 
-            if (Data.Length < 17)
-                return $"Invalid data length of {Data.Length}. Expected 17.";
+            if (Data.Length < 15)
+                return $"Invalid data length of {Data.Length}. Expected 15.";
 
             // Define our stamp types
             Dictionary<byte, string> stampTypes = new Dictionary<byte, string>()
                 { { 0x00, "Creation" }, { 0x01, "Retired Value" }, { 0x03, "Revision" } };
 
-            string stampType = stampTypes.ContainsKey(Data[2]) ? stampTypes[Data[2]] : "(INVALID STAMP TYPE)";
+            string stampType = stampTypes.ContainsKey(Data[0]) ? stampTypes[Data[0]] : "(INVALID STAMP TYPE)";
             sb.AppendLine($"Stamp Type: {stampType}");
 
             // Get an EBCDIC string of the rest of the data
-            string ebcdic = Encoding.GetEncoding("IBM037").GetString(Data.Skip(3).ToArray());
+            string ebcdic = Encoding.GetEncoding("IBM037").GetString(Data.Skip(1).ToArray());
 
             // Determine whether it's the 1900s or 2000s
             string year = ebcdic.Substring(0, 1);

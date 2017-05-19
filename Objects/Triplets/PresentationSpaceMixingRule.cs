@@ -37,8 +37,8 @@ namespace AFPParser.Triplets
                 { 0xFF, "MO:DCA Default Mixing Rule" }
             };
 
-            // Position 2 has up to four two-byte keywords
-            for (int i = 2; i <= Data.Length - 2; i += 2)
+            // Position 0 has up to four two-byte keywords
+            for (int i = 0; i <= Data.Length - 2; i += 2)
             {
                 byte keyword = Data[i];
                 byte value = Data[i + 1];

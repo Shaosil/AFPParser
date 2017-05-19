@@ -13,7 +13,10 @@ namespace AFPParser
         public int StartingIndex { get; set; }
         public Lookups.DataTypes DataType { get; set; }
         public string Description { get; set; }
-        
+
+        // Mappings are looked up by byte (corresponding to big endian bit position)
+        // and flag-checked. The description contains info for both positions, such as
+        // "On condition|Off condition", respectively, separated by pipe
         public Dictionary<byte, string> Mappings { get; set; }
 
         public Offset(int startingIdx, Lookups.DataTypes dataType, string description)
@@ -91,7 +94,7 @@ namespace AFPParser
                     {
                         int descIndex = Convert.ToInt32(bitInfo[kvp.Key]); // 0 or 1
                         sb.AppendLine();
-                        sb.Append(kvp.Value[descIndex]);
+                        sb.Append($"* {kvp.Value[descIndex]}");
                     }
                     break;
 

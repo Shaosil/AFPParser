@@ -61,10 +61,14 @@ namespace AFPParser
 
         private void dgvFields_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Copy hex data to clipboard
-            StructuredField sf = (StructuredField)dgvFields.CurrentRow.DataBoundItem;
-            Clipboard.SetText(sf.DataHex);
-            MessageBox.Show("Hex values copied to clipboard.", "Hex", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                // Copy hex data to clipboard
+                StructuredField sf = (StructuredField)dgvFields.CurrentRow.DataBoundItem;
+                Clipboard.SetText(sf.DataHex);
+                MessageBox.Show("Hex values copied to clipboard.", "Hex", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch { }
         }
 
         private void UpdateSelectedGridRecord(StructuredField field)

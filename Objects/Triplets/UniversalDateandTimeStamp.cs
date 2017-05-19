@@ -21,29 +21,29 @@ namespace AFPParser.Triplets
 
             StringBuilder sb = new StringBuilder();
 
-            if (Data.Length < 13)
-                return $"Invalid data length of {Data.Length}. Expected 13.";
+            if (Data.Length < 11)
+                return $"Invalid data length of {Data.Length}. Expected 11.";
 
             // Get the year by proper endian
-            byte[] orderedBytes = Data.Skip(3).Take(2).ToArray();
+            byte[] orderedBytes = Data.Skip(1).Take(2).ToArray();
             if (BitConverter.IsLittleEndian) orderedBytes = orderedBytes.Reverse().ToArray();
             int year = BitConverter.ToUInt16(orderedBytes, 0);
 
             // Store everything else
-            int month = Data[5];
-            int day = Data[6];
-            int hour = Data[7];
-            int minute = Data[8];
-            int second = Data[9];
+            int month = Data[3];
+            int day = Data[4];
+            int hour = Data[5];
+            int minute = Data[6];
+            int second = Data[7];
 
             // Calculate the date
             DateTime formattedDate = new DateTime(year, month, day, hour, minute, second);
 
             // Add/subtract time zone info if there is an offset
-            if ((int)Data[10] > 0)
+            if (Data[8] > 0)
             {
-                int hoursAhead = Data[11];
-                int minutesAhead = Data[12];
+                int hoursAhead = Data[9];
+                int minutesAhead = Data[10];
 
                 formattedDate = formattedDate.AddHours(hoursAhead).AddMinutes(minutesAhead);
             }
