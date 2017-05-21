@@ -13,7 +13,7 @@ namespace AFPParser.Triplets
 
         public PresentationSpaceMixingRule(byte[] allData) : base(allData) { }
 
-        public override string GetDescription()
+        protected override string GetOffsetDescriptions()
         {
             // Offset is NULL since we are handling the whole data section (only one offset defined)
 

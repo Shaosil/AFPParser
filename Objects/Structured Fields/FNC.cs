@@ -2,13 +2,14 @@ using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
 {
-	public class FNC : StructuredField
-	{
-		private static string _abbr = "FNC";
-		private static string _title = "Font Control";
-		private static string _desc = "Provides defaults and information about the font character set.";
-		private static List<Offset> _oSets = new List<Offset>()
+    public class FNC : StructuredField
+    {
+        private static string _abbr = "FNC";
+        private static string _title = "Font Control";
+        private static string _desc = "Provides defaults and information about the font character set.";
+        private static List<Offset> _oSets = new List<Offset>()
         {
+            new Offset(0, Lookups.DataTypes.EMPTY, ""),
             new Offset(1, Lookups.DataTypes.CODE, "Pattern Technology")
             {
                 Mappings = new Dictionary<byte, string>()
@@ -64,8 +65,8 @@ namespace AFPParser.StructuredFields
             new Offset(21, Lookups.DataTypes.UBIN, "FNM Repeating Group Length"),
             new Offset(22, Lookups.DataTypes.CODE, "Resolution X Unit Base") { Mappings = new Dictionary<byte, string>() { { 0x00, "10 Inches" } } },
             new Offset(23, Lookups.DataTypes.CODE, "Resolution Y Unit Base") { Mappings = new Dictionary<byte, string>() { { 0x00, "10 Inches" } } },
-            new Offset(24, Lookups.DataTypes.EMPTY, "Units Per X Base (Need double byte mapping support!"),
-            new Offset(26, Lookups.DataTypes.EMPTY, "Units Per Y Base (Need double byte mapping support!"),
+            new Offset(24, Lookups.DataTypes.EMPTY, "Units Per X Base (Need double byte mapping support!)"),
+            new Offset(26, Lookups.DataTypes.EMPTY, "Units Per Y Base (Need double byte mapping support!)"),
             new Offset(28, Lookups.DataTypes.UBIN, "Outline Pattern Data Count"),
             new Offset(32, Lookups.DataTypes.EMPTY, ""),
             new Offset(35, Lookups.DataTypes.UBIN, "FNN Repeating Group Length"),
@@ -74,13 +75,13 @@ namespace AFPParser.StructuredFields
             new Offset(42, Lookups.DataTypes.TRIPS, "")
         };
 
-		public override string Abbreviation => _abbr;
-		public override string Title => _title;
-		protected override string Description => _desc;
-		protected override bool IsRepeatingGroup => false;
-		protected override int RepeatingGroupStart => 0;
-		protected override List<Offset> Offsets => _oSets;
+        public override string Abbreviation => _abbr;
+        public override string Title => _title;
+        protected override string Description => _desc;
+        protected override bool IsRepeatingGroup => false;
+        protected override int RepeatingGroupStart => 0;
+        protected override List<Offset> Offsets => _oSets;
 
-		public FNC(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+        public FNC(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+    }
 }

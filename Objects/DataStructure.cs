@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace AFPParser
 {
@@ -41,7 +44,7 @@ namespace AFPParser
             Data = new byte[Length - introducerLength];
         }
 
-        public virtual string GetDescription()
+        public virtual string GetFullDescription()
         {
             StringBuilder sb = new StringBuilder();
 
@@ -51,9 +54,40 @@ namespace AFPParser
             return sb.ToString();
         }
 
-        // This method should be overwritten by inheriting classes
-        protected abstract string GetOffsetDescriptions();
-        
+        // Override this to custom handle all offsets at once
+        protected virtual string GetOffsetDescriptions()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (Semantics.Offsets.Any())
+                // Write out each offset's description
+                foreach (Offset oSet in Semantics.Offsets)
+                    sb.Append(GetSingleOffsetDescription(oSet));
+            else
+                sb.AppendLine($"Not yet implemented...{Environment.NewLine}Raw Data: {DataHex}");
+
+            return sb.ToString();
+        }
+
+        // Override this to custom handle one or more offsets at a time
+        protected virtual string GetSingleOffsetDescription(Offset oSet)
+        {
+            if (string.IsNullOrWhiteSpace(oSet.Description)) return string.Empty;
+
+            StringBuilder sb = new StringBuilder();
+
+            // Get sectioned data
+            IEnumerable<Offset> nextOffsets = Semantics.Offsets.Where(o => o.StartingIndex > oSet.StartingIndex);
+            int nextIndex = nextOffsets.Any() ? nextOffsets.Min(o => o.StartingIndex) : 0;
+            if (nextIndex == 0) nextIndex = Data.Length;
+            int bytesToTake = nextIndex - oSet.StartingIndex;
+            byte[] sectionedData = GetSectionedData(oSet.StartingIndex, bytesToTake);
+
+            sb.AppendLine(oSet.DisplayDataByType(sectionedData));
+
+            return sb.ToString();
+        }
+
         protected byte[] GetSectionedData(int startIndex, int length)
         {
             byte[] sectionedData = new byte[length];
@@ -66,6 +100,22 @@ namespace AFPParser
         protected string GetReadableDataPiece(int startIndex, int length)
         {
             return Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length));
+        }
+
+        // Returns a proper Endian array of booleans. 8 bits per byte
+        protected bool[] GetBitArray(params byte[] bytes)
+        {
+            bool[] allBits = new bool[8 * bytes.Length];
+
+            // Append all 8 bits from each byte to our boolean array
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                IEnumerable<bool> curArray = new BitArray(new[] { bytes[i] }).Cast<bool>();
+                if (BitConverter.IsLittleEndian) curArray = curArray.Reverse();
+                Array.ConstrainedCopy(curArray.ToArray(), 0, allBits, 8 * i, 8);
+            }
+
+            return allBits;
         }
     }
 }

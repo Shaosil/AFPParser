@@ -32,23 +32,13 @@ namespace AFPParser.PTXControlSequences
             for (int i = 0; i <= 2; i += 2)
             {
                 // Get the bit values of the two bytes
-                IEnumerable<bool> formattedBA;
-                if (BitConverter.IsLittleEndian)
-                {
-                    // To flip the bytes, take each byte separately and cast it to a reversed bool array
-                    IEnumerable<bool> firstBA = new BitArray(new[] { Data[i] }).Cast<bool>().Reverse();
-                    IEnumerable<bool> secondBA = new BitArray(new[] { Data[i + 1] }).Cast<bool>().Reverse();
-
-                    // Then merge them all in the right order to a new bit array
-                    formattedBA = new BitArray(firstBA.Concat(secondBA).ToArray()).Cast<bool>();
-                }
-                else
-                    formattedBA = new BitArray(new[] { Data[i], Data[i + 1] }).Cast<bool>();
+                bool[] formattedBA = GetBitArray(Data[i], Data[i + 1]);
 
                 // Prepare the degree and minute bits
                 IEnumerable<bool> degreeBits = formattedBA.Take(9), minuteBits = formattedBA.Skip(9).Take(6);
                 if (BitConverter.IsLittleEndian)
                 {
+                    // Flip back to little endian so the new bit arrays below will convert to the correct integer
                     degreeBits = degreeBits.Reverse();
                     minuteBits = minuteBits.Reverse();
                 }

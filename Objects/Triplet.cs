@@ -11,8 +11,8 @@ namespace AFPParser
         protected abstract string Description { get; }
         protected abstract List<Offset> Offsets { get; }
         protected override string StructureName => "Triplet";
-        
-        public Triplet(byte[] allData) : base (allData[0], allData[1].ToString("X"), 2)
+
+        public Triplet(byte[] allData) : base(allData[0], allData[1].ToString("X"), 2)
         {
             // Triplets never have repeating groups
             Semantics = new SemanticsInfo(SpacedClassName, Description, false, 0, Offsets);
@@ -48,35 +48,7 @@ namespace AFPParser
                     tripletType = Lookups.Triplets[triplet[1]];
                 Triplet assignedTriplet = (Triplet)Activator.CreateInstance(tripletType, triplet);
 
-                sb.AppendLine(assignedTriplet.GetDescription());
-            }
-
-            return sb.ToString();
-        }
-
-        protected override string GetOffsetDescriptions()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (Offsets.Any())
-                foreach (Offset oSet in Offsets)
-                {
-                    if (!string.IsNullOrWhiteSpace(oSet.Description))
-                    {
-                        // Get sectioned data
-                        int nextIndex = Offsets.IndexOf(oSet) + 1;
-                        int bytesToTake = oSet == Offsets.Last()
-                            ? Data.Length - oSet.StartingIndex
-                            : Offsets[nextIndex].StartingIndex - oSet.StartingIndex;
-                        byte[] sectionedData = GetSectionedData(oSet.StartingIndex, bytesToTake);
-
-                        // Write out this offset's description
-                        sb.AppendLine(oSet.DisplayDataByType(sectionedData));
-                    }
-                }
-            else
-            {
-                sb.AppendLine($"Not yet implemented...{Environment.NewLine}Raw Data: {DataHex}");
+                sb.AppendLine(assignedTriplet.GetFullDescription());
             }
 
             return sb.ToString();

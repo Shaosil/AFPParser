@@ -8,7 +8,7 @@ namespace AFPParser
 {
     public static class Lookups
     {
-        public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, UBIN, COLOR };
+        public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, UBIN, SBIN, COLOR };
 
         #region Structured Fields
         public static Dictionary<string, Type> StructuredFields = new Dictionary<string, Type>()

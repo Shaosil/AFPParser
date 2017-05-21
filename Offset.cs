@@ -39,6 +39,7 @@ namespace AFPParser
                     switch (DataType)
                     {
                         case Lookups.DataTypes.UBIN:
+                        case Lookups.DataTypes.SBIN:
                             // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
                             bool isOdd = data.Length == 3;
 
@@ -48,9 +49,15 @@ namespace AFPParser
                             else if (isOdd)
                                 data = data.Take(data.Length - 1).ToArray();
 
+                            // Convert to signed or unsigned shorts or ints
+                            bool isShort = data.Length == 2;
+                            bool isSigned = DataType == Lookups.DataTypes.SBIN;
+
                             sb.Append(data.Length == 1 ? data[0].ToString()
-                                : data.Length == 2 ? BitConverter.ToUInt16(data, 0).ToString()
-                                : data.Length == 4 ? BitConverter.ToUInt32(data, 0).ToString()
+                                : isShort && !isSigned ? BitConverter.ToUInt16(data, 0).ToString()
+                                : !isShort && !isSigned ? BitConverter.ToUInt32(data, 0).ToString()
+                                : isShort && isSigned ? BitConverter.ToInt16(data, 0).ToString()
+                                : !isShort && isSigned ? BitConverter.ToInt32(data, 0).ToString()
                                 : "(Unknown Numeric Value)");
                             break;
 

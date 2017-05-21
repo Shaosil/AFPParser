@@ -34,7 +34,7 @@ namespace AFPParser.StructuredFields
             foreach (PTXControlSequence sequence in CSIs)
             {
                 // Write out the info
-                sb.AppendLine(sequence.GetDescription());
+                sb.AppendLine(sequence.GetFullDescription());
             }
 
             return sb.ToString();

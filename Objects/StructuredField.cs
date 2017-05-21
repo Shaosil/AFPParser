@@ -12,7 +12,7 @@ namespace AFPParser
         // Properties directly converted from raw hex data
         public byte Flag { get; private set; }
         public int Sequence { get; private set; }
-        
+
         // Abstract properties derived from hard coded individual structured field information
         public abstract string Abbreviation { get; }
         public abstract string Title { get; }
@@ -23,7 +23,7 @@ namespace AFPParser
         protected abstract List<Offset> Offsets { get; }
         protected override string StructureName => "Structured Field";
 
-        public StructuredField(int length, string id, byte flag, int sequence) : base (length, id, 8)
+        public StructuredField(int length, string id, byte flag, int sequence) : base(length, id, 8)
         {
             Flag = flag;
             Sequence = sequence;
@@ -31,7 +31,7 @@ namespace AFPParser
             Semantics = new SemanticsInfo(Title, Description, IsRepeatingGroup, RepeatingGroupStart, Offsets);
         }
 
-        public override string GetDescription()
+        public override string GetFullDescription()
         {
             StringBuilder sb = new StringBuilder();
 
@@ -46,7 +46,7 @@ namespace AFPParser
 
             return sb.ToString();
         }
-        
+
         // This method can be overridden if it is complicated to parse
         protected override string GetOffsetDescriptions()
         {
@@ -65,17 +65,17 @@ namespace AFPParser
             }
 
             // If this is a repeating group identifier, loop through each subsection of offsets
-            int skip = IsRepeatingGroup ? RepeatingGroupStart : Offsets[0].StartingIndex;
+            int skip = IsRepeatingGroup ? RepeatingGroupStart : 0;
             int sectionLength = RepeatingGroupLength;
             do
             {
                 for (int i = 0; i < Offsets.Count; i++)
                 {
-                    // If this offset is past the data length, break out of the loop
-                    if (Offsets[i].StartingIndex >= Data.Length) break;
+                    // If we are past the data length, break out of the loop
+                    if (skip >= Data.Length) break;
 
-                    // Get the length of the current repeating group if it is retrieved in each section (if the method hasn't been overwritten)
-                    if (IsRepeatingGroup && RepeatingGroupLength == Data.Length)
+                    // Get the length of the current repeating group if it is retrieved in each section (if there is not a fixed length)
+                    if (IsRepeatingGroup && RepeatingGroupLength == 0)
                         sectionLength = Data[skip];
 
                     // Calculate section of bytes to take from data
@@ -83,7 +83,7 @@ namespace AFPParser
                     int take = (nextOffsetIdx == "n" ? sectionLength : int.Parse(nextOffsetIdx)) - Offsets[i].StartingIndex;
                     byte[] sectionedData = GetSectionedData(skip, take);
 
-                    // Build description by datatype
+                    // Build description by data type
                     switch (Offsets[i].DataType)
                     {
                         // For triplets, call the triplet parser
@@ -94,12 +94,7 @@ namespace AFPParser
 
                         // Everything else
                         default:
-                            // Skip non descriptive offsets
-                            if (!string.IsNullOrWhiteSpace(Offsets[i].Description))
-                            {
-                                // Write out this offset's description
-                                sb.AppendLine(Offsets[i].DisplayDataByType(sectionedData));
-                            }
+                            sb.Append(GetSingleOffsetDescription(Offsets[i]));
                             break;
                     }
 
