@@ -13,28 +13,12 @@ namespace AFPParser
 
         public void Parse(string fileName)
         {
-            // Then, read all AFP file bytes into memory
+            // First, read all AFP file bytes into memory
             byte[] byteList = File.ReadAllBytes(fileName);
 
-            // Prepare some variables and dynamic funcs...
+            // Next, loop through each 5A block and store a StructuredField object
             int curIdx = 0;
             AfpFile = new BindingList<StructuredField>();
-            Func<byte[], byte[]> getProperEndianArray = (byte[] array) =>
-            {
-                if (BitConverter.IsLittleEndian)
-                {
-                    // Reverse the array
-                    byte[] reversedArray = new byte[array.Length];
-                    for (int i = 0; i < array.Length; i++)
-                        reversedArray[i] = array[array.Length - 1 - i];
-
-                    array = reversedArray;
-                }
-
-                return array;
-            };
-
-            // Next, loop through each 5A block and store a StructuredField object
             while (curIdx < byteList.Length - 1)
             {
                 if (byteList[curIdx] != 0x5A)
@@ -50,10 +34,10 @@ namespace AFPParser
                 Array.ConstrainedCopy(byteList, curIdx + 7, sequenceBytes, 0, 2);
 
                 // Get introducer section
-                int length = BitConverter.ToInt16(getProperEndianArray(lengthBytes), 0);
+                int length = (int)DataStructure.GetNumericValue(lengthBytes, false);
                 string hex = BitConverter.ToString(hexBytes).Replace("-", "");
                 byte flag = byteList[curIdx + 6];
-                int sequence = BitConverter.ToInt16(getProperEndianArray(sequenceBytes), 0);
+                int sequence = (int)DataStructure.GetNumericValue(sequenceBytes, false);
 
                 // Lookup what type of field we need by the structured fields hex dictionary
                 Type fieldType = typeof(StructuredFields.UNKNOWN);

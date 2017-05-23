@@ -59,13 +59,13 @@ namespace AFPParser.StructuredFields
 
         public FNO(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
 
-        protected override string GetSingleOffsetDescription(Offset oSet)
+        protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
             StringBuilder sb = new StringBuilder();
 
             // Parse everything except offset 12 - handle that one ourselves
             if (oSet.StartingIndex != 12)
-                sb.Append(base.GetSingleOffsetDescription(oSet));
+                sb.Append(base.GetSingleOffsetDescription(oSet, sectionedData));
             else
             {
                 sb.AppendLine($"Control Flags:");

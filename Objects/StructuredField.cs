@@ -94,7 +94,7 @@ namespace AFPParser
 
                         // Everything else
                         default:
-                            sb.Append(GetSingleOffsetDescription(Offsets[i]));
+                            sb.Append(GetSingleOffsetDescription(Offsets[i], sectionedData));
                             break;
                     }
 

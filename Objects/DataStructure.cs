@@ -60,31 +60,30 @@ namespace AFPParser
             StringBuilder sb = new StringBuilder();
 
             if (Semantics.Offsets.Any())
-                // Write out each offset's description
+                // Write out each implemented offset's description
                 foreach (Offset oSet in Semantics.Offsets)
-                    sb.Append(GetSingleOffsetDescription(oSet));
+                {
+                    // Get sectioned data
+                    IEnumerable<Offset> nextOffsets = Semantics.Offsets.Where(o => o.StartingIndex > oSet.StartingIndex);
+                    int nextIndex = nextOffsets.Any() ? nextOffsets.Min(o => o.StartingIndex) : 0;
+                    if (nextIndex == 0) nextIndex = Data.Length;
+                    int bytesToTake = nextIndex - oSet.StartingIndex;
+                    byte[] sectionedData = GetSectionedData(oSet.StartingIndex, bytesToTake);
+
+                    sb.Append(GetSingleOffsetDescription(oSet, sectionedData));
+                }
             else
                 sb.AppendLine($"Not yet implemented...{Environment.NewLine}Raw Data: {DataHex}");
 
             return sb.ToString();
         }
 
-        // Override this to custom handle one or more offsets at a time
-        protected virtual string GetSingleOffsetDescription(Offset oSet)
+        // Override this to custom handle one or more offsets at a time.
+        protected virtual string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
             if (string.IsNullOrWhiteSpace(oSet.Description)) return string.Empty;
-
-            StringBuilder sb = new StringBuilder();
-
-            // Get sectioned data
-            IEnumerable<Offset> nextOffsets = Semantics.Offsets.Where(o => o.StartingIndex > oSet.StartingIndex);
-            int nextIndex = nextOffsets.Any() ? nextOffsets.Min(o => o.StartingIndex) : 0;
-            if (nextIndex == 0) nextIndex = Data.Length;
-            int bytesToTake = nextIndex - oSet.StartingIndex;
-            byte[] sectionedData = GetSectionedData(oSet.StartingIndex, bytesToTake);
-
-            sb.AppendLine(oSet.DisplayDataByType(sectionedData));
-
+            StringBuilder sb = new StringBuilder(oSet.DisplayDataByType(sectionedData));
+            sb.AppendLine();
             return sb.ToString();
         }
 
@@ -103,7 +102,7 @@ namespace AFPParser
         }
 
         // Returns a proper Endian array of booleans. 8 bits per byte
-        protected bool[] GetBitArray(params byte[] bytes)
+        public static bool[] GetBitArray(params byte[] bytes)
         {
             bool[] allBits = new bool[8 * bytes.Length];
 
@@ -116,6 +115,35 @@ namespace AFPParser
             }
 
             return allBits;
+        }
+        
+        // Returns the correct numeric value for an array of bytes
+        public static long GetNumericValue(byte[] bytes, bool isSigned)
+        {
+            // Currently only support up to 4 byte integers
+            if (bytes.Length > 4) return 0;
+
+            // If there is an extra byte, strip it out
+            if (bytes.Length == 3)
+            {
+                if (BitConverter.IsLittleEndian)
+                    bytes = bytes.Skip(1).ToArray();
+                else
+                    bytes = bytes.Take(bytes.Length - 1).ToArray();
+            }
+
+            // Use correct Endianness
+            if (BitConverter.IsLittleEndian)
+                bytes = bytes.Reverse().ToArray();
+
+            // Return signed/unsigned int16/int32 based on array length and parameter
+            return bytes.Length == 1 && isSigned ? Convert.ToInt16(bytes[0])
+                : bytes.Length == 1 && !isSigned ? Convert.ToUInt16(bytes[0])
+                : bytes.Length == 2 && isSigned ? BitConverter.ToInt16(bytes, 0)
+                : bytes.Length == 2 && !isSigned ? BitConverter.ToUInt16(bytes, 0)
+                : bytes.Length == 4 && isSigned ? BitConverter.ToInt32(bytes, 0)
+                : bytes.Length == 4 && !isSigned ? (long)BitConverter.ToUInt32(bytes, 0)
+                : 0;
         }
     }
 }

@@ -266,7 +266,7 @@
     <Compile Include="Objects\Triplets\CRCResourceManagement.cs" />
     <Compile Include="Objects\Triplets\TonerSaver.cs" />
     <Compile Include="Objects\Triplets\UNKNOWN.cs" />
-    <Compile Include="Objects\Triplets\ObjectDateandTimeStamp.cs" />
+    <Compile Include="Objects\Triplets\LocalDateandTimeStamp.cs" />
     <Compile Include="Objects\Triplets\UniversalDateandTimeStamp.cs" />
     <Compile Include="Objects\Triplets\PresentationSpaceMixingRule.cs" />
     <Compile Include="FrmMain.cs">

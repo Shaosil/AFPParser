@@ -7,7 +7,11 @@ namespace AFPParser.StructuredFields
 		private static string _abbr = "BRG";
 		private static string _title = "Begin Resource Group";
 		private static string _desc = "The Begin Resource Group structured field begins a resource group, which becomes the current resource group at the same level in the document hierarchy.";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Resource Group Name"),
+            new Offset(8, Lookups.DataTypes.TRIPS, "")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

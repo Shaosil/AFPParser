@@ -40,25 +40,9 @@ namespace AFPParser
                     {
                         case Lookups.DataTypes.UBIN:
                         case Lookups.DataTypes.SBIN:
-                            // Some UBINs may be 3 bytes. Try to ignore a byte if that happens
-                            bool isOdd = data.Length == 3;
-
-                            // AFP is Big Endian
-                            if (BitConverter.IsLittleEndian)
-                                data = data.Skip(Convert.ToInt32(isOdd)).Reverse().ToArray();
-                            else if (isOdd)
-                                data = data.Take(data.Length - 1).ToArray();
-
-                            // Convert to signed or unsigned shorts or ints
-                            bool isShort = data.Length == 2;
                             bool isSigned = DataType == Lookups.DataTypes.SBIN;
-
-                            sb.Append(data.Length == 1 ? data[0].ToString()
-                                : isShort && !isSigned ? BitConverter.ToUInt16(data, 0).ToString()
-                                : !isShort && !isSigned ? BitConverter.ToUInt32(data, 0).ToString()
-                                : isShort && isSigned ? BitConverter.ToInt16(data, 0).ToString()
-                                : !isShort && isSigned ? BitConverter.ToInt32(data, 0).ToString()
-                                : "(Unknown Numeric Value)");
+                            sb.Append(data.Length > 4 ? "(Unknown Numeric Value)"
+                                : DataStructure.GetNumericValue(data, isSigned).ToString());
                             break;
 
                         case Lookups.DataTypes.CHAR:

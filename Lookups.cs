@@ -177,7 +177,7 @@ namespace AFPParser
             { 0x5A, typeof(ObjectOffset) },
             { 0x5D, typeof(FontHorizontalScaleFactor) },
             { 0x5E, typeof(ObjectCount) },
-            { 0x62, typeof(ObjectDateandTimeStamp) },
+            { 0x62, typeof(LocalDateAndTimeStamp) },
             { 0x63, typeof(CRCResourceManagement) },
             { 0x64, typeof(ObjectOriginIdentifier) },
             { 0x65, typeof(Comment) },

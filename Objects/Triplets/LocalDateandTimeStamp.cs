@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-    public class ObjectDateandTimeStamp : Triplet
+    public class LocalDateAndTimeStamp : Triplet
     {
         private static string _desc = "Specifies a date and time stamp to be associated with an object.";
         private static List<Offset> _oSets = new List<Offset>();
@@ -13,7 +13,7 @@ namespace AFPParser.Triplets
         protected override string Description => _desc;
         protected override List<Offset> Offsets => _oSets;
 
-        public ObjectDateandTimeStamp(byte[] allData) : base(allData) { }
+        public LocalDateAndTimeStamp(byte[] allData) : base(allData) { }
 
         protected override string GetOffsetDescriptions()
         {
