@@ -65,8 +65,8 @@ namespace AFPParser.StructuredFields
             new Offset(21, Lookups.DataTypes.UBIN, "FNM Repeating Group Length"),
             new Offset(22, Lookups.DataTypes.CODE, "Resolution X Unit Base") { Mappings = new Dictionary<byte, string>() { { 0x00, "10 Inches" } } },
             new Offset(23, Lookups.DataTypes.CODE, "Resolution Y Unit Base") { Mappings = new Dictionary<byte, string>() { { 0x00, "10 Inches" } } },
-            new Offset(24, Lookups.DataTypes.EMPTY, "Units Per X Base (Need double byte mapping support!)"),
-            new Offset(26, Lookups.DataTypes.EMPTY, "Units Per Y Base (Need double byte mapping support!)"),
+            new Offset(24, Lookups.DataTypes.UBIN, "Units Per X Base"),
+            new Offset(26, Lookups.DataTypes.UBIN, "Units Per Y Base"),
             new Offset(28, Lookups.DataTypes.UBIN, "Outline Pattern Data Count"),
             new Offset(32, Lookups.DataTypes.EMPTY, ""),
             new Offset(35, Lookups.DataTypes.UBIN, "FNN Repeating Group Length"),
@@ -82,6 +82,41 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         protected override List<Offset> Offsets => _oSets;
 
+        // Custom data
+        public enum ePatternTech { LaserMatrixNBitWide, CIDKeyedFont, PFBType1 }
+        private Dictionary<byte, ePatternTech> dPatternTechs = new Dictionary<byte, ePatternTech>()
+        {
+            { 0x05, ePatternTech.LaserMatrixNBitWide },
+            { 0x1E, ePatternTech.CIDKeyedFont },
+            { 0x1F, ePatternTech.PFBType1 }
+        };
+        public ePatternTech PatternTech { get; private set; }
+        public ushort MaxBoxWidth { get; private set; }
+        public ushort MaxBoxHeight { get; private set; }
+        public ushort FNORGLength { get; private set; }
+        public ushort FNIRGLength { get; private set; }
+        public ushort RasterDataCount { get; private set; }
+        public ushort FNPRGLength { get; private set; }
+        public ushort FNMRGLength { get; private set; }
+        public ushort FNNRGLength { get; private set; }
+        public uint FNNDataCount { get; private set; }
+
         public FNC(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            PatternTech = dPatternTechs[Data[1]];
+            MaxBoxWidth = (ushort)GetNumericValue(GetSectionedData(10, 2), false);
+            MaxBoxHeight = (ushort)GetNumericValue(GetSectionedData(12, 2), false);
+            FNORGLength = (ushort)GetNumericValue(new[] { Data[14] }, false);
+            FNIRGLength = (ushort)GetNumericValue(new[] { Data[15] }, false);
+            RasterDataCount = (ushort)GetNumericValue(GetSectionedData(17, 2), false);
+            FNPRGLength = (ushort)GetNumericValue(new[] { Data[20] }, false);
+            FNMRGLength = (ushort)GetNumericValue(new[] { Data[21] }, false);
+            if (Data.Length > 35)
+                FNNRGLength = (ushort)GetNumericValue(new[] { Data[35] }, false);
+            if (Data.Length > 39)
+                FNNDataCount = (uint)GetNumericValue(GetSectionedData(36, 4), false);
+        }
     }
 }

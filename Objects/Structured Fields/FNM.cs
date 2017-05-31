@@ -34,6 +34,45 @@ namespace AFPParser.StructuredFields
         }
         protected override List<Offset> Offsets => _oSets;
 
-		public FNM(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+        public IReadOnlyList<PatternData> AllPatternData { get; private set; }
+
+        // Repeating groups get parsed into this class
+        public class PatternData
+        {
+            public ushort BoxWidth { get; set; }
+            public ushort BoxHeight { get; set; }
+            public uint DataOffset { get; set; }
+
+            public PatternData(ushort width, ushort height, uint offset)
+            {
+                BoxWidth = width;
+                BoxHeight = height;
+                DataOffset = offset;
+            }
+        }
+
+        public FNM(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            List<PatternData> allData = new List<PatternData>();
+
+            // Load all patterns - repeating groups are always length 8
+            for (int i = 0; i < Data.Length; i += 8)
+            {
+                byte[] widthBytes = GetSectionedData(i, 2);
+                byte[] heightBytes = GetSectionedData(i + 2, 2);
+                byte[] offsetBytes = GetSectionedData(i + 4, 4);
+
+                ushort width = (ushort)GetNumericValue(widthBytes, false);
+                ushort height = (ushort)GetNumericValue(heightBytes, false);
+                uint offset = (uint)GetNumericValue(offsetBytes, false);
+
+                allData.Add(new PatternData(width, height, offset));
+            }
+
+            // Set our readonly list
+            AllPatternData = allData;
+        }
+    }
 }

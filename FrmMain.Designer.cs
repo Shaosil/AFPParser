@@ -142,9 +142,10 @@
             this.txtDescription.Multiline = true;
             this.txtDescription.Name = "txtDescription";
             this.txtDescription.ReadOnly = true;
-            this.txtDescription.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtDescription.Size = new System.Drawing.Size(576, 609);
             this.txtDescription.TabIndex = 3;
+            this.txtDescription.WordWrap = false;
             // 
             // lblParsedData
             // 

@@ -36,7 +36,7 @@ namespace AFPParser
                     opts.LastDirectory = new FileInfo(dialog.FileName).DirectoryName;
 
                     // Parse the AFP file
-                    afpParser.Parse(dialog.FileName);
+                    afpParser.LoadData(dialog.FileName);
 
                     // Databind the list box
                     afpFileBindingSource.DataSource = null;

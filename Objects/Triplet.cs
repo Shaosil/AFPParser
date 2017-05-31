@@ -53,5 +53,10 @@ namespace AFPParser
 
             return sb.ToString();
         }
+
+        public override void ParseData()
+        {
+            // TODO: Remove this if and when each triplet parses the data in their own way
+        }
     }
 }

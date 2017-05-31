@@ -33,5 +33,10 @@ namespace AFPParser
 
             return sb.ToString();
         }
+
+        public override void ParseData()
+        {
+            // TODO: Remove this if and when each control sequence parses the data in their own way
+        }
     }
 }

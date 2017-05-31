@@ -15,7 +15,12 @@ namespace AFPParser.StructuredFields
             new Offset(10, Lookups.DataTypes.SBIN, "Ascender Height"),
             new Offset(12, Lookups.DataTypes.SBIN, "Descender Depth"),
             new Offset(14, Lookups.DataTypes.EMPTY, ""),
-            new Offset(16, Lookups.DataTypes.UBIN, "FNM Index")
+            new Offset(16, Lookups.DataTypes.UBIN, "FNM Index"),
+            new Offset(18, Lookups.DataTypes.SBIN, "A-Space"),
+            new Offset(20, Lookups.DataTypes.SBIN, "B-Space"),
+            new Offset(22, Lookups.DataTypes.SBIN, "C-Space"),
+            new Offset(24, Lookups.DataTypes.EMPTY, ""),
+            new Offset(26, Lookups.DataTypes.SBIN, "Baseline Offset"),
         };
 
 		public override string Abbreviation => _abbr;

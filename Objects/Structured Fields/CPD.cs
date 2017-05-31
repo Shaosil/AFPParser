@@ -11,7 +11,7 @@ namespace AFPParser.StructuredFields
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Code Page Description"),
             new Offset(32, Lookups.DataTypes.UBIN, "Graphic Character GID Length"),
-            new Offset(34, Lookups.DataTypes.UBIN, "Numbre of Coded Graphic Characters Assigned"),
+            new Offset(34, Lookups.DataTypes.UBIN, "Number of Coded Graphic Characters Assigned"),
             new Offset(38, Lookups.DataTypes.UBIN, "Graphic Character Set GID"),
             new Offset(40, Lookups.DataTypes.UBIN, "Code Page GID"),
             new Offset(42, Lookups.DataTypes.UBIN, "Encoding Scheme (Need double byte mapping support!)")

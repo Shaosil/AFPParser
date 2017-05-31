@@ -23,11 +23,13 @@ namespace AFPParser
         protected abstract List<Offset> Offsets { get; }
         protected override string StructureName => "Structured Field";
 
+        // Container info
+        public Container LowestLevelContainer { get; set; }
+
         public StructuredField(int length, string id, byte flag, int sequence) : base(length, id, 8)
         {
             Flag = flag;
             Sequence = sequence;
-
             Semantics = new SemanticsInfo(Title, Description, IsRepeatingGroup, RepeatingGroupStart, Offsets);
         }
 
@@ -107,6 +109,11 @@ namespace AFPParser
             } while (skip < Data.Length);
 
             return sb.ToString().Trim();
+        }
+
+        public override void ParseData()
+        {
+             // TODO: Remove this if and when each structured field parses the data in their own way
         }
     }
 }

@@ -44,6 +44,8 @@ namespace AFPParser
             Data = new byte[Length - introducerLength];
         }
 
+        public abstract void ParseData();
+
         public virtual string GetFullDescription()
         {
             StringBuilder sb = new StringBuilder();
