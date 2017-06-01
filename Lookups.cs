@@ -269,5 +269,30 @@ namespace AFPParser
             { 0xF9, typeof(PTXControlSequences.NOP) }
         };
         #endregion
+
+        // Mappings which appear more than once should be stored here
+        public static class CommonMappings
+        {
+            public static Dictionary<byte, string> Rotations = new Dictionary<byte, string>()
+            {
+                { 0x00, "0 Degrees" },
+                { 0x2D, "90 Degrees" },
+                { 0x5A, "180 Degrees" },
+                { 0x87, "270 Degrees" }
+            };
+
+            public static Dictionary<byte, string> CharacterUseFlags = new Dictionary<byte, string>()
+            {
+                { 0x00, "Valid Coded Character|Invalid Coded Character" },
+                { 0x01, "To be printed|Not to be printed" },
+                { 0x02, "To be incremented|Not to be incremented" }
+            };
+
+            public static Dictionary<byte, string> AxisBase = new Dictionary<byte, string>()
+            {
+                { 0x00, "10 Inches" },
+                { 0x01, "10 Centimeters" }
+            };
+        }
     }
 }

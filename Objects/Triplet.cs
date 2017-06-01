@@ -9,10 +9,10 @@ namespace AFPParser
     {
         // Properties which must be implemented by individual triplets
         protected abstract string Description { get; }
-        protected abstract List<Offset> Offsets { get; }
+        protected abstract List<Offset> Offsets { get; }    // Keep in mind that offset 0 in code is actually offset 2, since the first two bytes are always the same
         protected override string StructureName => "Triplet";
 
-        public Triplet(byte[] allData) : base(allData[0], allData[1].ToString("X"), 2)
+        public Triplet(byte[] allData) : base(allData[0], allData[1].ToString("X2"), 2)
         {
             // Triplets never have repeating groups
             Semantics = new SemanticsInfo(SpacedClassName, Description, false, 0, Offsets);

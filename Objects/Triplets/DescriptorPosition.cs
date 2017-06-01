@@ -4,8 +4,11 @@ namespace AFPParser.Triplets
 {
 	public class DescriptorPosition : Triplet
 	{
-		private static string _desc = "";
-        private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Used to associate an object area position field with an object area description field.";
+        private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.EMPTY, "Object Area Position ID")
+        };
 
         protected override string Description => _desc;
         protected override List<Offset> Offsets => _oSets;

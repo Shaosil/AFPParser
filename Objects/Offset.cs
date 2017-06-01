@@ -14,9 +14,14 @@ namespace AFPParser
         public Lookups.DataTypes DataType { get; set; }
         public string Description { get; set; }
 
-        // Mappings are looked up by byte (corresponding to big endian bit position)
-        // and flag-checked. The description contains info for both positions, such as
-        // "Off condition|On condition", respectively, separated by pipe
+        /// <summary>
+        /// Normal mappings simply map a description to a single byte value
+        /// 
+        /// Bit mappings are looked up by byte (corresponding to big endian bit position)
+        /// and flag-checked. The description contains info for both positions, such as
+        /// "Off condition|On condition", respectively, separated by pipe
+        /// </summary>
+
         public Dictionary<byte, string> Mappings { get; set; }
 
         public Offset(int startingIdx, Lookups.DataTypes dataType, string description)

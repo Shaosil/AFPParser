@@ -77,12 +77,15 @@ namespace AFPParser
                     if (skip >= Data.Length) break;
 
                     // Get the length of the current repeating group if it is retrieved in each section (if there is not a fixed length)
-                    if (IsRepeatingGroup && RepeatingGroupLength == 0)
-                        sectionLength = Data[skip];
+                    if (IsRepeatingGroup && RepeatingGroupLength == 0 && i == 0)
+                    {
+                        int rgOffsetLength = Offsets[i + 1].StartingIndex;
+                        sectionLength = (int)GetNumericValue(GetSectionedData(skip, rgOffsetLength), false);
+                    }
 
                     // Calculate section of bytes to take from data
-                    string nextOffsetIdx = i == Offsets.Count - 1 ? "n" : Offsets[i + 1].StartingIndex.ToString();
-                    int take = (nextOffsetIdx == "n" ? sectionLength : int.Parse(nextOffsetIdx)) - Offsets[i].StartingIndex;
+                    int nextOffsetIdx = i == Offsets.Count - 1 ? 0 : Offsets[i + 1].StartingIndex;
+                    int take = (nextOffsetIdx == 0 ? sectionLength : nextOffsetIdx) - Offsets[i].StartingIndex;
                     byte[] sectionedData = GetSectionedData(skip, take);
 
                     // Build description by data type

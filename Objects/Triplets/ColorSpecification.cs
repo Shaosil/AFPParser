@@ -24,7 +24,7 @@ namespace AFPParser.Triplets
             new Offset(7, Lookups.DataTypes.UBIN, "Component 2 bits"),
             new Offset(8, Lookups.DataTypes.UBIN, "Component 3 bits"),
             new Offset(9, Lookups.DataTypes.UBIN, "Component 4 bits"),
-            new Offset(10, Lookups.DataTypes.COLOR, "")
+            new Offset(10, Lookups.DataTypes.COLOR, "Color - Not Yet Implemented")
         };
 
         protected override string Description => _desc;

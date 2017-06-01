@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AFPParser.StructuredFields
 {
@@ -10,15 +11,7 @@ namespace AFPParser.StructuredFields
 		private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Default Graphic Character GID"),
-            new Offset(8, Lookups.DataTypes.BITS, "Default Character Use Flags")
-            {
-                Mappings = new Dictionary<byte, string>()
-                {
-                    { 0x00, "Valid Coded Character|Invalid Coded Character" },
-                    { 0x01, "To be printed|Not to be printed" },
-                    { 0x02, "To be incremented|Not to be incremented" }
-                }
-            },
+            new Offset(8, Lookups.DataTypes.BITS, "Default Character Use Flags") { Mappings = Lookups.CommonMappings.CharacterUseFlags },
             new Offset(9, Lookups.DataTypes.CODE, "CPI Repeating Group Length")
             {
                 Mappings = new Dictionary<byte, string>()
@@ -48,6 +41,9 @@ namespace AFPParser.StructuredFields
 		protected override bool IsRepeatingGroup => false;
 		protected override int RepeatingGroupStart => 0;
 		protected override List<Offset> Offsets => _oSets;
+
+        // Parsed data
+        public bool IsSingleByteCodePage => Data.Length > 9 && new byte[] { 0x0A, 0xFE }.Contains(Data[9]);
 
 		public CPC(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
 	}

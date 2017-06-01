@@ -15,11 +15,7 @@ namespace AFPParser.StructuredFields
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Graphic Character GID"),
-            new Offset(8, Lookups.DataTypes.BITS, "Graphic Character Use Flags")
-            {
-                // Same mappings as the CPC offset
-                Mappings = PageControl.Semantics.Offsets[1].Mappings
-            },
+            new Offset(8, Lookups.DataTypes.BITS, "Graphic Character Use Flags") { Mappings = Lookups.CommonMappings.CharacterUseFlags },
             new Offset(9, Lookups.DataTypes.UBIN, "Code Point")
         };
 
@@ -30,32 +26,17 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         protected override List<Offset> Offsets => _oSets;
 
-        // Store the related CPC field
-        private static CPC _pageControl = null;
-        private static CPC PageControl
-        {
-            get
-            {
-                if (_pageControl == null)
-                    _pageControl = (CPC)Parser.AfpFile.FirstOrDefault(f => f.GetType() == typeof(CPC));
-
-                return _pageControl;
-            }
-        }
-
         public CPI(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
 
         protected override string GetOffsetDescriptions()
         {
             StringBuilder sb = new StringBuilder();
 
-           // CPI will have one or more repeating groups. The length of each is found in the CPC field
-            if (PageControl == null)
-                return "ERROR: Code Page Control field not found in file! Could not determine repeating group length.";
+            // CPI will have one or more repeating groups. The length of each is found in the CPC field
+            CPC cpcField = LowestLevelContainer.GetField<CPC>();
 
             // Single byte code points are length 10, double are length 11
-            bool isSingleByte = new[] { 0x0A, 0xFE }.Contains(PageControl.Data[9]);
-            int standardLength = isSingleByte ? 10 : 11;
+            int standardLength = cpcField.IsSingleByteCodePage ? 10 : 11;
 
             // Loop through however many sections we need to
             for (int curIndex = 0; curIndex < Data.Length;)
@@ -63,15 +44,15 @@ namespace AFPParser.StructuredFields
                 // Retrieve the byte sections
                 byte[] GCGID = GetSectionedData(curIndex, 8);
                 byte[] PrtFlags = GetSectionedData(curIndex + 8, 1);
-                byte[] CodePoint = GetSectionedData(curIndex + 9, isSingleByte ? 1 : 2);
+                byte[] CodePoint = GetSectionedData(curIndex + 9, cpcField.IsSingleByteCodePage ? 1 : 2);
 
                 // Display first 3 semantics based on predefined offsets above
                 sb.AppendLine(Offsets[0].DisplayDataByType(GCGID));
                 sb.AppendLine(Offsets[1].DisplayDataByType(PrtFlags));
                 sb.AppendLine(Offsets[2].DisplayDataByType(CodePoint));
 
-                // If this code point includes unicode scalar value entries, parse them here
-                if (!isSingleByte)
+                // If this code point includes Unicode scalar value entries, parse them here
+                if (!cpcField.IsSingleByteCodePage)
                 {
                     int numScalarValues = Data[standardLength];
 

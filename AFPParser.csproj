@@ -278,7 +278,7 @@
     </Compile>
     <Compile Include="Lookups.cs" />
     <Compile Include="Objects\Triplets\UP3iFinishingOperation.cs" />
-    <Compile Include="Offset.cs" />
+    <Compile Include="Objects\Offset.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />

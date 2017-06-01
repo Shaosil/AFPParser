@@ -1,3 +1,5 @@
+using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
@@ -14,7 +16,19 @@ namespace AFPParser.StructuredFields
             new Offset(34, Lookups.DataTypes.UBIN, "Number of Coded Graphic Characters Assigned"),
             new Offset(38, Lookups.DataTypes.UBIN, "Graphic Character Set GID"),
             new Offset(40, Lookups.DataTypes.UBIN, "Code Page GID"),
-            new Offset(42, Lookups.DataTypes.UBIN, "Encoding Scheme (Need double byte mapping support!)")
+            new Offset(42, Lookups.DataTypes.UBIN, "Encoding Scheme")
+            {
+                Mappings = new Dictionary<byte, string>()
+                {
+                    { 0x00, "No encoding scheme specified" },
+                    { 0x01, "Single byte, encoding not specified" },
+                    { 0x02, "Double byte, encoding not specified" },
+                    { 0x21, "Single byte, IBM-PC Data" },
+                    { 0x61, "Single byte, EBCDIC Presentation" },
+                    { 0x62, "Double byte, EBCDIC Presentation" },
+                    { 0x82, "Double byte, UCS Presentation" }
+                }
+            }
         };
 
         public override string Abbreviation => _abbr;
