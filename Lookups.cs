@@ -3,12 +3,13 @@ using AFPParser.Triplets;
 using AFPParser.StructuredFields;
 using System.Collections.Generic;
 using AFPParser.PTXControlSequences;
+using AFPParser.ImageSelfDefiningFields;
 
 namespace AFPParser
 {
     public static class Lookups
     {
-        public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, UBIN, SBIN, COLOR };
+        public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, IMAGESDFS, UBIN, SBIN, COLOR };
 
         #region Structured Fields
         public static Dictionary<string, Type> StructuredFields = new Dictionary<string, Type>()
@@ -267,6 +268,38 @@ namespace AFPParser
             { 0xF7, typeof(STO) },
             { 0xF8, typeof(PTXControlSequences.NOP) },
             { 0xF9, typeof(PTXControlSequences.NOP) }
+        };
+        #endregion
+
+        #region Image Self Defining Fields
+        public static Dictionary<byte, Type> ImageSelfDefiningFields = new Dictionary<byte, Type>()
+        {
+            { 0x70, typeof(BeginSegment)},
+            { 0x71, typeof(EndSegment)},
+            { 0x8C, typeof(BeginTile)},
+            { 0x8D, typeof(EndTile)},
+            { 0x8E, typeof(BeginTransparencyMask)},
+            { 0x8F, typeof(EndTransparencyMask)},
+            { 0x91, typeof(BeginImageContent)},
+            { 0x93, typeof(EndImageContent)},
+            { 0x94, typeof(ImageSize)},
+            { 0x95, typeof(ImageEncoding)},
+            { 0x96, typeof(IDESize)},
+            { 0x97, typeof(ImageLUT_ID)},
+            { 0x98, typeof(BandImage)},
+            { 0x9B, typeof(IDEStructure)},
+            { 0x9F, typeof(ExternalAlgorithmSpecification)},
+            { 0xB5, typeof(TilePosition)},
+            { 0xB6, typeof(TileSize)},
+            { 0xB7, typeof(TileSetColor)},
+            { 0xF4, typeof(SetExtendedBilevelImageColor)},
+            { 0xF6, typeof(SetBilevelImageColor)},
+            { 0xF7, typeof(IOCAFunctionSetIdentification)},
+            { 0x92, typeof(ImageData)},
+            { 0x9C, typeof(BandImageData)},
+            { 0xB8, typeof(IncludeTile)},
+            { 0xBB, typeof(TileTOC)},
+            { 0xCE, typeof(ImageSubsampling)}
         };
         #endregion
 

@@ -7,7 +7,11 @@ namespace AFPParser.StructuredFields
 		private static string _abbr = "EPG";
 		private static string _title = "End Page";
 		private static string _desc = "The End Page structured field terminates the current presentation page definition initiated by a Begin Page structured field.";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Page Name"),
+            new Offset(8, Lookups.DataTypes.TRIPS, "")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

@@ -22,7 +22,7 @@ namespace AFPParser
                 Data[i] = allData[2 + i];
         }
 
-        public static string ParseAll(byte[] tripletData)
+        public static string GetAllDescriptions(byte[] tripletData)
         {
             StringBuilder sb = new StringBuilder();
 

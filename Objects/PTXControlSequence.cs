@@ -13,7 +13,7 @@ namespace AFPParser
         protected abstract List<Offset> Offsets { get; }
         protected override string StructureName => "Control Sequence";
 
-        public PTXControlSequence(byte[] allData) : base(allData[0], allData[1].ToString("X"), 2)
+        public PTXControlSequence(byte[] allData) : base(allData[0], allData[1].ToString("X2"), 2)
         {
             // Control sequences never have repeating groups
             Semantics = new SemanticsInfo(SpacedClassName, Description, false, 0, Offsets);

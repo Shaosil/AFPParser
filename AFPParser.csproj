@@ -49,6 +49,35 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Objects\Container.cs" />
+    <Compile Include="Objects\ContainerAttribute.cs" />
+    <Compile Include="Objects\Containers\ImageObjectContainer.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\BandImage.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\BandImageData.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\BeginImageContent.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\BeginSegment.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\BeginTile.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\BeginTransparencyMask.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\EndImageContent.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\EndSegment.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\EndTile.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\EndTransparencyMask.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\ExternalAlgorithmSpecification.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\IDESize.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\IDEStructure.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\ImageData.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\ImageEncoding.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\ImageLUT_ID.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\ImageSize.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\ImageSubsampling.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\IncludeTile.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\IOCAFunctionSetIdentification.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\SetBilevelImageColor.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\SetExtendedBilevelImageColor.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\TilePosition.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\TileSetColor.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\TileSize.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\UNKNOWN.cs" />
+    <Compile Include="Objects\Image Self Defining Fields\TileTOC.cs" />
     <Compile Include="Objects\PTX Control Sequences\AMB.cs" />
     <Compile Include="Objects\PTX Control Sequences\AMI.cs" />
     <Compile Include="Objects\PTX Control Sequences\BLN.cs" />
@@ -209,6 +238,7 @@
     <Compile Include="Objects\DataStructure.cs" />
     <Compile Include="Objects\PTXControlSequence.cs" />
     <Compile Include="Objects\Structured Fields\XMD.cs" />
+    <Compile Include="Objects\ImageSelfDefiningField.cs" />
     <Compile Include="Objects\Triplets\AreaDefinition.cs" />
     <Compile Include="Objects\Triplets\AttributeQualifier.cs" />
     <Compile Include="Objects\Triplets\AttributeValue.cs" />

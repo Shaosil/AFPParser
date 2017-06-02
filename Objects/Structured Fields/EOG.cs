@@ -7,7 +7,10 @@ namespace AFPParser.StructuredFields
 		private static string _abbr = "EOG";
 		private static string _title = "End Object Environment Group";
 		private static string _desc = "The End Object Environment Group structured field terminates the definition of an Object Environment Group initiated by a Begin Object Environment Group structured field.";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Object Environment Group Name")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

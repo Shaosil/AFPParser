@@ -91,10 +91,16 @@ namespace AFPParser
                     // Build description by data type
                     switch (Offsets[i].DataType)
                     {
-                        // For triplets, call the triplet parser
+                        // For special sub sectioned data types, call the static parser
                         case Lookups.DataTypes.TRIPS:
+                        case Lookups.DataTypes.IMAGESDFS:
                             if (i > 0) sb.AppendLine();
-                            sb.AppendLine(Triplet.ParseAll(sectionedData));
+
+                            if (Offsets[i].DataType == Lookups.DataTypes.TRIPS)
+                                sb.AppendLine(Triplet.GetAllDescriptions(sectionedData));
+                            else
+                                sb.AppendLine(ImageSelfDefiningField.GetAllDescriptions(sectionedData));
+
                             break;
 
                         // Everything else

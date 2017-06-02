@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AFPParser
 {
@@ -73,7 +74,12 @@ namespace AFPParser
                 // If this is a BEGIN tag, create a new container and add it to the list, and set it as active
                 if (typeCode == "A8")
                 {
+                    // If the tag is decorated with a custom container type attribute, use that instead
                     Container c = new Container();
+                    ContainerTypeAttribute containerAttribyte = sf.GetType().GetCustomAttribute<ContainerTypeAttribute>();
+                    if (containerAttribyte != null)
+                        c = (Container)Activator.CreateInstance(containerAttribyte.AssignedType);
+
                     AllContainers.Add(c);
                     activeContainers.Add(c);
                 }
@@ -86,9 +92,13 @@ namespace AFPParser
                 if (activeContainers.Any())
                     sf.LowestLevelContainer = activeContainers.Last();
 
-                // If this is an END tag, remove the last container from our active container list
+                // If this is an END tag, remove the last container from our active container list, and parse any group data for the collection of fields
                 if (typeCode == "A9")
-                    activeContainers.RemoveAt(activeContainers.Count - 1);
+                {
+                    Container mostRecentContainer = activeContainers.Last();
+                    activeContainers.Remove(mostRecentContainer);
+                    mostRecentContainer.ParseContainerData();
+                }
             }
 
             // Now that everything is structured, parse all data by individual handlers

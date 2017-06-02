@@ -26,5 +26,11 @@ namespace AFPParser
         {
             return Fields.Where(f => f.GetType() == typeof(T)).Cast<T>().ToList();
         }
+
+        // Called after all fields have been added to the container
+        public virtual void ParseContainerData()
+        {
+            // Nothing to do in a generic container
+        }
     }
 }
