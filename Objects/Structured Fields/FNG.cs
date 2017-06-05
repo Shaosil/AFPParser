@@ -25,7 +25,7 @@ namespace AFPParser.StructuredFields
             StringBuilder sb = new StringBuilder();
 
             // Outline and raster data are handled much differently. If we have a patterns map, it's raster
-            bool isRaster = LowestLevelContainer.GetField<FNM>() != null;
+            bool isRaster = LowestLevelContainer.GetStructure<FNM>() != null;
 
             if (isRaster)
                 return GetRasterData();
@@ -38,7 +38,7 @@ namespace AFPParser.StructuredFields
             StringBuilder sb = new StringBuilder();
 
             // Loop through each repeating group of patterns
-            FNC refFNC = LowestLevelContainer.GetField<FNC>();
+            FNC refFNC = LowestLevelContainer.GetStructure<FNC>();
             int curIndex = 0;
             do
             {
@@ -111,7 +111,7 @@ namespace AFPParser.StructuredFields
         private string GetRasterData()
         {
             StringBuilder sb = new StringBuilder();
-            FNM patternMap = LowestLevelContainer.GetField<FNM>();
+            FNM patternMap = LowestLevelContainer.GetStructure<FNM>();
 
             // Write out each character pattern
             for (int i = 0; i < patternMap.AllPatternData.Count; i++)

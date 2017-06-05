@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -36,6 +37,22 @@ namespace AFPParser
         }
 
         protected abstract string StructureName { get; }
+
+        // Container info
+        public Container LowestLevelContainer { get; set; }
+        public Container NewContainer
+        {
+            get
+            {
+                // Returns either a generic container, or custom typed container by specific attribute
+                Container c = new Container();
+                ContainerTypeAttribute containerAttribyte = GetType().GetCustomAttribute<ContainerTypeAttribute>();
+                if (containerAttribyte != null)
+                    c = (Container)Activator.CreateInstance(containerAttribyte.AssignedType);
+                
+                return c;
+            }
+        }
 
         public DataStructure(int length, string id, int introducerLength)
         {

@@ -33,7 +33,7 @@ namespace AFPParser.StructuredFields
             StringBuilder sb = new StringBuilder();
 
             // CPI will have one or more repeating groups. The length of each is found in the CPC field
-            CPC cpcField = LowestLevelContainer.GetField<CPC>();
+            CPC cpcField = LowestLevelContainer.GetStructure<CPC>();
 
             // Single byte code points are length 10, double are length 11
             int standardLength = cpcField.IsSingleByteCodePage ? 10 : 11;

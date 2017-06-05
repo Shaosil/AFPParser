@@ -11,7 +11,6 @@ namespace AFPParser
     public class Parser
     {
         public static BindingList<StructuredField> AfpFile { get; set; }
-        public static List<Container> AllContainers { get; set; }
 
         public void LoadData(string fileName)
         {
@@ -65,7 +64,6 @@ namespace AFPParser
         private void ParseData()
         {
             // Create containers for applicable groups of fields
-            AllContainers = new List<Container>();
             List<Container> activeContainers = new List<Container>();
             foreach (StructuredField sf in AfpFile)
             {
@@ -73,20 +71,11 @@ namespace AFPParser
 
                 // If this is a BEGIN tag, create a new container and add it to the list, and set it as active
                 if (typeCode == "A8")
-                {
-                    // If the tag is decorated with a custom container type attribute, use that instead
-                    Container c = new Container();
-                    ContainerTypeAttribute containerAttribyte = sf.GetType().GetCustomAttribute<ContainerTypeAttribute>();
-                    if (containerAttribyte != null)
-                        c = (Container)Activator.CreateInstance(containerAttribyte.AssignedType);
-
-                    AllContainers.Add(c);
-                    activeContainers.Add(c);
-                }
+                    activeContainers.Add(sf.NewContainer);
 
                 // Add this field to each active container's list of fields
                 foreach (Container c in activeContainers)
-                    c.Fields.Add(sf);
+                    c.Structures.Add(sf);
 
                 // Set the lowest level container if there are any
                 if (activeContainers.Any())

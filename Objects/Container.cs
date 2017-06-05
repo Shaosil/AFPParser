@@ -5,26 +5,41 @@ using System.Linq;
 namespace AFPParser
 {
     // A basic container simply holds a group of fields.
-    [DebuggerDisplay("{Fields[0].Abbreviation}, {Fields.Count} fields")]
+    [DebuggerDisplay("{Structures[0].ID}, ({Structures.Count})")]
     public class Container
     {
-        public List<StructuredField> Fields { get; set; }
+        // A list of data structures in this container
+        public List<DataStructure> Structures { get; set; }
+        // A list of data structures that have this container as the lowest level container
+        public IReadOnlyList<DataStructure> DirectStructures => Structures.Where(s => s.LowestLevelContainer == this).ToList();
 
         public Container()
         {
-            Fields = new List<StructuredField>();
+            Structures = new List<DataStructure>();
         }
 
         // Get the single field in this container of a specific type
-        public T GetField<T>() where T : StructuredField
+        public T GetStructure<T>() where T : DataStructure
         {
-            return (T)Fields.FirstOrDefault(f => f.GetType() == typeof(T));
+            return (T)Structures.FirstOrDefault(f => f.GetType() == typeof(T));
         }
 
         // Get a list of fields in this container which are of a specific type
-        public List<T> GetFields<T>() where T : StructuredField
+        public List<T> GetStructures<T>() where T : DataStructure
         {
-            return Fields.Where(f => f.GetType() == typeof(T)).Cast<T>().ToList();
+            return Structures.Where(f => f.GetType() == typeof(T)).Cast<T>().ToList();
+        }
+
+        // Get the single field in this container of a specific type
+        public T DirectGetStructure<T>() where T : DataStructure
+        {
+            return (T)DirectStructures.FirstOrDefault(f => f.GetType() == typeof(T));
+        }
+
+        // Get a list of fields in this container which are of a specific type
+        public List<T> DirectGetStructures<T>() where T : DataStructure
+        {
+            return DirectStructures.Where(f => f.GetType() == typeof(T)).Cast<T>().ToList();
         }
 
         // Called after all fields have been added to the container

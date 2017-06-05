@@ -12,8 +12,6 @@ namespace AFPParser
         protected abstract List<Offset> Offsets { get; }    // Keep in mind that offset 0 in code is actually offset 2, since the first two bytes are always the same
         protected override string StructureName => "Image Self Defining Field";
 
-        protected Container LowestLevelContainer { get; set; }
-
         public ImageSelfDefiningField(int paramLength, string id, byte[] data) : base(paramLength, id, id.Length - 2)
         {
             // SDFs never have repeating groups
@@ -27,6 +25,11 @@ namespace AFPParser
         public static List<ImageSelfDefiningField> GetAllSDFs(byte[] sdfData)
         {
             List<ImageSelfDefiningField> sdfList = new List<ImageSelfDefiningField>();
+
+            // Container info
+            byte[] beginCodes = new byte[4] { 0x70, 0x8C, 0x8E, 0x91 };
+            byte[] endCodes = new byte[4] { 0x71, 0x8D, 0x8F, 0x93 };
+            List<Container> activeContainers = new List<Container>();
 
             for (int i = 0; i < sdfData.Length;)
             {
@@ -45,6 +48,26 @@ namespace AFPParser
                 if (Lookups.ImageSelfDefiningFields.ContainsKey(id))
                     iSDFType = Lookups.ImageSelfDefiningFields[id];
                 ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, length, sId, data);
+
+                // If this is a begin tag, add a new container to our active list
+                if (beginCodes.Contains(id))
+                    activeContainers.Add(sdf.NewContainer);
+
+                // Set lowest level container, if any
+                if (activeContainers.Any())
+                    sdf.LowestLevelContainer = activeContainers.Last();
+
+                // Add this field to all containers
+                foreach (Container c in activeContainers)
+                    c.Structures.Add(sdf);
+
+                // If this is the last structure in a container, close it up and parse any specific container data
+                if (endCodes.Contains(id))
+                {
+                    Container c = activeContainers.Last();
+                    activeContainers.Remove(c);
+                    c.ParseContainerData();
+                }
 
                 sdfList.Add(sdf);
 

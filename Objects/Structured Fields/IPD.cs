@@ -30,8 +30,20 @@ namespace AFPParser.StructuredFields
             sb.AppendLine("Since image data can be split across multiple IPD fields, it");
             sb.AppendLine("has all been parsed into the container as one data stream.");
             sb.AppendLine();
-            sb.AppendLine($"Raw image hex data:");
-            sb.AppendLine(BitConverter.ToString(((ImageObjectContainer)LowestLevelContainer).ImageData).Replace("-", " "));
+
+            IReadOnlyList<ImageContentContainer.ImageInfo> allImageData = ((ImageObjectContainer)LowestLevelContainer).Images;
+            for (int i = 0; i < allImageData.Count; i++)
+            {
+                sb.AppendLine($"Raw image {i + 1} data:");
+                sb.AppendLine(BitConverter.ToString(allImageData[i].Data).Replace("-", " "));
+                if (allImageData[i].TransparencyMask.Length > 0)
+                {
+                    sb.AppendLine($"Raw image {i + 1} transparency data:");
+                    sb.AppendLine(BitConverter.ToString(allImageData[i].TransparencyMask).Replace("-", " "));
+                }
+
+                sb.AppendLine();
+            }
 
             return sb.ToString();
         }

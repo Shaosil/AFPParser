@@ -23,9 +23,6 @@ namespace AFPParser
         protected abstract List<Offset> Offsets { get; }
         protected override string StructureName => "Structured Field";
 
-        // Container info
-        public Container LowestLevelContainer { get; set; }
-
         public StructuredField(int length, string id, byte flag, int sequence) : base(length, id, 8)
         {
             Flag = flag;

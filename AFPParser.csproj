@@ -51,6 +51,7 @@
     <Compile Include="Objects\Container.cs" />
     <Compile Include="Objects\ContainerAttribute.cs" />
     <Compile Include="Objects\Containers\ImageObjectContainer.cs" />
+    <Compile Include="Objects\Containers\ImageContentContainer.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImage.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImageData.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BeginImageContent.cs" />
