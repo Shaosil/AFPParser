@@ -14,10 +14,10 @@ There are well over 1,000 pages of documentation on how to decode sections and b
 <li><strike>Support parsing semantics of any structured field, using predefined offsets</strike></li>
 <li><strike>Understanding and parsing triplets, using their own set of offsets</strike></li>
 <li><strike>Create a more solid class inheritance architecture</strike></li>
-<li><i>Support parsing of more fields' data</i> <-- Current step</li>
+<li><strike>Support parsing of more fields' data</strike></li>
+<li><i>Build a rendering engine.</i> <-- Current step</li>
 <li>Fully support decoding of all field, triplet, and control sequences data.</li>
 <li>Support editing/adding/deleting fields and saving the file according to definied AFP standards.</li>
-<li>Build a rendering engine.</li>
 </ul>
 
 The remaining steps are not necessarily listed in order of execution. If I have time, I would like to start working on a way to<br/>
