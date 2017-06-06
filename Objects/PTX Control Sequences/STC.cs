@@ -1,3 +1,5 @@
+using System.Text;
+using System.Drawing;
 using System.Collections.Generic;
 
 namespace AFPParser.PTXControlSequences
@@ -6,12 +8,34 @@ namespace AFPParser.PTXControlSequences
 	{
 		private static string _abbr = "STC";
 		private static string _desc = "Set Text Color";
-        private static List<Offset> _oSets = new List<Offset>();
+        private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.EMPTY, "Color - CUSTOM PARSED")
+        };
 
         public override string Abbreviation => _abbr;
 		protected override string Description => _desc;
 		protected override List<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public Color TextColor { get; private set; }
+
 		public STC(byte[] data) : base(data) { }
-	}
+
+        public override void ParseData()
+        {
+            if (Lookups.StandardOCAColors.ContainsKey(Data[1]))
+                TextColor = Lookups.StandardOCAColors[Data[1]];
+            else
+                TextColor = Color.Black;
+        }
+
+        protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
+        {
+            // Only one offset
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(TextColor.ToString());
+            return sb.ToString();
+        }
+    }
 }

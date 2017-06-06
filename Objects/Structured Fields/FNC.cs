@@ -14,9 +14,9 @@ namespace AFPParser.StructuredFields
             {
                 Mappings = new Dictionary<byte, string>()
                 {
-                    { 0x05, "Laser Matrix N-bit Wide" },
-                    { 0x1E, "CID Keyed Font (Type 0)" },
-                    { 0x1F, "PFB (Type 1)" }
+                    { 0x05, ePatternTech.LaserMatrixNBitWide.ToString() },
+                    { 0x1E, ePatternTech.CIDKeyedFont.ToString() },
+                    { 0x1F, ePatternTech.PFBType1.ToString() }
                 }
             },
             new Offset(2, Lookups.DataTypes.EMPTY, ""),
@@ -63,8 +63,8 @@ namespace AFPParser.StructuredFields
             new Offset(17, Lookups.DataTypes.UBIN, "Raster Pattern Data Count"),
             new Offset(20, Lookups.DataTypes.UBIN, "FNP Repeating Group Length"),
             new Offset(21, Lookups.DataTypes.UBIN, "FNM Repeating Group Length"),
-            new Offset(22, Lookups.DataTypes.CODE, "Resolution X Unit Base") { Mappings = new Dictionary<byte, string>() { { 0x00, "10 Inches" } } },
-            new Offset(23, Lookups.DataTypes.CODE, "Resolution Y Unit Base") { Mappings = new Dictionary<byte, string>() { { 0x00, "10 Inches" } } },
+            new Offset(22, Lookups.DataTypes.CODE, "Resolution X Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(23, Lookups.DataTypes.CODE, "Resolution Y Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
             new Offset(24, Lookups.DataTypes.UBIN, "Units Per X Base"),
             new Offset(26, Lookups.DataTypes.UBIN, "Units Per Y Base"),
             new Offset(28, Lookups.DataTypes.UBIN, "Outline Pattern Data Count"),

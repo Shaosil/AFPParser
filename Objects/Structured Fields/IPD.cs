@@ -31,15 +31,15 @@ namespace AFPParser.StructuredFields
             sb.AppendLine("has all been parsed into the container as one data stream.");
             sb.AppendLine();
 
-            IReadOnlyList<ImageContentContainer.ImageInfo> allImageData = ((ImageObjectContainer)LowestLevelContainer).Images;
-            for (int i = 0; i < allImageData.Count; i++)
+            int count = 1;
+            foreach (ImageContentContainer.ImageInfo info in ((ImageObjectContainer)LowestLevelContainer).Images)
             {
-                sb.AppendLine($"Raw image {i + 1} data:");
-                sb.AppendLine(BitConverter.ToString(allImageData[i].Data).Replace("-", " "));
-                if (allImageData[i].TransparencyMask.Length > 0)
+                sb.AppendLine($"Raw image {count} data:");
+                sb.AppendLine(BitConverter.ToString(info.Data).Replace("-", " "));
+                if (info.TransparencyMask.Length > 0)
                 {
-                    sb.AppendLine($"Raw image {i + 1} transparency data:");
-                    sb.AppendLine(BitConverter.ToString(allImageData[i].TransparencyMask).Replace("-", " "));
+                    sb.AppendLine($"Raw image {count++} transparency data:");
+                    sb.AppendLine(BitConverter.ToString(info.TransparencyMask).Replace("-", " "));
                 }
 
                 sb.AppendLine();

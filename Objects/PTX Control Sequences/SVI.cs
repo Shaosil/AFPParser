@@ -6,7 +6,10 @@ namespace AFPParser.PTXControlSequences
 	{
 		private static string _abbr = "SVI";
 		private static string _desc = "Set Variable Space Character Increment";
-        private static List<Offset> _oSets = new List<Offset>();
+        private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.SBIN, "Increment")
+        };
 
         public override string Abbreviation => _abbr;
 		protected override string Description => _desc;

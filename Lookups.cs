@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using AFPParser.Triplets;
 using AFPParser.StructuredFields;
 using System.Collections.Generic;
@@ -300,6 +301,28 @@ namespace AFPParser
             { 0xB8, typeof(IncludeTile)},
             { 0xBB, typeof(TileTOC)},
             { 0xCE, typeof(ImageSubsampling)}
+        };
+        #endregion
+
+        #region Standard OCA Color Table
+        public static Dictionary<byte, Color> StandardOCAColors = new Dictionary<byte, Color>()
+        {
+            { 0x01, Color.Blue },
+            { 0x02, Color.Red },
+            { 0x03, Color.Magenta },
+            { 0x04, Color.Green },
+            { 0x05, Color.Cyan },
+            { 0x06, Color.Yellow },
+            { 0x07, Color.White },
+            { 0x08, Color.Black },
+            { 0x09, Color.DarkBlue },
+            { 0x0A, Color.Orange },
+            { 0x0B, Color.Purple },
+            { 0x0C, Color.DarkGreen },
+            { 0x0D, Color.DarkCyan },
+            { 0x0E, Color.DarkGoldenrod },
+            { 0x0F, Color.Gray },
+            { 0x10, Color.Brown }
         };
         #endregion
 

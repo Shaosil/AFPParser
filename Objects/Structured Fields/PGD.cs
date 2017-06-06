@@ -1,4 +1,6 @@
+using System.Text;
 using System.Collections.Generic;
+using System;
 
 namespace AFPParser.StructuredFields
 {
@@ -26,6 +28,36 @@ namespace AFPParser.StructuredFields
 		protected override int RepeatingGroupStart => 0;
 		protected override List<Offset> Offsets => _oSets;
 
-		public PGD(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+        // Parsed Data
+        public string BaseUnit { get; private set; }
+        public int UnitsPerXBase { get; private set; }
+        public int UnitsPerYBase { get; private set; }
+        public int XSize { get; private set; }
+        public int YSize { get; private set; }
+
+        public PGD(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            BaseUnit = Lookups.CommonMappings.AxisBase[Data[0]] == Lookups.CommonMappings.AxisBase[0] ? "Inches" : "Centimeters";
+            UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
+            UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
+            XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);
+            YSize = (int)GetNumericValue(GetSectionedData(9, 3), false);
+        }
+
+        public override string GetFullDescription()
+        {
+            StringBuilder sb = new StringBuilder(base.GetFullDescription());
+
+            // Calculate the page width/height
+            double width = Math.Round(XSize / (UnitsPerXBase / 10.0), 2);
+            double height = Math.Round(YSize / (UnitsPerYBase / 10.0), 2);
+            sb.AppendLine();
+            sb.AppendLine();
+            sb.AppendLine($"Page size: {width} x {height} {BaseUnit}.");
+
+            return sb.ToString();
+        }
+    }
 }

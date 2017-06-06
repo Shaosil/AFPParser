@@ -6,7 +6,10 @@ namespace AFPParser.PTXControlSequences
 	{
 		private static string _abbr = "AMI";
 		private static string _desc = "Absolute Move Inline";
-        private static List<Offset> _oSets = new List<Offset>();
+        private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.SBIN, "Displacement")
+        };
 
         public override string Abbreviation => _abbr;
 		protected override string Description => _desc;

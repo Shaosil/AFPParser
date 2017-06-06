@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+using System;
 using System.Text;
+using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
 {
@@ -27,7 +28,14 @@ namespace AFPParser.StructuredFields
 		protected override int RepeatingGroupStart => 0;
 		protected override List<Offset> Offsets => _oSets;
 
-		public PTD2(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+        // Parsed Data
+        public string BaseUnit { get; private set; }
+        public int UnitsPerXBase { get; private set; }
+        public int UnitsPerYBase { get; private set; }
+        public int XSize { get; private set; }
+        public int YSize { get; private set; }
+
+        public PTD2(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
@@ -38,6 +46,29 @@ namespace AFPParser.StructuredFields
 
             // This section can specify default values for control sequences. Load them up as normal sequences
             sb.AppendLine("Initial text conditions not yet implemented...");
+
+            return sb.ToString();
+        }
+
+        public override void ParseData()
+        {
+            BaseUnit = Lookups.CommonMappings.AxisBase[Data[0]] == Lookups.CommonMappings.AxisBase[0] ? "Inches" : "Centimeters";
+            UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
+            UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
+            XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);
+            YSize = (int)GetNumericValue(GetSectionedData(9, 3), false);
+        }
+
+        public override string GetFullDescription()
+        {
+            StringBuilder sb = new StringBuilder(base.GetFullDescription());
+
+            // Calculate the PTD width/height
+            double width = Math.Round(XSize / (UnitsPerXBase / 10.0), 2);
+            double height = Math.Round(YSize / (UnitsPerYBase / 10.0), 2);
+            sb.AppendLine();
+            sb.AppendLine();
+            sb.AppendLine($"Presentation space: {width} x {height} {BaseUnit}.");
 
             return sb.ToString();
         }
