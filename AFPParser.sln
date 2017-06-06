@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser", "AFPParser.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser.Tests", "AfpParser.Tests\AFPParser.Tests.csproj", "{B48081E1-D330-466E-A231-694F49B9AE49}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser.UI", "AFPParser.UI\AFPParser.UI.csproj", "{2BBECF14-3188-4163-8499-7F0880F99684}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B48081E1-D330-466E-A231-694F49B9AE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B48081E1-D330-466E-A231-694F49B9AE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B48081E1-D330-466E-A231-694F49B9AE49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BBECF14-3188-4163-8499-7F0880F99684}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BBECF14-3188-4163-8499-7F0880F99684}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BBECF14-3188-4163-8499-7F0880F99684}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BBECF14-3188-4163-8499-7F0880F99684}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

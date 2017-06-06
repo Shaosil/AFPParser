@@ -22,8 +22,6 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         protected override List<Offset> Offsets => _oSets;
 
-        protected new ImageObjectContainer LowestLevelContainer { get; set; }
-
 		public BIM(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+    }
 }

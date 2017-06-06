@@ -1,4 +1,4 @@
-﻿namespace AFPParser
+﻿namespace AFPParser.UI
 {
     partial class FrmMain
     {
@@ -34,11 +34,12 @@
             this.IdentifierAbbr = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IdentifierHexCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IdentifierTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.lblParsedData = new System.Windows.Forms.Label();
+            this.btnPreview = new System.Windows.Forms.Button();
             this.flagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sequenceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.lblParsedData = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFields)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.afpFileBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -109,28 +110,6 @@
             this.IdentifierTitle.ReadOnly = true;
             this.IdentifierTitle.Width = 302;
             // 
-            // flagDataGridViewTextBoxColumn
-            // 
-            this.flagDataGridViewTextBoxColumn.DataPropertyName = "Flag";
-            this.flagDataGridViewTextBoxColumn.FillWeight = 5F;
-            this.flagDataGridViewTextBoxColumn.HeaderText = "Flag";
-            this.flagDataGridViewTextBoxColumn.Name = "flagDataGridViewTextBoxColumn";
-            this.flagDataGridViewTextBoxColumn.ReadOnly = true;
-            this.flagDataGridViewTextBoxColumn.Width = 60;
-            // 
-            // sequenceDataGridViewTextBoxColumn
-            // 
-            this.sequenceDataGridViewTextBoxColumn.DataPropertyName = "Sequence";
-            this.sequenceDataGridViewTextBoxColumn.FillWeight = 7F;
-            this.sequenceDataGridViewTextBoxColumn.HeaderText = "Sequence";
-            this.sequenceDataGridViewTextBoxColumn.Name = "sequenceDataGridViewTextBoxColumn";
-            this.sequenceDataGridViewTextBoxColumn.ReadOnly = true;
-            this.sequenceDataGridViewTextBoxColumn.Width = 85;
-            // 
-            // afpFileBindingSource
-            // 
-            this.afpFileBindingSource.DataSource = typeof(AFPParser.StructuredField);
-            // 
             // txtDescription
             // 
             this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -156,6 +135,39 @@
             this.lblParsedData.TabIndex = 4;
             this.lblParsedData.Text = "Parsed Data";
             // 
+            // btnPreview
+            // 
+            this.btnPreview.Enabled = false;
+            this.btnPreview.Location = new System.Drawing.Point(462, 12);
+            this.btnPreview.Name = "btnPreview";
+            this.btnPreview.Size = new System.Drawing.Size(178, 23);
+            this.btnPreview.TabIndex = 0;
+            this.btnPreview.Text = "Preview File (work in progress)...";
+            this.btnPreview.UseVisualStyleBackColor = true;
+            this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
+            // 
+            // flagDataGridViewTextBoxColumn
+            // 
+            this.flagDataGridViewTextBoxColumn.DataPropertyName = "Flag";
+            this.flagDataGridViewTextBoxColumn.FillWeight = 5F;
+            this.flagDataGridViewTextBoxColumn.HeaderText = "Flag";
+            this.flagDataGridViewTextBoxColumn.Name = "flagDataGridViewTextBoxColumn";
+            this.flagDataGridViewTextBoxColumn.ReadOnly = true;
+            this.flagDataGridViewTextBoxColumn.Width = 60;
+            // 
+            // sequenceDataGridViewTextBoxColumn
+            // 
+            this.sequenceDataGridViewTextBoxColumn.DataPropertyName = "Sequence";
+            this.sequenceDataGridViewTextBoxColumn.FillWeight = 7F;
+            this.sequenceDataGridViewTextBoxColumn.HeaderText = "Sequence";
+            this.sequenceDataGridViewTextBoxColumn.Name = "sequenceDataGridViewTextBoxColumn";
+            this.sequenceDataGridViewTextBoxColumn.ReadOnly = true;
+            this.sequenceDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // afpFileBindingSource
+            // 
+            this.afpFileBindingSource.DataSource = typeof(AFPParser.StructuredField);
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -164,6 +176,7 @@
             this.Controls.Add(this.lblParsedData);
             this.Controls.Add(this.txtDescription);
             this.Controls.Add(this.dgvFields);
+            this.Controls.Add(this.btnPreview);
             this.Controls.Add(this.btnBrowse);
             this.MinimumSize = new System.Drawing.Size(1250, 700);
             this.Name = "FrmMain";
@@ -189,5 +202,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn IdentifierTitle;
         private System.Windows.Forms.DataGridViewTextBoxColumn flagDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn sequenceDataGridViewTextBoxColumn;
+        private System.Windows.Forms.Button btnPreview;
     }
 }

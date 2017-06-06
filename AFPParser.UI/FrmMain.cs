@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing.Printing;
+using AFPParser.StructuredFields;
 
-namespace AFPParser
+namespace AFPParser.UI
 {
     public partial class FrmMain : Form
     {
@@ -19,6 +22,7 @@ namespace AFPParser
             opts = Options.LoadSettings(optionsFile);
 
             afpParser = new Parser();
+            afpParser.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -37,11 +41,14 @@ namespace AFPParser
 
                     // Parse the AFP file
                     afpParser.LoadData(dialog.FileName);
-
+                    
                     // Databind the list box
                     afpFileBindingSource.DataSource = null;
                     afpFileBindingSource.DataSource = Parser.AfpFile;
                     dgvFields.Focus();
+
+                    // Enable/disable the preview button
+                    btnPreview.Enabled = Parser.AfpFile.Any();
                 }
                 finally
                 {
@@ -93,6 +100,36 @@ namespace AFPParser
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             opts.SaveSettings(optionsFile);
+        }
+
+        private void btnPreview_Click(object sender, EventArgs e)
+        {
+            // Get the first page's PGD
+            PGD pgd = Parser.AfpFile.OfType<PGD>().First();
+
+            // Pop a new form assuming 90 DPI
+            Form f = new Form()
+            {
+                Width = (pgd.XSize / (pgd.UnitsPerXBase / 10)) * 90,
+                Height = (pgd.YSize / (pgd.UnitsPerYBase / 10)) * 90,
+                FormBorderStyle = FormBorderStyle.FixedSingle,
+                MaximizeBox = false,
+                ShowInTaskbar = false,
+                MinimizeBox = false
+            };
+
+            PrintPreviewControl ppc = new PrintPreviewControl() { Dock = DockStyle.Fill };
+            ppc.Document = new PrintDocument();
+            ppc.Document.PrintPage += TestBuildPrintPreview;
+
+            f.Controls.Add(ppc);
+
+            f.ShowDialog();
+        }
+
+        private void TestBuildPrintPreview(object sender, PrintPageEventArgs e)
+        {
+            e.Graphics.DrawString("Work in progress...", new Font(FontFamily.GenericMonospace, 16), Brushes.Black, 100, 100);
         }
     }
 }

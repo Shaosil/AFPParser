@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace AFPParser
+namespace AFPParser.UI
 {
     static class Program
     {

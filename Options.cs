@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Windows.Forms;
 using System.Xml.Serialization;
 
 [Serializable]
@@ -27,10 +26,7 @@ public class Options
             // Save
             loadedOpts.SaveSettings(path);
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Could not load settings. {ex.Message}", "Settings Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
+        catch { }
 
         return loadedOpts;
     }
