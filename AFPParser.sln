@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser.UI", "AFPParser.UI\AFPParser.UI.csproj", "{2BBECF14-3188-4163-8499-7F0880F99684}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser", "AFPParser.csproj", "{3DA66ED3-616E-4B1A-AF8C-05E98A74929A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser.Tests", "AfpParser.Tests\AFPParser.Tests.csproj", "{B48081E1-D330-466E-A231-694F49B9AE49}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFPParser.UI", "AFPParser.UI\AFPParser.UI.csproj", "{2BBECF14-3188-4163-8499-7F0880F99684}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
