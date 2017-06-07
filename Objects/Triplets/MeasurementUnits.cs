@@ -13,8 +13,8 @@ namespace AFPParser.Triplets
             new Offset(4, Lookups.DataTypes.UBIN, "Y Units per Base")
         };
 
-        protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         public MeasurementUnits(byte[] allData) : base(allData) { }
 	}

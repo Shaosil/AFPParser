@@ -12,8 +12,8 @@ namespace AFPParser.PTXControlSequences
         };
 
         public override string Abbreviation => _abbr;
-		protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+		public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
 		public TRN(byte[] data) : base(data) { }
 	}

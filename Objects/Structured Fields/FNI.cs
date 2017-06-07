@@ -25,7 +25,7 @@ namespace AFPParser.StructuredFields
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;
-		protected override string Description => _desc;
+		public override string Description => _desc;
 		protected override bool IsRepeatingGroup => true;
 		protected override int RepeatingGroupStart => 0;
         protected override int RepeatingGroupLength
@@ -33,14 +33,14 @@ namespace AFPParser.StructuredFields
             get
             {
                 int length = Data.Length;
-                FNC control = (FNC)Parser.AfpFile.FirstOrDefault(f => f.GetType() == typeof(FNC));
+                FNC control = LowestLevelContainer.GetStructure<FNC>();
                 if (control != null)
                     length = control.Data[15];
 
                 return length;
             }
         }
-        protected override List<Offset> Offsets => _oSets;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
 		public FNI(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
 	}

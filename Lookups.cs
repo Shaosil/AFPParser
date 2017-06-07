@@ -192,6 +192,7 @@ namespace AFPParser
             { 0x74, typeof(TonerSaver) },
             { 0x75, typeof(ColorFidelity) },
             { 0x78, typeof(FontFidelity) },
+            { 0x79, typeof(MetricAdjustment) },
             { 0x80, typeof(AttributeQualifier) },
             { 0x81, typeof(PagePositionInformation) },
             { 0x82, typeof(ParameterValue) },

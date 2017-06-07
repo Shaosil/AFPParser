@@ -15,19 +15,15 @@ namespace AFPParser
 
         // Abstract properties derived from hard coded individual structured field information
         public abstract string Abbreviation { get; }
-        public abstract string Title { get; }
-        protected abstract string Description { get; }
         protected abstract bool IsRepeatingGroup { get; }
         protected abstract int RepeatingGroupStart { get; }
         protected virtual int RepeatingGroupLength { get { return Data.Length; } }
-        protected abstract List<Offset> Offsets { get; }
         protected override string StructureName => "Structured Field";
 
         public StructuredField(int length, string id, byte flag, int sequence) : base(length, id, 8)
         {
             Flag = flag;
             Sequence = sequence;
-            Semantics = new SemanticsInfo(Title, Description, IsRepeatingGroup, RepeatingGroupStart, Offsets);
         }
 
         public override string GetFullDescription()

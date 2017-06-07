@@ -12,7 +12,8 @@ namespace AFPParser.UI
     {
         private readonly string optionsFile = Environment.CurrentDirectory + "\\Options.xml";
         private Options opts;
-        private Parser afpParser;
+        private Parser parser;
+        private PrintParser printParser;
 
         public FrmMain()
         {
@@ -21,13 +22,13 @@ namespace AFPParser.UI
             // Store things like last opened directory
             opts = Options.LoadSettings(optionsFile);
 
-            afpParser = new Parser();
-            afpParser.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
+            parser = new Parser();
+            parser.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog() { InitialDirectory = opts.LastDirectory, Filter = "AFP Files(*.afp)|*.afp" };
+            OpenFileDialog dialog = new OpenFileDialog() { InitialDirectory = opts.LastDirectory, Filter = "AFP Files (*.afp)|*.afp|All Files|*.*" };
             DialogResult result = dialog.ShowDialog();
 
             if (result == DialogResult.OK)
@@ -36,19 +37,25 @@ namespace AFPParser.UI
                 {
                     Cursor = Cursors.WaitCursor;
 
-                    // Store the last used directory
-                    opts.LastDirectory = new FileInfo(dialog.FileName).DirectoryName;
+                    // Store the last used directory and file
+                    FileInfo fInfo = new FileInfo(dialog.FileName);
+                    opts.LastDirectory = fInfo.DirectoryName;
+                    opts.LastOpenedFile = fInfo.Name;
 
                     // Parse the AFP file
-                    afpParser.LoadData(dialog.FileName);
+                    parser.LoadData(dialog.FileName);
                     
                     // Databind the list box
                     afpFileBindingSource.DataSource = null;
-                    afpFileBindingSource.DataSource = Parser.AfpFile;
+                    afpFileBindingSource.DataSource = parser.StructuredFields;
                     dgvFields.Focus();
 
                     // Enable/disable the preview button
-                    btnPreview.Enabled = Parser.AfpFile.Any();
+                    btnPreview.Enabled = parser.StructuredFields.Any();
+
+                    // Load the print parser data
+                    if (btnPreview.Enabled)
+                        printParser = new PrintParser(parser.StructuredFields);
                 }
                 finally
                 {
@@ -104,32 +111,19 @@ namespace AFPParser.UI
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
-            // Get the first page's PGD
-            PGD pgd = Parser.AfpFile.OfType<PGD>().First();
+            // Set up a print preview dialog and wire it to our print parser's build event
+            PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
+            ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something
+            ((Form)ppd).WindowState = FormWindowState.Maximized;
+            ppd.Document.PrintPage += printParser.BuildPrintPage;
 
-            // Pop a new form assuming 90 DPI
-            Form f = new Form()
-            {
-                Width = (pgd.XSize / (pgd.UnitsPerXBase / 10)) * 90,
-                Height = (pgd.YSize / (pgd.UnitsPerYBase / 10)) * 90,
-                FormBorderStyle = FormBorderStyle.FixedSingle,
-                MaximizeBox = false,
-                ShowInTaskbar = false,
-                MinimizeBox = false
-            };
+            // Set page size by checking the first PGD. Width and height are in 1/100 inch
+            PGD pgd = parser.StructuredFields.OfType<PGD>().First();
+            int xWidth = (int)(pgd.XInches * 100);
+            int yWidth = (int)(pgd.YInches * 100);
+            ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
 
-            PrintPreviewControl ppc = new PrintPreviewControl() { Dock = DockStyle.Fill };
-            ppc.Document = new PrintDocument();
-            ppc.Document.PrintPage += TestBuildPrintPreview;
-
-            f.Controls.Add(ppc);
-
-            f.ShowDialog();
-        }
-
-        private void TestBuildPrintPreview(object sender, PrintPageEventArgs e)
-        {
-            e.Graphics.DrawString("Work in progress...", new Font(FontFamily.GenericMonospace, 16), Brushes.Black, 100, 100);
+            ppd.ShowDialog();
         }
     }
 }

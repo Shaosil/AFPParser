@@ -27,8 +27,8 @@ namespace AFPParser.Triplets
             new Offset(10, Lookups.DataTypes.COLOR, "Color - Not Yet Implemented")
         };
 
-        protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         public ColorSpecification(byte[] allData) : base(allData) { }
 	}

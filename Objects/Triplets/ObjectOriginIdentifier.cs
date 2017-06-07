@@ -13,8 +13,8 @@ namespace AFPParser.Triplets
             new Offset(15, Lookups.DataTypes.CHAR, "Data Set ID")
         };
 
-        protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         public ObjectOriginIdentifier(byte[] allData) : base(allData) { }
     }

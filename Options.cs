@@ -5,7 +5,10 @@ using System.Xml.Serialization;
 [Serializable]
 public class Options
 {
+    private static XmlSerializer serializer = new XmlSerializer(typeof(Options));
+
     public string LastDirectory { get; set; }
+    public string LastOpenedFile { get; set; }
 
     Options()
     {
@@ -21,7 +24,7 @@ public class Options
             // Read if existing
             if (File.Exists(path))
                 using (FileStream reader = File.OpenRead(path))
-                    loadedOpts = (Options)new XmlSerializer(typeof(Options)).Deserialize(reader);
+                    loadedOpts = (Options)(serializer.Deserialize(reader));
 
             // Save
             loadedOpts.SaveSettings(path);
@@ -35,8 +38,10 @@ public class Options
     {
         try
         {
+            File.WriteAllText(path, string.Empty);
+
             using (FileStream writer = File.OpenWrite(path))
-                new XmlSerializer(typeof(Options)).Serialize(writer, this);
+                serializer.Serialize(writer, this);
         }
         catch { }
     }

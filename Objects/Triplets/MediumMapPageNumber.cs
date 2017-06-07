@@ -10,8 +10,8 @@ namespace AFPParser.Triplets
 			new Offset(0, Lookups.DataTypes.UBIN, "Page number")
 		};
 
-		protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+		public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
 		public MediumMapPageNumber(byte[] allData) : base(allData) { }
 	}

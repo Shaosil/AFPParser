@@ -9,15 +9,10 @@ namespace AFPParser
     {
         // Properties which must be implemented by individual control sequences
         public abstract string Abbreviation { get; }
-        protected abstract string Description { get; }
-        protected abstract List<Offset> Offsets { get; }    // Keep in mind that offset 0 in code is actually offset 4, since the first four bytes are always the same
         protected override string StructureName => "Control Sequence";
 
         public PTXControlSequence(byte[] allData) : base(allData[0], allData[1].ToString("X2"), 2)
         {
-            // Control sequences never have repeating groups
-            Semantics = new SemanticsInfo(SpacedClassName, Description, false, 0, Offsets);
-
             // Set data starting at offset 2
             for (int i = 0; i < Data.Length; i++)
                 Data[i] = allData[2 + i];
@@ -28,7 +23,7 @@ namespace AFPParser
             StringBuilder sb = new StringBuilder();
 
             // Use description instead of title
-            sb.AppendLine($"{Semantics.Description} ({StructureName} 0x{ID})");
+            sb.AppendLine($"{Description} ({StructureName} 0x{ID})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();

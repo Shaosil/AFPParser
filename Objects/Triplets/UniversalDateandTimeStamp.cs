@@ -10,8 +10,8 @@ namespace AFPParser.Triplets
         private static string _desc = "Specifies a date and time in accordance with the format defined in ISO 8601: 1988 (E).";
         private static List<Offset> _oSets = new List<Offset>();
 
-        protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         public UniversalDateandTimeStamp(byte[] allData) : base(allData) { }
 

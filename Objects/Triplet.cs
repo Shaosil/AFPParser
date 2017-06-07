@@ -8,18 +8,24 @@ namespace AFPParser
     public abstract class Triplet : DataStructure
     {
         // Properties which must be implemented by individual triplets
-        protected abstract string Description { get; }
-        protected abstract List<Offset> Offsets { get; }    // Keep in mind that offset 0 in code is actually offset 2, since the first two bytes are always the same
         protected override string StructureName => "Triplet";
 
         public Triplet(byte[] allData) : base(allData[0], allData[1].ToString("X2"), 2)
         {
-            // Triplets never have repeating groups
-            Semantics = new SemanticsInfo(SpacedClassName, Description, false, 0, Offsets);
-
             // Set data starting at offset 2
             for (int i = 0; i < Data.Length; i++)
                 Data[i] = allData[2 + i];
+        }
+
+        public override string GetFullDescription()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            // Use spaced class name instead of title
+            sb.AppendLine($"{SpacedClassName} ({StructureName} 0x{ID})");
+            sb.Append(GetOffsetDescriptions());
+
+            return sb.ToString();
         }
 
         public static string GetAllDescriptions(byte[] tripletData)

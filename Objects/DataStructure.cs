@@ -15,7 +15,11 @@ namespace AFPParser
         public int Length { get; private set; }
         public string ID { get; private set; }
         public byte[] Data { get; private set; }
-        public SemanticsInfo Semantics { get; protected set; }
+
+        // Readable information, usually looked up or hard coded by referencing documentation
+        public virtual string Title { get; }
+        public virtual string Description { get; }
+        public virtual IReadOnlyList<Offset> Offsets { get; }
 
         // Dynamically calculated properties
         public string DataHex { get { return BitConverter.ToString(Data).Replace("-", " "); } }
@@ -67,7 +71,7 @@ namespace AFPParser
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"{Semantics.Title} ({StructureName} 0x{ID})");
+            sb.AppendLine($"{Title} ({StructureName} 0x{ID})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();
@@ -78,12 +82,12 @@ namespace AFPParser
         {
             StringBuilder sb = new StringBuilder();
 
-            if (Semantics.Offsets.Any())
+            if (Offsets.Any())
                 // Write out each implemented offset's description
-                foreach (Offset oSet in Semantics.Offsets)
+                foreach (Offset oSet in Offsets)
                 {
                     // Get sectioned data
-                    IEnumerable<Offset> nextOffsets = Semantics.Offsets.Where(o => o.StartingIndex > oSet.StartingIndex);
+                    IEnumerable<Offset> nextOffsets = Offsets.Where(o => o.StartingIndex > oSet.StartingIndex);
                     int nextIndex = nextOffsets.Any() ? nextOffsets.Min(o => o.StartingIndex) : 0;
                     if (nextIndex == 0) nextIndex = Data.Length;
                     int bytesToTake = nextIndex - oSet.StartingIndex;

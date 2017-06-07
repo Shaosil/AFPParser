@@ -31,11 +31,11 @@ namespace AFPParser.StructuredFields
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;
-		protected override string Description => _desc;
+		public override string Description => _desc;
 		protected override bool IsRepeatingGroup => true;
 		protected override int RepeatingGroupStart => 1;
         protected override int RepeatingGroupLength => 23;
-        protected override List<Offset> Offsets => _oSets;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
 		public OBP(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
 	}

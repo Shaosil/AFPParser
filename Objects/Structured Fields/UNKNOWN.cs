@@ -8,11 +8,11 @@ namespace AFPParser.StructuredFields
 
         public override string Title { get { return "UNKNOWN"; } }
 
-        protected override string Description { get { return $"UNKNOWN HEX CODE: {ID}"; } }
+        public override string Description { get { return $"UNKNOWN HEX CODE: {ID}"; } }
 
         protected override bool IsRepeatingGroup { get { return false; } }
 
-        protected override List<Offset> Offsets { get { return new List<Offset>(); } }
+        public override IReadOnlyList<Offset> Offsets { get { return new List<Offset>(); } }
 
         protected override int RepeatingGroupStart { get { return 0; } }
 

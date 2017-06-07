@@ -10,7 +10,7 @@ namespace AFPParser
     {
         public event Action<string> ErrorEvent;
 
-        public static BindingList<StructuredField> AfpFile { get; set; }
+        public List<StructuredField> StructuredFields { get; set; }
 
         public void LoadData(string fileName)
         {
@@ -21,7 +21,7 @@ namespace AFPParser
 
                 // Next, loop through each 5A block and store a StructuredField object
                 int curIdx = 0;
-                AfpFile = new BindingList<StructuredField>();
+                StructuredFields = new List<StructuredField>();
                 while (curIdx < byteList.Length - 1)
                 {
                     if (byteList[curIdx] != 0x5A)
@@ -53,7 +53,7 @@ namespace AFPParser
                         field.Data[i] = byteList[curIdx + 9 + i];
 
                     // Append to AFP file
-                    AfpFile.Add(field);
+                    StructuredFields.Add(field);
 
                     // Go to next 5A
                     curIdx += field.Length + 1;
@@ -64,7 +64,7 @@ namespace AFPParser
             }
             catch (Exception ex)
             {
-                AfpFile = new BindingList<StructuredField>();
+                StructuredFields = new List<StructuredField>();
                 ErrorEvent?.Invoke($"Error: {ex.Message}");
             }
         }
@@ -73,7 +73,7 @@ namespace AFPParser
         {
             // Create containers for applicable groups of fields
             List<Container> activeContainers = new List<Container>();
-            foreach (StructuredField sf in AfpFile)
+            foreach (StructuredField sf in StructuredFields)
             {
                 string typeCode = sf.ID.Substring(2, 2);
 
@@ -99,7 +99,7 @@ namespace AFPParser
             }
 
             // Now that everything is structured, parse all data by individual handlers
-            foreach (StructuredField sf in AfpFile)
+            foreach (StructuredField sf in StructuredFields)
                 sf.ParseData();
         }
     }

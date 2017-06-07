@@ -8,15 +8,10 @@ namespace AFPParser
     public abstract class ImageSelfDefiningField : DataStructure
     {
         // Properties which must be implemented by individual SDFs
-        protected abstract string Description { get; }
-        protected abstract List<Offset> Offsets { get; }    // Keep in mind that offset 0 in code is actually offset 2, since the first two bytes are always the same
         protected override string StructureName => "Image Self Defining Field";
 
         public ImageSelfDefiningField(int paramLength, string id, byte[] data) : base(paramLength, id, id.Length - 2)
         {
-            // SDFs never have repeating groups
-            Semantics = new SemanticsInfo(SpacedClassName, Description, false, 0, Offsets);
-
             // Set data
             for (int i = 0; i < Data.Length; i++)
                 Data[i] = data[i];

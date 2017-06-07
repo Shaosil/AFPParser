@@ -8,12 +8,12 @@ namespace AFPParser.PTXControlSequences
 		private static string _desc = "Set Coded Font Local";
         private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.EMPTY, "Identifier")
+            new Offset(0, Lookups.DataTypes.UBIN, "Identifier")
         };
 
         public override string Abbreviation => _abbr;
-		protected override string Description => _desc;
-        protected override List<Offset> Offsets => _oSets;
+		public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         public SCFL(byte[] data) : base(data) { }
 	}

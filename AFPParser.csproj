@@ -259,6 +259,7 @@
     <Compile Include="Objects\Triplets\FinishingOperation.cs" />
     <Compile Include="Objects\Triplets\FontDescriptorSpecification.cs" />
     <Compile Include="Objects\Triplets\FontFidelity.cs" />
+    <Compile Include="Objects\Triplets\MetricAdjustment.cs" />
     <Compile Include="Objects\Triplets\FontHorizontalScaleFactor.cs" />
     <Compile Include="Objects\Triplets\FontResolutionandMetricTechnology.cs" />
     <Compile Include="Objects\Triplets\FullyQualifiedName.cs" />
@@ -307,7 +308,6 @@
     <Compile Include="Options.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SemanticsInfo.cs" />
     <Compile Include="Objects\StructuredField.cs" />
     <Compile Include="Objects\Triplet.cs" />
   </ItemGroup>
