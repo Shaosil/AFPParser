@@ -65,7 +65,7 @@ namespace AFPParser
             }
 
             // If this is a repeating group identifier, loop through each subsection of offsets
-            int skip = IsRepeatingGroup ? RepeatingGroupStart : 0;
+            int skip = IsRepeatingGroup ? RepeatingGroupStart : Offsets[0].StartingIndex;
             int sectionLength = RepeatingGroupLength;
             do
             {

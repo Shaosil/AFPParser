@@ -146,13 +146,11 @@ namespace AFPParser
             // Currently only support up to 4 byte integers
             if (bytes.Length > 4) return 0;
 
-            // If there is an extra byte, strip it out
+            // If there are three bytes, add a byte to the beginning and manually add the signed bit if needed
             if (bytes.Length == 3)
             {
-                if (BitConverter.IsLittleEndian)
-                    bytes = bytes.Skip(1).ToArray();
-                else
-                    bytes = bytes.Take(bytes.Length - 1).ToArray();
+                byte extraByte = (byte)(isSigned && (bytes[0] & (1 << 7)) > 0 ? 0x80 : 0x00);
+                bytes = new byte[1] { extraByte }.Concat(bytes).ToArray();
             }
 
             // Use correct Endianness

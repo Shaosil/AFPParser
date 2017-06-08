@@ -24,7 +24,7 @@ namespace AFPParser.PTXControlSequences
 
             // I/B Axis orientation stored in four total bytes.
             // Each two byte set has 3 parts. A (9 bits), B (6 bits), and C (1 bit)
-            // A = 0 -359 degrees
+            // A = 0 - 359 degrees
             // B = 0 - 59 minutes
             // C = Reserved, always 0
 

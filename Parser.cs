@@ -94,13 +94,17 @@ namespace AFPParser
                 {
                     Container mostRecentContainer = activeContainers.Last();
                     activeContainers.Remove(mostRecentContainer);
-                    mostRecentContainer.ParseContainerData();
                 }
             }
 
             // Now that everything is structured, parse all data by individual handlers
             foreach (StructuredField sf in StructuredFields)
+            {
                 sf.ParseData();
+                
+                // Parse container data after parsing all fields inside of it
+                if (sf.ID.Substring(2, 2) == "A9") sf.LowestLevelContainer.ParseContainerData();
+            }
         }
     }
 }

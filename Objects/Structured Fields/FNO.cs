@@ -61,31 +61,29 @@ namespace AFPParser.StructuredFields
             {
                 sb.AppendLine($"Control Flags:");
 
-                bool[] bitArray = GetBitArray(Data[12]);
-
-                // The first three bits represent a numeric value
-                bool[] FNINum = bitArray.Take(3).ToArray();
-                if (BitConverter.IsLittleEndian) FNINum = FNINum.Reverse().ToArray();
+                // The first three bits represent a numeric value, so add 5 blank bytes
+                BitArray indexNumBits = new BitArray(new bool[5] { false, false, false, false, false }
+                    .Concat(GetBitArray(sectionedData).Take(3)).ToArray());
                 int[] FNINumInt = new int[1];
-                new BitArray(FNINum).CopyTo(FNINumInt, 0);
+                indexNumBits.CopyTo(FNINumInt, 0);
                 sb.AppendLine($"* Font Index Number: {FNINumInt[0]}");
 
                 sb.Append("* ");
-                if (!bitArray[4]) sb.Append("No ");
+                if ((sectionedData[0] & (1 << 3)) == 0) sb.Append("No ");
                 sb.AppendLine("Kerning Data");
 
                 sb.Append("* ");
-                if (!bitArray[5]) sb.Append("Minimum ");
+                if ((sectionedData[0] & (1 << 2)) == 0) sb.Append("Minimum ");
                 else sb.Append("Uniform ");
                 sb.AppendLine("A-space");
 
                 sb.Append("* ");
-                if (!bitArray[6]) sb.Append("Maximum ");
+                if ((sectionedData[0] & (1 << 1)) == 0) sb.Append("Maximum ");
                 else sb.Append("Uniform ");
                 sb.AppendLine("baseline offset");
 
                 sb.Append("* ");
-                if (!bitArray[7]) sb.Append("Maximum ");
+                if ((sectionedData[0] & 1) == 0) sb.Append("Maximum ");
                 else sb.Append("Uniform ");
                 sb.AppendLine("character increment");
             }

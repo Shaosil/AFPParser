@@ -21,7 +21,6 @@ namespace AFPParser
         /// and flag-checked. The description contains info for both positions, such as
         /// "Off condition|On condition", respectively, separated by pipe
         /// </summary>
-
         public Dictionary<byte, string> Mappings { get; set; }
 
         public Offset(int startingIdx, Lookups.DataTypes dataType, string description)
@@ -76,19 +75,13 @@ namespace AFPParser
             {
                 case Lookups.DataTypes.BITS:
                     // Mappings correspond to bit positions
-                    Dictionary<byte, string[]> bitsAndDescriptions = new Dictionary<byte, string[]>();
-                    foreach (KeyValuePair<byte, string> mapping in Mappings)
-                        bitsAndDescriptions.Add(mapping.Key, mapping.Value.Split('|').ToArray());
+                    Dictionary<byte, string[]> bitsAndDescriptions = Mappings.ToDictionary(k => k.Key, v => v.Value.Split('|'));
 
-                    // Display in big Endian if not already
-                    BitArray bitInfo = new BitArray(new[] { data });
-                    if (BitConverter.IsLittleEndian)
-                        bitInfo = new BitArray(bitInfo.Cast<bool>().Reverse().ToArray());
-
-                    // Get the position of the bit, and determine which description to display
+                    // Check bit flag and determine which description to display
                     foreach (KeyValuePair<byte, string[]> kvp in bitsAndDescriptions)
                     {
-                        int descIndex = Convert.ToInt32(bitInfo[kvp.Key]); // 0 or 1
+                        int shift = 7 - kvp.Key; // 0 = leftmost bit in our mappings
+                        int descIndex = Convert.ToInt32((data & (1 << shift)) > 0); // If bit is flagged, use index 1
                         sb.AppendLine();
                         sb.Append($"* {kvp.Value[descIndex]}");
                     }

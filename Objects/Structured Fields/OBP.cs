@@ -9,7 +9,8 @@ namespace AFPParser.StructuredFields
 		private static string _desc = "The Object Area Position structured field specifies the origin and orientation of the object area, and the origin and orientation of the object content within the object area.";
 		private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.EMPTY, ""), // Actually the RG Length, but it's always 23
+            new Offset(0, Lookups.DataTypes.UBIN, "OBP ID"),
+            new Offset(1, Lookups.DataTypes.EMPTY, ""), // RGLength, always 23, and always only one group...
             new Offset(2, Lookups.DataTypes.SBIN, "X Axis Area Origin"),
             new Offset(5, Lookups.DataTypes.SBIN, "Y Axis Area Origin"),
             new Offset(8, Lookups.DataTypes.CODE, "X Axis Rotation") { Mappings = Lookups.CommonMappings.Rotations },
@@ -32,9 +33,8 @@ namespace AFPParser.StructuredFields
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;
 		public override string Description => _desc;
-		protected override bool IsRepeatingGroup => true;
-		protected override int RepeatingGroupStart => 1;
-        protected override int RepeatingGroupLength => 23;
+		protected override bool IsRepeatingGroup => false;
+		protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
