@@ -17,6 +17,37 @@ namespace AFPParser
                 Data[i] = allData[2 + i];
         }
 
+        public static List<Triplet> GetAllTriplets(byte[] tripletData)
+        {
+            List<Triplet> allTrips = new List<Triplet>();
+
+            // Find each triplet segment by reading the length
+            List<byte[]> tripletBytes = new List<byte[]>();
+            int curIndex = 0;
+            while (curIndex < tripletData.Length)
+            {
+                // The first byte is always length, so use that to add each triplet section to the list of byte arrays
+                int length = tripletData[curIndex];
+                tripletBytes.Add(tripletData.Skip(curIndex).Take(length).ToArray());
+                curIndex += length;
+            }
+
+            // Create instances of matching triplet objects by IDs
+            foreach (byte[] triplet in tripletBytes)
+            {
+                // Get the type of triplet, create the object, and add it to the list
+                Type tripletType = typeof(Triplets.UNKNOWN);
+                if (Lookups.Triplets.ContainsKey(triplet[1]))
+                    tripletType = Lookups.Triplets[triplet[1]];
+                allTrips.Add((Triplet)Activator.CreateInstance(tripletType, triplet));
+            }
+
+            // Parse all triplet data
+            allTrips.ForEach(t => t.ParseData());
+
+            return allTrips;
+        }
+
         public override string GetFullDescription()
         {
             StringBuilder sb = new StringBuilder();
@@ -24,38 +55,6 @@ namespace AFPParser
             // Use spaced class name instead of title
             sb.AppendLine($"{SpacedClassName} ({StructureName} 0x{ID})");
             sb.Append(GetOffsetDescriptions());
-
-            return sb.ToString();
-        }
-
-        public static string GetAllDescriptions(byte[] tripletData)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            List<byte[]> triplets = new List<byte[]>();
-            int curIndex = 0;
-            while (curIndex < tripletData.Length)
-            {
-                // The first byte is always length, so use that to add each triplet section to the list of byte arrays
-                int length = tripletData[curIndex];
-
-                // Add the current triplet to the list
-                triplets.Add(tripletData.Skip(curIndex).Take(length).ToArray());
-
-                curIndex += length;
-            }
-
-            // Append each triplet's description and data
-            foreach (byte[] triplet in triplets)
-            {
-                // Get the type of triplet
-                Type tripletType = typeof(Triplets.UNKNOWN);
-                if (Lookups.Triplets.ContainsKey(triplet[1]))
-                    tripletType = Lookups.Triplets[triplet[1]];
-                Triplet assignedTriplet = (Triplet)Activator.CreateInstance(tripletType, triplet);
-
-                sb.AppendLine(assignedTriplet.GetFullDescription());
-            }
 
             return sb.ToString();
         }

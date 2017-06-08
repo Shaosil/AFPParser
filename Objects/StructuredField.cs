@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
+using AFPParser.StructuredFields;
 
 namespace AFPParser
 {
@@ -20,10 +21,14 @@ namespace AFPParser
         protected virtual int RepeatingGroupLength { get { return Data.Length; } }
         protected override string StructureName => "Structured Field";
 
+        // Parsed Data
+        public IReadOnlyList<Triplet> Triplets { get; private set; }
+
         public StructuredField(int length, string id, byte flag, int sequence) : base(length, id, 8)
         {
             Flag = flag;
             Sequence = sequence;
+            Triplets = new List<Triplet>();
         }
 
         public override string GetFullDescription()
@@ -84,16 +89,17 @@ namespace AFPParser
                     // Build description by data type
                     switch (Offsets[i].DataType)
                     {
+
                         // For special sub sectioned data types, call the static parser
-                        case Lookups.DataTypes.TRIPS:
                         case Lookups.DataTypes.IMAGESDFS:
                             if (i > 0) sb.AppendLine();
+                            sb.AppendLine(ImageSelfDefiningField.GetAllDescriptions(sectionedData));
+                            break;
 
-                            if (Offsets[i].DataType == Lookups.DataTypes.TRIPS)
-                                sb.AppendLine(Triplet.GetAllDescriptions(sectionedData));
-                            else
-                                sb.AppendLine(ImageSelfDefiningField.GetAllDescriptions(sectionedData));
-
+                        // For Triplets, parse them all at once
+                        case Lookups.DataTypes.TRIPS:
+                            foreach (Triplet t in Triplets)
+                                sb.AppendLine(t.GetFullDescription());
                             break;
 
                         // Everything else
@@ -115,7 +121,10 @@ namespace AFPParser
 
         public override void ParseData()
         {
-             // TODO: Remove this if and when each structured field parses the data in their own way
+            // Parse triplets automatically if they exist
+            Offset tripsOffset = Offsets.FirstOrDefault(o => o.DataType == Lookups.DataTypes.TRIPS);
+            if (tripsOffset != null)
+                Triplets = Triplet.GetAllTriplets(Data.Skip(tripsOffset.StartingIndex).ToArray());
         }
     }
 }

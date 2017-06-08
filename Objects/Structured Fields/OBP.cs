@@ -37,6 +37,14 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupLength => 23;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public int OBPID { get; private set; }
+
 		public OBP(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+
+        public override void ParseData()
+        {
+            OBPID = Data[0];
+        }
+    }
 }

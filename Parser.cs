@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.ComponentModel;
 using System.Collections.Generic;
+using AFPParser.StructuredFields;
 
 namespace AFPParser
 {

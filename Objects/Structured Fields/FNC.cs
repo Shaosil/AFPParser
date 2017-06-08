@@ -105,6 +105,8 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
+            base.ParseData();
+
             PatternTech = dPatternTechs[Data[1]];
             MaxBoxWidth = (ushort)GetNumericValue(GetSectionedData(10, 2), false);
             MaxBoxHeight = (ushort)GetNumericValue(GetSectionedData(12, 2), false);
