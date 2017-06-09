@@ -113,12 +113,11 @@ namespace AFPParser.UI
                     double curXPosition = 0;
                     double curYPosition = 0;
 
-
                     foreach (PTXControlSequence sequence in text.CSIs)
                     {
                         Type sequenceType = sequence.GetType();
 
-                        //if (sequenceType == typeof(SCFL)) curFont = GetFont((SCFL)sequence);
+                        if (sequenceType == typeof(SCFL)) curFont = GetFont((SCFL)sequence, aeGroup);
                         if (sequenceType == typeof(AMI)) curXPosition = Lookups.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(AMB)) curYPosition = Lookups.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(RMI)) curXPosition += Lookups.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
@@ -139,9 +138,14 @@ namespace AFPParser.UI
             e.HasMorePages = ++curPageIndex < pageContainers.Count;
         }
 
-        private Font GetFont(SCFL sequence)
+        private Font GetFont(SCFL sfcl, BAG activeEnvironment)
         {
-            throw new NotImplementedException();
+            MCF2 map2 = activeEnvironment.LowestLevelContainer.GetStructure<MCF2>();
+            MCF1 map1 = activeEnvironment.LowestLevelContainer.GetStructure<MCF1>();
+
+            // 
+
+            return new Font(FontFamily.GenericMonospace, 6);
         }
     }
 }

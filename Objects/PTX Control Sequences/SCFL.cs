@@ -15,6 +15,14 @@ namespace AFPParser.PTXControlSequences
 		public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public int FontId { get; private set; }
+
         public SCFL(byte[] data) : base(data) { }
-	}
+
+        public override void ParseData()
+        {
+            FontId = Data[0];
+        }
+    }
 }
