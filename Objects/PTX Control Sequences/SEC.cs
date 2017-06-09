@@ -6,10 +6,10 @@ using System.Linq;
 
 namespace AFPParser.PTXControlSequences
 {
-	public class SEC : PTXControlSequence
-	{
-		private static string _abbr = "SEC";
-		private static string _desc = "Set Extended Text Color";
+    public class SEC : PTXControlSequence
+    {
+        private static string _abbr = "SEC";
+        private static string _desc = "Set Extended Text Color";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.EMPTY, ""),
@@ -33,12 +33,12 @@ namespace AFPParser.PTXControlSequences
         };
 
         public override string Abbreviation => _abbr;
-		public override string Description => _desc;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed data
-        public enum eColorSpace { RGB, CMYK, Highlight, CIELAB, StandardOCA };
-        public eColorSpace ColorSpace { get; private set; }
+        private enum eColorSpace { RGB, CMYK, Highlight, CIELAB, StandardOCA };
+        private eColorSpace ColorSpace { get; set; }
         public int C1BitCount { get; private set; }
         public int C2BitCount { get; private set; }
         public int C3BitCount { get; private set; }

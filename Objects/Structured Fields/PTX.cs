@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
@@ -18,7 +16,7 @@ namespace AFPParser.StructuredFields
         protected override bool IsRepeatingGroup => false;
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
-        
+
         public List<PTXControlSequence> CSIs { get; set; }
 
         public PTX(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
