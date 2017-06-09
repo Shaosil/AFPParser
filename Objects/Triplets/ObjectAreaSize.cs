@@ -21,6 +21,16 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public int XExtent { get; private set; }
+        public int YExtent { get; private set; }
+
         public ObjectAreaSize(byte[] allData) : base(allData) { }
-	}
+
+        public override void ParseData()
+        {
+            XExtent = (int)GetNumericValue(GetSectionedData(1, 3), false);
+            YExtent = (int)GetNumericValue(GetSectionedData(4, 3), false);
+        }
+    }
 }

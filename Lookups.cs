@@ -351,5 +351,25 @@ namespace AFPParser
                 { 0x01, "10 Centimeters" }
             };
         }
+
+        #region Conversion Functions
+        public enum eMeasurement { Inches, Centimeters }
+        public static double GetMeasurement(int units, int unitsPerBase)
+        {
+            return Math.Round(units / (unitsPerBase / 10.0), 2);
+        }
+        public static double GetInches(int units, int unitsPerBase, eMeasurement measurement)
+        {
+            double measured = GetMeasurement(units, unitsPerBase);
+            if (measurement == eMeasurement.Centimeters) measured *= 2.54;
+            return measured;
+        }
+        public static double GetCentimeters(int units, int unitsPerBase, eMeasurement measurement)
+        {
+            double measured = GetMeasurement(units, unitsPerBase);
+            if (measurement == eMeasurement.Inches) measured /= 2.54;
+            return measured;
+        }
+        #endregion
     }
 }

@@ -29,48 +29,11 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public enum eMeasurement { Inches, Centimeters }
-        public eMeasurement BaseUnit { get; private set; }
+        public Lookups.eMeasurement BaseUnit { get; private set; }
         public int UnitsPerXBase { get; private set; }
         public int UnitsPerYBase { get; private set; }
         public int XSize { get; private set; }
         public int YSize { get; private set; }
-        public double XInches
-        {
-            get
-            {
-                double units = Math.Round(XSize / (UnitsPerXBase / 10.0), 2);
-                if (BaseUnit != eMeasurement.Inches) units *= 2.54;
-                return units;
-            }
-        }
-        public double YInches
-        {
-            get
-            {
-                double units = Math.Round(YSize / (UnitsPerYBase / 10.0), 2);
-                if (BaseUnit != eMeasurement.Inches) units *= 2.54;
-                return units;
-            }
-        }
-        public double XCentimeters
-        {
-            get
-            {
-                double units = Math.Round(XSize / (UnitsPerXBase / 10.0), 2);
-                if (BaseUnit != eMeasurement.Centimeters) units /= 2.54;
-                return units;
-            }
-        }
-        public double YCentimeters
-        {
-            get
-            {
-                double units = Math.Round(YSize / (UnitsPerYBase / 10.0), 2);
-                if (BaseUnit != eMeasurement.Centimeters) units /= 2.54;
-                return units;
-            }
-        }
 
         public PGD(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
 
@@ -78,7 +41,9 @@ namespace AFPParser.StructuredFields
         {
             base.ParseData();
 
-            BaseUnit = Lookups.CommonMappings.AxisBase[Data[0]] == Lookups.CommonMappings.AxisBase[0] ? eMeasurement.Inches : eMeasurement.Centimeters;
+            BaseUnit = Lookups.CommonMappings.AxisBase[Data[0]] == Lookups.CommonMappings.AxisBase[0]
+                ? Lookups.eMeasurement.Inches
+                : Lookups.eMeasurement.Centimeters;
             UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
             UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);
@@ -93,10 +58,7 @@ namespace AFPParser.StructuredFields
             sb.AppendLine();
             sb.AppendLine();
             sb.Append("Page size: ");
-            if (BaseUnit == eMeasurement.Inches)
-                sb.Append($"{XInches} x {YInches}");
-            else
-                sb.Append($"{XCentimeters} x {YCentimeters}");
+            sb.Append($"{Lookups.GetMeasurement(XSize, UnitsPerXBase)} x {Lookups.GetMeasurement(YSize, UnitsPerYBase)}");
             sb.AppendLine($" {BaseUnit.ToString()}");
 
             return sb.ToString();

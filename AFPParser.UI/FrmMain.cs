@@ -44,8 +44,8 @@ namespace AFPParser.UI
 
                     // Parse the AFP file
                     parser.LoadData(dialog.FileName);
-                    
-                    // Databind the list box
+
+                    // Data bind the list box
                     afpFileBindingSource.DataSource = null;
                     afpFileBindingSource.DataSource = parser.StructuredFields;
                     dgvFields.Focus();
@@ -111,6 +111,9 @@ namespace AFPParser.UI
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
+            // Reset print preview variables
+            printParser.Reset();
+
             // Set up a print preview dialog and wire it to our print parser's build event
             PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
             ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something
@@ -119,8 +122,8 @@ namespace AFPParser.UI
 
             // Set page size by checking the first PGD. Width and height are in 1/100 inch
             PGD pgd = parser.StructuredFields.OfType<PGD>().First();
-            int xWidth = (int)(pgd.XInches * 100);
-            int yWidth = (int)(pgd.YInches * 100);
+            int xWidth = (int)(Lookups.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
+            int yWidth = (int)(Lookups.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
             ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
 
             ppd.ShowDialog();

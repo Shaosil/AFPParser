@@ -126,5 +126,15 @@ namespace AFPParser
             if (tripsOffset != null)
                 Triplets = Triplet.GetAllTriplets(Data.Skip(tripsOffset.StartingIndex).ToArray());
         }
+
+        public T GetTriplet<T>() where T : Triplet
+        {
+            return Triplets.OfType<T>().FirstOrDefault();
+        }
+
+        public List<T> GetTriplets<T>() where T : Triplet
+        {
+            return Triplets.OfType<T>().ToList();
+        }
     }
 }

@@ -1,3 +1,5 @@
+using System.Linq;
+using AFPParser.Triplets;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
