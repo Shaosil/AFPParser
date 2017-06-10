@@ -21,25 +21,25 @@ namespace AFPParser
         // Get the single field in this container of a specific type
         public T GetStructure<T>() where T : DataStructure
         {
-            return (T)Structures.FirstOrDefault(f => f.GetType() == typeof(T));
+            return Structures.OfType<T>().FirstOrDefault();
         }
 
         // Get a list of fields in this container which are of a specific type
         public List<T> GetStructures<T>() where T : DataStructure
         {
-            return Structures.Where(f => f.GetType() == typeof(T)).Cast<T>().ToList();
+            return Structures.OfType<T>().ToList();
         }
 
         // Get the single field in this container of a specific type
         public T DirectGetStructure<T>() where T : DataStructure
         {
-            return (T)DirectStructures.FirstOrDefault(f => f.GetType() == typeof(T));
+            return DirectStructures.OfType<T>().FirstOrDefault();
         }
 
         // Get a list of fields in this container which are of a specific type
         public List<T> DirectGetStructures<T>() where T : DataStructure
         {
-            return DirectStructures.Where(f => f.GetType() == typeof(T)).Cast<T>().ToList();
+            return DirectStructures.OfType<T>().ToList();
         }
 
         // Called after all fields have been added to the container

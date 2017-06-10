@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using AFPParser.Containers;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
@@ -22,15 +23,31 @@ namespace AFPParser.StructuredFields
 
         protected override string GetOffsetDescriptions()
         {
+            FontObjectContainer fontContainer = (FontObjectContainer)LowestLevelContainer;
             StringBuilder sb = new StringBuilder();
 
             // Outline and raster data are handled much differently. If we have a patterns map, it's raster
             bool isRaster = LowestLevelContainer.GetStructure<FNM>() != null;
 
             if (isRaster)
-                return GetRasterData();
+            {
+                foreach (bool[,] pattern in fontContainer.RasterPatterns)
+                {
+                    for (int y = 0; y < pattern.GetUpperBound(1); y++)
+                    {
+                        for (int x = 0; x < pattern.GetUpperBound(0); x++)
+                            sb.Append(pattern[x, y] ? "#" : ".");
+
+                        sb.AppendLine(); // Move to the next row of bits
+                    }
+
+                    sb.AppendLine(); // Put a space in between patterns
+                }
+            }
             else
-                return GetOutlineData();
+                sb.AppendLine("Outline fonts not yet implemented...");
+
+            return sb.ToString();
         }
 
         private string GetOutlineData()
@@ -54,7 +71,7 @@ namespace AFPParser.StructuredFields
                 int descriptorLength = !string.IsNullOrEmpty(id) && refFNC.PatternTech != FNC.ePatternTech.PFBType1
                     ? (int)GetNumericValue(GetSectionedData(8 + idLength, 2), false) : 0;
                 byte[] descriptor = descriptorLength > 2 ? GetSectionedData(8 + idLength + 2, descriptorLength - 2) : new byte[0];
-                
+
                 // Object descriptor
                 if (descriptor.Length > 0)
                 {
@@ -108,38 +125,6 @@ namespace AFPParser.StructuredFields
             return sb.ToString();
         }
 
-        private string GetRasterData()
-        {
-            StringBuilder sb = new StringBuilder();
-            FNM patternMap = LowestLevelContainer.GetStructure<FNM>();
-
-            // Write out each character pattern
-            for (int i = 0; i < patternMap.AllPatternData.Count; i++)
-            {
-                if (patternMap.AllPatternData[i].BoxWidth <= 0) continue;
-
-                // Take up to the next offset (or end of data)
-                int bytesToTake = (i == patternMap.AllPatternData.Count - 1 ? Data.Length : (int)patternMap.AllPatternData[i + 1].DataOffset)
-                    - (int)patternMap.AllPatternData[i].DataOffset;
-
-                // Since bytes have to have 8 bits, the number of bytes can be easily calculated by knowing the bit width
-                int numBytes = (int)Math.Ceiling((patternMap.AllPatternData[i].BoxWidth + 1 )/ 8.0);
-
-                // Get a bit array of n bytes, and print out the pixels line by line
-                byte[] sectionBytes = GetSectionedData((int)patternMap.AllPatternData[i].DataOffset, bytesToTake);
-                bool[] sectionBits = GetBitArray(sectionBytes);
-                for (int b = 0; b < sectionBits.Length; b++)
-                {
-                    sb.Append(sectionBits[b] ? "#" : ".");
-                    if (((b + 1) / 8.0) % numBytes == 0) sb.AppendLine();
-                }
-
-                sb.AppendLine();
-            }
-
-            return sb.ToString();
-        }
-
         private uint GetChecksum(byte[] objectData)
         {
             // Calculates the checksum for the tech object data section of a font pattern. The algorithm is as follows:
@@ -158,7 +143,7 @@ namespace AFPParser.StructuredFields
                 checksumArray[curArrayIndex++] += objectData[i];
                 if (curArrayIndex == 4) curArrayIndex = 0;
             }
-            
+
             return (uint)GetNumericValue(checksumArray, false);
         }
     }

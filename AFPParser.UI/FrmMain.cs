@@ -2,18 +2,23 @@
 using System.IO;
 using System.Linq;
 using System.Drawing;
+using AFPParser.Containers;
 using System.Windows.Forms;
 using System.Drawing.Printing;
 using AFPParser.StructuredFields;
+using System.Collections.Generic;
 
 namespace AFPParser.UI
 {
     public partial class FrmMain : Form
     {
+        public enum eFileType { Unknown, Document, IOCAImage, IMImage, Font }
+
         private readonly string optionsFile = Environment.CurrentDirectory + "\\Options.xml";
         private Options opts;
         private Parser parser;
         private PrintParser printParser;
+        private eFileType DocType;
 
         public FrmMain()
         {
@@ -28,7 +33,11 @@ namespace AFPParser.UI
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog() { InitialDirectory = opts.LastDirectory, Filter = "AFP Files (*.afp)|*.afp|All Files|*.*" };
+            OpenFileDialog dialog = new OpenFileDialog()
+            {
+                InitialDirectory = opts.LastDirectory,
+                Filter = "AFP Files (*.afp)|*.afp|All Files|*.*"
+            };
             DialogResult result = dialog.ShowDialog();
 
             if (result == DialogResult.OK)
@@ -37,7 +46,7 @@ namespace AFPParser.UI
                 {
                     Cursor = Cursors.WaitCursor;
 
-                    // Store the last used directory and file
+                    // Store the last used options
                     FileInfo fInfo = new FileInfo(dialog.FileName);
                     opts.LastDirectory = fInfo.DirectoryName;
                     opts.LastOpenedFile = fInfo.Name;
@@ -50,18 +59,47 @@ namespace AFPParser.UI
                     afpFileBindingSource.DataSource = parser.StructuredFields;
                     dgvFields.Focus();
 
-                    // Enable/disable the preview button
-                    btnPreview.Enabled = parser.StructuredFields.Any();
+                    // Enable/disable the preview button if there are pages, or the first field is a page segment (resource)
+                    DocType = GetFileType();
+                    btnPreview.Enabled = DocType == eFileType.Document || DocType == eFileType.IOCAImage || DocType == eFileType.IMImage;
 
                     // Load the print parser data
                     if (btnPreview.Enabled)
-                        printParser = new PrintParser(parser.StructuredFields);
+
+                    // Change form title
+                    Name = $"AFP Parser - {fInfo.Name}";
                 }
                 finally
                 {
                     Cursor = Cursors.Default;
                 }
             }
+        }
+
+        private eFileType GetFileType()
+        {
+            eFileType fType = eFileType.Unknown;
+
+            if (parser != null && parser.StructuredFields.Any())
+            {
+                // If there are pages, it's a document
+                if (parser.StructuredFields.OfType<BPG>().Any())
+                    fType = eFileType.Document;
+                else
+                {
+                    // If it's a page segment, check for images or fonts
+                    Type f1 = parser.StructuredFields[0].GetType();
+                    Type f2 = parser.StructuredFields[1].GetType();
+                    if (f1 == typeof(BPS) && f2 == typeof(BIM))
+                        fType = eFileType.IOCAImage;
+                    else if (f1 == typeof(BPS) && f2 == typeof(BII))
+                        fType = eFileType.IMImage;
+                    else if (f1 == typeof(BFN))
+                        fType = eFileType.Font;
+                }
+            }
+
+            return fType;
         }
 
         private void dgvFields_SelectionChanged(object sender, EventArgs e)
@@ -111,22 +149,82 @@ namespace AFPParser.UI
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
-            // Reset print preview variables
-            printParser.Reset();
+            // Only display a print preview if it's a paged document. Otherwise, display an image from the page segment if we can
+            switch (DocType)
+            {
+                case eFileType.Document:
+                    printParser = new PrintParser(parser.StructuredFields);
 
-            // Set up a print preview dialog and wire it to our print parser's build event
-            PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
-            ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something
-            ((Form)ppd).WindowState = FormWindowState.Maximized;
-            ppd.Document.PrintPage += printParser.BuildPrintPage;
+                    // Set up a print preview dialog and wire it to our print parser's build event
+                    PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
+                    ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something
+                    ((Form)ppd).WindowState = FormWindowState.Maximized;
+                    ppd.Document.PrintPage += printParser.BuildPrintPage;
 
-            // Set page size by checking the first PGD. Width and height are in 1/100 inch
-            PGD pgd = parser.StructuredFields.OfType<PGD>().First();
-            int xWidth = (int)(Lookups.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
-            int yWidth = (int)(Lookups.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
-            ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
+                    // Set page size by checking the first PGD. Width and height are in 1/100 inch
+                    PGD pgd = parser.StructuredFields.OfType<PGD>().First();
+                    int xWidth = (int)(Lookups.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
+                    int yWidth = (int)(Lookups.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
+                    ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
 
-            ppd.ShowDialog();
+                    ppd.ShowDialog();
+                    break;
+
+                case eFileType.IOCAImage:
+                case eFileType.IMImage:
+                    int fileCounter = 1;
+
+                    List<ImageObjectContainer> iocs = parser.StructuredFields.Select(f => f.LowestLevelContainer).OfType<ImageObjectContainer>().Distinct().ToList();
+                    List<IMImageContainer> imcs = parser.StructuredFields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().Distinct().ToList();
+
+                    if (iocs.Any() || imcs.Any())
+                    {
+                        Cursor = Cursors.WaitCursor;
+
+                        // Clear out the directory of existing pngs
+                        foreach (string file in Directory.GetFiles(Environment.CurrentDirectory))
+                            if (new FileInfo(file).Extension.ToUpper() == ".PNG")
+                                File.Delete(file);
+
+                        // Generate a .png from the image data and save it to the exe directory
+                        if (DocType == eFileType.IOCAImage)
+                        {
+                            foreach (ImageObjectContainer ioc in iocs)
+                            {
+                                foreach (ImageContentContainer.ImageInfo image in ioc.Images)
+                                {
+                                    Bitmap png = new Bitmap(new MemoryStream(image.Data));
+                                    png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (IMImageContainer imc in imcs)
+                            {
+                                Bitmap png = new Bitmap(imc.ImageData.GetUpperBound(0) + 1, imc.ImageData.GetUpperBound(1) + 1);
+                                IID descriptor = imc.DirectGetStructure<IID>();
+
+                                for (int y = 0; y < png.Height; y++)
+                                    for (int x = 0; x < png.Width; x++)
+                                        png.SetPixel(x, y, imc.ImageData[x, y] ? descriptor.ImageColor : Color.White);
+
+                                png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
+                            }
+                        }
+
+                        btnPreview.Enabled = false;
+                        Cursor = Cursors.Default;
+                        if (MessageBox.Show($"{fileCounter} image(s) created in executing directory. Open directory?",
+                            "Images Created", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
+                            System.Diagnostics.Process.Start(Environment.CurrentDirectory);
+                    }
+                    else
+                    {
+                        MessageBox.Show("No image containers found, though this does appear to be an image file.");
+                    }
+                    break;
+            }
         }
     }
 }

@@ -26,11 +26,6 @@ namespace AFPParser.UI
             if (pageContainers.Count == 0) pageContainers = new List<Container>() { fields[0].LowestLevelContainer };
         }
 
-        public void Reset()
-        {
-            curPageIndex = 0;
-        }
-
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
         {
             // Draw each image on the page first
