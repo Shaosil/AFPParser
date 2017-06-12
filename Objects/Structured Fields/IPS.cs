@@ -6,8 +6,14 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "IPS";
 		private static string _title = "Include Page Segment";
-		private static string _desc = "The Include Page Segment structured field references a page segment resource object that is to be presented on the page or overlay presentation space.The IPS specifies a reference point on the including page or overlay coordinate system that may be used to position objects contained in the page segment.A page segment can be referenced at any time during page or overlay state, but not during an object state. The page segment inherits the active environment group definition of the including page or overlay.";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "References a page segment resource object that is to be presented on the page or overlay presentation space.";
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Page Segment Name"),
+            new Offset(8, Lookups.DataTypes.SBIN, "X Axis Origin"),
+            new Offset(11, Lookups.DataTypes.SBIN, "Y Axis Origin"),
+            new Offset(14, Lookups.DataTypes.TRIPS, "")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;
@@ -16,6 +22,20 @@ namespace AFPParser.StructuredFields
 		protected override int RepeatingGroupStart => 0;
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public string SegmentName { get; private set; }
+        public int XOrigin { get; private set; }
+        public int YOrigin { get; private set; }
+
 		public IPS(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+
+        public override void ParseData()
+        {
+            base.ParseData();
+
+            SegmentName = GetReadableDataPiece(0, 8);
+            XOrigin = (int)GetNumericValue(GetSectionedData(8, 3), true);
+            YOrigin = (int)GetNumericValue(GetSectionedData(11, 3), true);
+        }
+    }
 }

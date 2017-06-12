@@ -13,17 +13,17 @@ namespace AFPParser.UI
 {
     public class PrintParser
     {
-        private List<StructuredField> structuredFields;
+        private AFPFile afpFile;
         private List<Container> pageContainers;
         private int curPageIndex = 0;
 
-        public PrintParser(List<StructuredField> fields)
+        public PrintParser(AFPFile file)
         {
-            structuredFields = fields;
+            afpFile = file;
 
             // Capture all pages' containers
-            pageContainers = fields.OfType<BPG>().Select(p => p.LowestLevelContainer).ToList();
-            if (pageContainers.Count == 0) pageContainers = new List<Container>() { fields[0].LowestLevelContainer };
+            pageContainers = afpFile.Fields.OfType<BPG>().Select(p => p.LowestLevelContainer).ToList();
+            if (pageContainers.Count == 0) pageContainers = new List<Container>() { afpFile.Fields[0].LowestLevelContainer };
         }
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
@@ -113,7 +113,7 @@ namespace AFPParser.UI
                         Type sequenceType = sequence.GetType();
 
                         if (sequenceType == typeof(SCFL)) curFont = GetFont((SCFL)sequence, aeGroup);
-                        if (sequenceType == typeof(AMI)) curXPosition = Lookups.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
+                        else if (sequenceType == typeof(AMI)) curXPosition = Lookups.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(AMB)) curYPosition = Lookups.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(RMI)) curXPosition += Lookups.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(RMB)) curYPosition += Lookups.GetInches(((RMB)sequence).Increment, yUnitsPerBase, measurement) * 100;

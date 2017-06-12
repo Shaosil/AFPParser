@@ -4,11 +4,14 @@ using System.Text;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace AFPParser
 {
     public abstract class DataStructure
     {
+        public static Regex RegexIsNotBlank = new Regex("\\w");
+
         public const string EBCDIC = "IBM037";
 
         // Properties directly converted from raw hex data
@@ -22,8 +25,8 @@ namespace AFPParser
         public virtual IReadOnlyList<Offset> Offsets { get; }
 
         // Dynamically calculated properties
-        public string DataHex { get { return BitConverter.ToString(Data).Replace("-", " "); } }
-        public string DataEBCDIC { get { return Encoding.GetEncoding(EBCDIC).GetString(Data); } }
+        public string DataHex => BitConverter.ToString(Data).Replace("-", " ");
+        public string DataEBCDIC => GetReadableDataPiece(0, Data.Length);
         protected string SpacedClassName
         {
             get
@@ -121,7 +124,10 @@ namespace AFPParser
 
         protected string GetReadableDataPiece(int startIndex, int length)
         {
-            return Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length));
+            // Convert to EBCDIC, and if there are no valid characters, blank it out
+            string ebcdicString = Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length));
+            if (!RegexIsNotBlank.IsMatch(ebcdicString)) ebcdicString = string.Empty;
+            return ebcdicString;
         }
 
         // Returns a proper Endian array of booleans. 8 bits per byte

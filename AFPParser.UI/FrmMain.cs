@@ -16,7 +16,7 @@ namespace AFPParser.UI
 
         private readonly string optionsFile = Environment.CurrentDirectory + "\\Options.xml";
         private Options opts;
-        private Parser parser;
+        private AFPFile afpFile;
         private PrintParser printParser;
         private eFileType DocType;
 
@@ -27,8 +27,8 @@ namespace AFPParser.UI
             // Store things like last opened directory
             opts = Options.LoadSettings(optionsFile);
 
-            parser = new Parser();
-            parser.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
+            afpFile = new AFPFile();
+            afpFile.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -52,22 +52,20 @@ namespace AFPParser.UI
                     opts.LastOpenedFile = fInfo.Name;
 
                     // Parse the AFP file
-                    parser.LoadData(dialog.FileName);
+                    if (afpFile.LoadData(dialog.FileName))
+                    {
+                        // Data bind the list box
+                        afpFileBindingSource.DataSource = null;
+                        afpFileBindingSource.DataSource = afpFile.Fields;
+                        dgvFields.Focus();
 
-                    // Data bind the list box
-                    afpFileBindingSource.DataSource = null;
-                    afpFileBindingSource.DataSource = parser.StructuredFields;
-                    dgvFields.Focus();
-
-                    // Enable/disable the preview button if there are pages, or the first field is a page segment (resource)
-                    DocType = GetFileType();
-                    btnPreview.Enabled = DocType == eFileType.Document || DocType == eFileType.IOCAImage || DocType == eFileType.IMImage;
-
-                    // Load the print parser data
-                    if (btnPreview.Enabled)
-
-                    // Change form title
-                    Name = $"AFP Parser - {fInfo.Name}";
+                        // Enable/disable the preview button if there are pages, or the first field is a page segment (resource)
+                        DocType = GetFileType();
+                        btnPreview.Enabled = DocType == eFileType.Document || DocType == eFileType.IOCAImage || DocType == eFileType.IMImage;
+                        
+                        // Change form title
+                        Text = $"AFP Parser - {fInfo.Name}";
+                    }
                 }
                 finally
                 {
@@ -80,16 +78,16 @@ namespace AFPParser.UI
         {
             eFileType fType = eFileType.Unknown;
 
-            if (parser != null && parser.StructuredFields.Any())
+            if (afpFile != null && afpFile.Fields.Any())
             {
                 // If there are pages, it's a document
-                if (parser.StructuredFields.OfType<BPG>().Any())
+                if (afpFile.Fields.OfType<BPG>().Any())
                     fType = eFileType.Document;
                 else
                 {
                     // If it's a page segment, check for images or fonts
-                    Type f1 = parser.StructuredFields[0].GetType();
-                    Type f2 = parser.StructuredFields[1].GetType();
+                    Type f1 = afpFile.Fields[0].GetType();
+                    Type f2 = afpFile.Fields[1].GetType();
                     if (f1 == typeof(BPS) && f2 == typeof(BIM))
                         fType = eFileType.IOCAImage;
                     else if (f1 == typeof(BPS) && f2 == typeof(BII))
@@ -153,7 +151,7 @@ namespace AFPParser.UI
             switch (DocType)
             {
                 case eFileType.Document:
-                    printParser = new PrintParser(parser.StructuredFields);
+                    printParser = new PrintParser(afpFile);
 
                     // Set up a print preview dialog and wire it to our print parser's build event
                     PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
@@ -162,7 +160,7 @@ namespace AFPParser.UI
                     ppd.Document.PrintPage += printParser.BuildPrintPage;
 
                     // Set page size by checking the first PGD. Width and height are in 1/100 inch
-                    PGD pgd = parser.StructuredFields.OfType<PGD>().First();
+                    PGD pgd = afpFile.Fields.OfType<PGD>().First();
                     int xWidth = (int)(Lookups.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
                     int yWidth = (int)(Lookups.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
                     ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
@@ -174,8 +172,8 @@ namespace AFPParser.UI
                 case eFileType.IMImage:
                     int fileCounter = 1;
 
-                    List<ImageObjectContainer> iocs = parser.StructuredFields.Select(f => f.LowestLevelContainer).OfType<ImageObjectContainer>().Distinct().ToList();
-                    List<IMImageContainer> imcs = parser.StructuredFields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().Distinct().ToList();
+                    List<ImageObjectContainer> iocs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<ImageObjectContainer>().Distinct().ToList();
+                    List<IMImageContainer> imcs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().Distinct().ToList();
 
                     if (iocs.Any() || imcs.Any())
                     {

@@ -33,9 +33,9 @@ namespace AFPParser.StructuredFields
             {
                 foreach (bool[,] pattern in fontContainer.RasterPatterns)
                 {
-                    for (int y = 0; y < pattern.GetUpperBound(1); y++)
+                    for (int y = 0; y <= pattern.GetUpperBound(1); y++)
                     {
-                        for (int x = 0; x < pattern.GetUpperBound(0); x++)
+                        for (int x = 0; x <= pattern.GetUpperBound(0); x++)
                             sb.Append(pattern[x, y] ? "#" : ".");
 
                         sb.AppendLine(); // Move to the next row of bits

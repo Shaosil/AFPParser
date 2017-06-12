@@ -29,7 +29,30 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupLength => Data[0];
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public MCF1(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+        // Parsed Data
+        public IReadOnlyList<MCF1Data> MappedData { get; private set; }
+
+        public MCF1(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            // Loop through each repeating group and parse out pieces of data that matter
+            List<MCF1Data> allFontData = new List<MCF1Data>();
+            int curIndex = 4;
+            int skip = Data[0];
+
+            while (curIndex < Data.Length)
+            {
+                string cfName = GetReadableDataPiece(curIndex + 4, 8);
+                string cpName = GetReadableDataPiece(curIndex + 12, 8);
+                string fcsName = GetReadableDataPiece(curIndex + 20, 8);
+                allFontData.Add(new MCF1Data(cfName, cpName, fcsName));
+
+                curIndex += skip;
+            }
+
+            MappedData = allFontData;
+        }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
@@ -55,6 +78,20 @@ namespace AFPParser.StructuredFields
 
             return sb.ToString();
 
+        }
+
+        public class MCF1Data
+        {
+            public string CodedFontName { get; private set; }
+            public string CodePageName { get; private set; }
+            public string FontCharacterSetName { get; private set; }
+            
+            public MCF1Data(string cfName, string cpName, string fcsName)
+            {
+                CodedFontName = cfName;
+                CodePageName = cpName;
+                FontCharacterSetName = fcsName;
+            }
         }
     }
 }
