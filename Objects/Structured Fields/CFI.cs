@@ -32,7 +32,25 @@ namespace AFPParser.StructuredFields
         }
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public IReadOnlyList<FontInfo> FontInfoList { get; private set; }
+
 		public CFI(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            // Gather all font info
+            List<FontInfo> infoList = new List<FontInfo>();
+            int curIndex = 0;
+            while (curIndex < Data.Length)
+            {
+                infoList.Add(new FontInfo(GetReadableDataPiece(0, 8), GetReadableDataPiece(8, 8)));
+
+                curIndex += RepeatingGroupLength;
+            }
+
+            FontInfoList = infoList;
+        }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
@@ -46,6 +64,18 @@ namespace AFPParser.StructuredFields
                 sb.AppendLine("Double byte");
 
             return sb.ToString();
+        }
+
+        public class FontInfo
+        {
+            public string FontCharacterSetName { get; private set; }
+            public string CodePageName { get; private set; }
+
+            public FontInfo(string fcsName, string cpName)
+            {
+                FontCharacterSetName = fcsName;
+                CodePageName = cpName;
+            }
         }
     }
 }

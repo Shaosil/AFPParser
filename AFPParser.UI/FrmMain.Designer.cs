@@ -37,6 +37,7 @@
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.lblParsedData = new System.Windows.Forms.Label();
             this.btnPreview = new System.Windows.Forms.Button();
+            this.btnManageResources = new System.Windows.Forms.Button();
             this.flagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sequenceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -79,7 +80,7 @@
             this.dgvFields.RowHeadersVisible = false;
             this.dgvFields.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvFields.Size = new System.Drawing.Size(628, 609);
-            this.dgvFields.TabIndex = 1;
+            this.dgvFields.TabIndex = 3;
             this.dgvFields.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFields_CellDoubleClick);
             this.dgvFields.SelectionChanged += new System.EventHandler(this.dgvFields_SelectionChanged);
             // 
@@ -123,7 +124,7 @@
             this.txtDescription.ReadOnly = true;
             this.txtDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtDescription.Size = new System.Drawing.Size(576, 609);
-            this.txtDescription.TabIndex = 3;
+            this.txtDescription.TabIndex = 4;
             this.txtDescription.WordWrap = false;
             // 
             // lblParsedData
@@ -141,10 +142,21 @@
             this.btnPreview.Location = new System.Drawing.Point(462, 12);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(178, 23);
-            this.btnPreview.TabIndex = 0;
+            this.btnPreview.TabIndex = 2;
             this.btnPreview.Text = "Preview File (work in progress)...";
             this.btnPreview.UseVisualStyleBackColor = true;
             this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
+            // 
+            // btnManageResources
+            // 
+            this.btnManageResources.Enabled = false;
+            this.btnManageResources.Location = new System.Drawing.Point(326, 12);
+            this.btnManageResources.Name = "btnManageResources";
+            this.btnManageResources.Size = new System.Drawing.Size(121, 23);
+            this.btnManageResources.TabIndex = 1;
+            this.btnManageResources.Text = "Manage Resources...";
+            this.btnManageResources.UseVisualStyleBackColor = true;
+            this.btnManageResources.Click += new System.EventHandler(this.btnManageResources_Click);
             // 
             // flagDataGridViewTextBoxColumn
             // 
@@ -177,6 +189,7 @@
             this.Controls.Add(this.txtDescription);
             this.Controls.Add(this.dgvFields);
             this.Controls.Add(this.btnPreview);
+            this.Controls.Add(this.btnManageResources);
             this.Controls.Add(this.btnBrowse);
             this.MinimumSize = new System.Drawing.Size(1250, 700);
             this.Name = "FrmMain";
@@ -203,5 +216,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn flagDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn sequenceDataGridViewTextBoxColumn;
         private System.Windows.Forms.Button btnPreview;
+        private System.Windows.Forms.Button btnManageResources;
     }
 }

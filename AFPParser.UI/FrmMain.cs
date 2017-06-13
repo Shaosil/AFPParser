@@ -62,6 +62,7 @@ namespace AFPParser.UI
                         // Enable/disable the preview button if there are pages, or the first field is a page segment (resource)
                         DocType = GetFileType();
                         btnPreview.Enabled = DocType == eFileType.Document || DocType == eFileType.IOCAImage || DocType == eFileType.IMImage;
+                        btnManageResources.Enabled = true;
                         
                         // Change form title
                         Text = $"AFP Parser - {fInfo.Name}";
@@ -143,6 +144,11 @@ namespace AFPParser.UI
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             opts.SaveSettings(optionsFile);
+        }
+
+        private void btnManageResources_Click(object sender, EventArgs e)
+        {
+            new FrmManageResources(afpFile).ShowDialog();
         }
 
         private void btnPreview_Click(object sender, EventArgs e)
