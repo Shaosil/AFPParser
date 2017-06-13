@@ -13,6 +13,7 @@ namespace AFPParser
         public IReadOnlyList<StructuredField> Fields { get; private set; }
         public List<string> ResourceDirectories { get; private set; }
         public IReadOnlyList<Resource> Resources { get; private set; }
+        public IReadOnlyDictionary<Resource, List<Container>> ResourceUses { get; private set; }
 
         public AFPFile()
         {

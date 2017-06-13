@@ -157,21 +157,27 @@ namespace AFPParser.UI
             switch (DocType)
             {
                 case eFileType.Document:
-                    printParser = new PrintParser(afpFile);
+                    // Verify they want to view if there are missing resources
+                    if (afpFile.Resources.All(r => r.Fields.Any()) || MessageBox.Show("There are referenced resources that have not been located. Preview anyway?"
+                    , "Missing Resources", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        printParser = new PrintParser(afpFile);
 
-                    // Set up a print preview dialog and wire it to our print parser's build event
-                    PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
-                    ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something
-                    ((Form)ppd).WindowState = FormWindowState.Maximized;
-                    ppd.Document.PrintPage += printParser.BuildPrintPage;
+                        // Set up a print preview dialog and wire it to our print parser's build event
+                        PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
+                        ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something
+                        ((Form)ppd).WindowState = FormWindowState.Maximized;
+                        ppd.Document.PrintPage += printParser.BuildPrintPage;
 
-                    // Set page size by checking the first PGD. Width and height are in 1/100 inch
-                    PGD pgd = afpFile.Fields.OfType<PGD>().First();
-                    int xWidth = (int)(Lookups.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
-                    int yWidth = (int)(Lookups.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
-                    ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
+                        // Set page size by checking the first PGD. Width and height are in 1/100 inch
+                        PGD pgd = afpFile.Fields.OfType<PGD>().First();
+                        int xWidth = (int)(Lookups.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
+                        int yWidth = (int)(Lookups.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
+                        ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
 
-                    ppd.ShowDialog();
+                        ppd.ShowDialog();
+                    }
+
                     break;
 
                 case eFileType.IOCAImage:

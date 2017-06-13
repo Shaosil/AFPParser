@@ -8,6 +8,12 @@ namespace AFPParser.Containers
     {
         // An image is being represented as a two dimensional array [Xlen, Ylen]
         public bool[,] ImageData { get; private set; }
+        public IReadOnlyList<Cell> Cells { get; private set; }
+
+        public IMImageContainer()
+        {
+            Cells = new List<Cell>();
+        }
 
         public override void ParseContainerData()
         {
@@ -46,9 +52,14 @@ namespace AFPParser.Containers
                 }
 
                 // Set x and y extent by finding max possible values
-                int xMax = cellList.Max(c => c.CellPosition.XOffset + c.CellPosition.XSize);
-                int yMax = cellList.Max(c => c.CellPosition.YOffset + c.CellPosition.YSize);
-                ImageData = new bool[xMax, yMax];
+                int maxX = cellList.Max(c => c.CellPosition.XOffset + c.CellPosition.XSize);
+                int maxY = cellList.Max(c => c.CellPosition.YOffset + c.CellPosition.YSize);
+                int minX = cellList.Min(c => c.CellPosition.XOffset);
+                int minY = cellList.Min(c => c.CellPosition.YOffset);
+
+                int width = maxX - minX;
+                int height = maxY - minY;
+                ImageData = new bool[width, height];
 
                 // Each cell has offset and size info - populate our 2 dimensional array based on that
                 foreach (Cell c in cellList)
@@ -62,9 +73,16 @@ namespace AFPParser.Containers
                             byte curByte = data[concatCounter++];
 
                             for (int b = 0; b < 8; b++)
-                                ImageData[c.CellPosition.XOffset + x + b, c.CellPosition.YOffset + y] = (curByte & (1 << (7 - b))) > 0;
+                            {
+                                // Adjust offsets in case the minimum X or Y values are above 0. This allows us to capture the minimum area possible
+                                int trueXOffset = c.CellPosition.XOffset - minX;
+                                int trueYOffset = c.CellPosition.YOffset - minY;
+                                ImageData[trueXOffset + x + b, trueYOffset + y] = (curByte & (1 << (7 - b))) > 0;
+                            }
                         }
                 }
+
+                Cells = cellList;
             }
         }
 

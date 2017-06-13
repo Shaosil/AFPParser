@@ -28,15 +28,27 @@ namespace AFPParser.UI
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
         {
-            // Draw each image on the page first
-            foreach (ImageObjectContainer ioc in pageContainers[curPageIndex].GetStructures<BIM>()
-                .Select(i => (ImageObjectContainer)i.LowestLevelContainer))
+            // Grab all containers in all resource fields
+            List<Container> resourceContainers = afpFile.Resources.SelectMany(r => r.Fields.Select(f => f.LowestLevelContainer)).Distinct().ToList();
+
+            // Check each image resource (embedded and page segment IM or IOCA data)
+            List<IMImageContainer> imImages = resourceContainers.OfType<IMImageContainer>().ToList();
+            List<ImageObjectContainer> IOCAImages = resourceContainers.OfType<ImageObjectContainer>().ToList();
+
+            // Draw each IM Image
+            foreach (IMImageContainer imImage in imImages)
             {
-                foreach (ImageContentContainer.ImageInfo image in ioc.Images)
+
+            }
+
+            // Draw each IOCA Image
+            foreach (ImageObjectContainer IOCAImage in IOCAImages)
+            {
+                foreach (ImageContentContainer.ImageInfo image in IOCAImage.Images)
                 {
                     // Get the positioning and scaling info based on the current object environment container
-                    OBD oaDescriptor = ioc.GetStructure<OBD>();
-                    OBP oaPosition = ioc.GetStructure<OBP>();
+                    OBD oaDescriptor = IOCAImage.GetStructure<OBD>();
+                    OBP oaPosition = IOCAImage.GetStructure<OBP>();
                     if (oaDescriptor != null && oaPosition != null)
                     {
                         // Get sizing info triplets
