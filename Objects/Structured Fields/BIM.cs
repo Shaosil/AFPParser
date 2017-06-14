@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
 {
-    [ContainerType(typeof(ImageObjectContainer))]
+    [ContainerType(typeof(IOCAImageContainer))]
     public class BIM : StructuredField
     {
         private static string _abbr = "BIM";
@@ -22,6 +22,16 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public string ObjectName { get; private set; }
+
 		public BIM(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            base.ParseData();
+
+            ObjectName = GetReadableDataPiece(0, 8);
+        }
     }
 }

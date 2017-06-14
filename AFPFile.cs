@@ -13,7 +13,6 @@ namespace AFPParser
         public IReadOnlyList<StructuredField> Fields { get; private set; }
         public List<string> ResourceDirectories { get; private set; }
         public IReadOnlyList<Resource> Resources { get; private set; }
-        public IReadOnlyDictionary<Resource, List<Container>> ResourceUses { get; private set; }
 
         public AFPFile()
         {
@@ -27,30 +26,38 @@ namespace AFPParser
             try
             {
                 // Load all data into main fields property
+                Resources = new List<Resource>();
                 Fields = LoadFields(path);
 
                 // Store embedded resources
-                List<Resource> allResources = new List<Resource>();
-                List<Container> allContainers = Fields.Select(f => f.LowestLevelContainer).Distinct().ToList();
+                List<Resource> embeddedResources = new List<Resource>();
+                List<Container> allContainers = Fields.Where(f => f.LowestLevelContainer != null).Select(f => f.LowestLevelContainer).Distinct().ToList();
 
                 // Gather embedded IM, IOCA, and Font containers
-                IEnumerable<Container> IOCAContainers = allContainers.OfType<ImageObjectContainer>();
+                IEnumerable<Container> IOCAContainers = allContainers.OfType<IOCAImageContainer>();
                 IEnumerable<Container> IMContainers = allContainers.OfType<IMImageContainer>();
                 IEnumerable<Container> fontContainers = allContainers.OfType<FontObjectContainer>();
+                IEnumerable<Container> codedFontContainers = allContainers.Where(c => c.Structures[0].GetType() == typeof(BCF));
 
                 // Add all embedded resources to the resource list
-                foreach (Container c in IOCAContainers.Concat(IMContainers).Concat(fontContainers))
+                foreach (Container c in IOCAContainers.Concat(IMContainers).Concat(fontContainers).Concat(codedFontContainers))
                 {
-                    Resource newResource = new Resource("Embedded", GetResourceTypeByContainer(c));
+                    // Each container has a property called "ObjectName" that can be used to get the resource name here
+                    string resName = c.Structures[0].GetType().GetProperty("ObjectName").GetValue(c.Structures[0]).ToString();
+                    Resource newResource = new Resource(resName, GetResourceTypeByContainer(c), true);
                     newResource.Fields = c.Structures.Cast<StructuredField>().ToList();
-                    allResources.Add(newResource);
+                    embeddedResources.Add(newResource);
                 }
 
                 // Add embedded and external referenced resources
-                Resources = allResources.Concat(LoadResources(Fields.ToList())).ToList();
+                Resources = embeddedResources; // Do this first as to avoid duplicates
+                List<Resource> referencedResources = LoadResources(Fields);
 
                 // Try to find all referenced files
-                ScanDirectoriesForResources(allResources);
+                ScanDirectoriesForResources(referencedResources);
+
+                // Reassign the result of both
+                Resources = Resources.Concat(referencedResources).ToList();
             }
             catch (Exception ex)
             {
@@ -162,25 +169,34 @@ namespace AFPParser
             }
         }
 
-        private List<Resource> LoadResources(List<StructuredField> fields)
+        private List<Resource> LoadResources(IEnumerable<StructuredField> fileFields)
         {
             List<Resource> allResources = new List<Resource>();
 
             // Add referenced page segments
-            foreach (string s in fields.OfType<IPS>().Select(f => f.SegmentName).Distinct())
+            foreach (string s in fileFields.OfType<IPS>().Select(f => f.SegmentName).Distinct())
                 allResources.Add(new Resource(s, Resource.eResourceType.PageSegment));
 
-            // Add referenced MCF1 coded fonts
-            List<MCF1.MCF1Data> mcf1Data = fields.OfType<MCF1>().SelectMany(f => f.MappedData).ToList();
-            foreach (string s in mcf1Data.Where(m => !string.IsNullOrWhiteSpace(m.CodedFontName)).Select(m => m.CodedFontName).Distinct())
+            // Helper lists
+            List<MCF1.MCF1Data> mcf1Data = fileFields.OfType<MCF1>().SelectMany(f => f.MappedData).ToList();
+            List<string> existingCodedFonts = Resources.GetNamesOfType(Resource.eResourceType.CodedFont);
+            List<string> existingFontCharacterSets = Resources.GetNamesOfType(Resource.eResourceType.FontCharacterSet);
+
+            // Get MCF1 coded fonts that are not already embedded
+            List<string> codedFonts = mcf1Data.Where(m => !string.IsNullOrWhiteSpace(m.CodedFontName)).Select(m => m.CodedFontName)
+                .Except(existingCodedFonts).ToList();
+
+            // Get MCF1 font character sets that are not already embedded
+            List<string> fontCharacterSets = mcf1Data.Where(m => !string.IsNullOrWhiteSpace(m.FontCharacterSetName)).Select(m => m.FontCharacterSetName)
+                .Except(existingFontCharacterSets).ToList();
+
+            // Get Coded Fonts font character sets that are not already embedded
+            fontCharacterSets.AddRange(fileFields.OfType<CFI>().SelectMany(f => f.FontInfoList.Select(i => i.FontCharacterSetName)).Except(existingCodedFonts));
+
+            // Add referenced fonts
+            foreach (string s in codedFonts)
                 allResources.Add(new Resource(s, Resource.eResourceType.CodedFont));
-
-            // Add referenced MCF1 font character sets
-            foreach (string s in mcf1Data.Where(m => !string.IsNullOrWhiteSpace(m.FontCharacterSetName)).Select(m => m.FontCharacterSetName).Distinct())
-                allResources.Add(new Resource(s, Resource.eResourceType.FontCharacterSet));
-
-            // Add referenced Coded Font's font character sets from CFI fields
-            foreach (string s in fields.OfType<CFI>().SelectMany(f => f.FontInfoList.Select(i => i.FontCharacterSetName)))
+            foreach (string s in fontCharacterSets)
                 allResources.Add(new Resource(s, Resource.eResourceType.FontCharacterSet));
 
             return allResources;
@@ -192,13 +208,13 @@ namespace AFPParser
             List<FileInfo> allFiles = ResourceDirectories.SelectMany(d => new DirectoryInfo(d).GetFiles()).ToList();
             foreach (Resource r in resources)
             {
-                FileInfo matchingFile = allFiles.FirstOrDefault(f => f.Name.ToUpper().Trim() == r.FileName);
+                FileInfo matchingFile = allFiles.FirstOrDefault(f => f.Name.ToUpper().Trim() == r.ResourceName);
                 if (matchingFile != null)
                 {
                     r.Fields = LoadFields(matchingFile.FullName);
 
                     // Also see if there are any additional resources to load from within those fields
-                    List<Resource> extraResources = LoadResources(r.Fields.ToList());
+                    List<Resource> extraResources = LoadResources(r.Fields);
 
                     // If there are, add them to the total resources list and recursively search for files within known directories
                     if (extraResources.Any())
@@ -216,9 +232,10 @@ namespace AFPParser
 
             Type cType = c.GetType();
             if (cType == typeof(IMImageContainer)) rType = Resource.eResourceType.IMImage;
-            else if (cType == typeof(ImageObjectContainer)) rType = Resource.eResourceType.IOCAImage;
+            else if (cType == typeof(IOCAImageContainer)) rType = Resource.eResourceType.IOCAImage;
             else if (cType == typeof(FontObjectContainer)) rType = Resource.eResourceType.FontCharacterSet;
-            else if (c.DirectStructures[0].GetType() == typeof(IPS)) rType = Resource.eResourceType.PageSegment;
+            else if (c.Structures[0].GetType() == typeof(BCF)) rType = Resource.eResourceType.CodedFont;
+            else if (c.Structures[0].GetType() == typeof(IPS)) rType = Resource.eResourceType.PageSegment;
 
             return rType;
         }
@@ -228,15 +245,18 @@ namespace AFPParser
             public enum eResourceType { Unknown, IMImage, IOCAImage, CodedFont, FontCharacterSet, PageSegment }
 
             public IReadOnlyList<StructuredField> Fields { get; set; }
-            public string FileName { get; private set; }
+            public string ResourceName { get; private set; }
             public eResourceType ResourceType { get; private set; }
-            public string Message => Fields.Any() ? "Loaded" : "File not found";
+            public bool IsLoaded => Fields.Any();
+            public bool IsEmbedded { get; private set; }
+            public string Message => IsEmbedded ? "Embedded" : IsLoaded ? "Loaded" : "File not found";
 
-            public Resource(string fName, eResourceType rType)
+            public Resource(string fName, eResourceType rType, bool embedded = false)
             {
-                FileName = fName.ToUpper().Trim();
-                ResourceType = rType;
                 Fields = new List<StructuredField>();
+                ResourceName = fName.ToUpper().Trim();
+                ResourceType = rType;
+                IsEmbedded = embedded;
             }
         }
     }

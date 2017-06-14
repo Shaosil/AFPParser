@@ -28,6 +28,14 @@ namespace AFPParser.Containers
                 ImageInfo info = new ImageInfo();
                 info.Data = c.DirectGetStructures<ImageData>().SelectMany(s => s.Data).ToArray();
 
+                // If there are tiles, store offset information
+                if (c.Structures[0].GetType() == typeof(BeginTile))
+                {
+                    TilePosition tp = c.GetStructure<TilePosition>();
+                    info.XOffset = tp.XOffset;
+                    info.YOffset = tp.YOffset;
+                }
+
                 // Add transparency data if needed
                 ImageSelfDefiningField BTM = c.GetStructure<BeginTransparencyMask>();
                 if (BTM != null)
@@ -41,6 +49,10 @@ namespace AFPParser.Containers
 
         public class ImageInfo
         {
+            // Tiles may have positional offsets relative to the top left of the first tile
+            public uint XOffset { get; set; }
+            public uint YOffset { get; set; }
+
             public byte[] Data { get; set; }
             public byte[] TransparencyMask { get; set; }
 

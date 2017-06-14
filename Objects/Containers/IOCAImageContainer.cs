@@ -4,12 +4,12 @@ using AFPParser.StructuredFields;
 
 namespace AFPParser.Containers
 {
-    public class ImageObjectContainer : Container
+    public class IOCAImageContainer : Container
     {
         public IReadOnlyList<ImageSelfDefiningField> SDFs { get; private set; }
         public IReadOnlyList<ImageContentContainer.ImageInfo> Images { get; private set; }
 
-        public ImageObjectContainer()
+        public IOCAImageContainer()
         {
             SDFs = new List<ImageSelfDefiningField>();
         }

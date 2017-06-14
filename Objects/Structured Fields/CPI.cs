@@ -16,7 +16,7 @@ namespace AFPParser.StructuredFields
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Graphic Character GID"),
             new Offset(8, Lookups.DataTypes.BITS, "Graphic Character Use Flags") { Mappings = Lookups.CommonMappings.CharacterUseFlags },
-            new Offset(9, Lookups.DataTypes.UBIN, "Code Point")
+            new Offset(9, Lookups.DataTypes.EMPTY, "Code Point")
         };
 
         public override string Abbreviation => _abbr;

@@ -117,7 +117,10 @@ namespace AFPParser
         {
             byte[] sectionedData = new byte[length];
             for (int i = 0; i < length; i++)
+            {
+                if (Data.Length <= startIndex + i) break;
                 sectionedData[i] = Data[startIndex + i];
+            }
 
             return sectionedData;
         }

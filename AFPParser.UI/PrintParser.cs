@@ -28,58 +28,104 @@ namespace AFPParser.UI
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
         {
-            // Grab all containers in all resource fields
-            List<Container> resourceContainers = afpFile.Resources.SelectMany(r => r.Fields.Select(f => f.LowestLevelContainer)).Distinct().ToList();
+            // Draw each embedded IM image. Positional information is stored inside the IID field of each image container
+            foreach (IMImageContainer imc in afpFile.Fields.Select(f => f.LowestLevelContainer).Distinct().OfType<IMImageContainer>())
+                DrawIMImage(imc, 0, 0, e);
 
-            // Check each image resource (embedded and page segment IM or IOCA data)
-            List<IMImageContainer> imImages = resourceContainers.OfType<IMImageContainer>().ToList();
-            List<ImageObjectContainer> IOCAImages = resourceContainers.OfType<ImageObjectContainer>().ToList();
+            // Draw each embedded IOCA image. Positional information is stored inside of the OBD/OBP fields of each image container
+            foreach (IOCAImageContainer ioc in afpFile.Fields.Select(f => f.LowestLevelContainer).Distinct().OfType<IOCAImageContainer>())
+                DrawIOCAImage(ioc, 0, 0, e);
 
-            // Draw each IM Image
-            foreach (IMImageContainer imImage in imImages)
+            // Include each IM and IOCA image in IPS by looking up the loaded resource
+            foreach (IPS pageSegment in afpFile.Fields.OfType<IPS>())
             {
+                // Find the first loaded image resource of the indicated name
+                AFPFile.Resource loadedResource = afpFile.Resources.FirstOrDefault(r => r.ResourceName == pageSegment.SegmentName.ToUpper().Trim()
+                     && r.IsLoaded && r.ResourceType == AFPFile.Resource.eResourceType.PageSegment);
 
-            }
-
-            // Draw each IOCA Image
-            foreach (ImageObjectContainer IOCAImage in IOCAImages)
-            {
-                foreach (ImageContentContainer.ImageInfo image in IOCAImage.Images)
+                if (loadedResource != null)
                 {
-                    // Get the positioning and scaling info based on the current object environment container
-                    OBD oaDescriptor = IOCAImage.GetStructure<OBD>();
-                    OBP oaPosition = IOCAImage.GetStructure<OBP>();
-                    if (oaDescriptor != null && oaPosition != null)
+                    if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IMImageContainer)))
                     {
-                        // Get sizing info triplets
-                        ObjectAreaSize oaSize = oaDescriptor.GetTriplet<ObjectAreaSize>();
-                        MeasurementUnits mu = oaDescriptor.GetTriplet<MeasurementUnits>();
-
-                        // Get inch origins based on unit scaling
-                        int xUnitOrigin = oaPosition.XOrigin + oaPosition.XContentOrigin;
-                        int yUnitOrigin = oaPosition.YOrigin + oaPosition.YContentOrigin;
-                        float xInchOrigin = (float)(Lookups.GetInches(xUnitOrigin, mu.XUnitsPerBase, mu.BaseUnit) * 100);
-                        float yInchOrigin = (float)(Lookups.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
-
-                        // Get inch scaling values
-                        double xInchScale = Lookups.GetInches(oaSize.XExtent, mu.XUnitsPerBase, mu.BaseUnit);
-                        double yInchScale = Lookups.GetInches(oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
-
-                        // We have the inch value and number of pixels, so set DPI based on those values
-                        Bitmap bmp = new Bitmap(new MemoryStream(image.Data));
-                        float xDpi = (float)(bmp.Width / xInchScale);
-                        float yDpi = (float)(bmp.Height / yInchScale);
-                        bmp.SetResolution(xDpi, yDpi);
-
-                        e.Graphics.DrawImage(bmp, xInchOrigin, yInchOrigin);
+                        IMImageContainer imc = loadedResource.Fields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().FirstOrDefault();
+                        DrawIMImage(imc, pageSegment.XOrigin, pageSegment.YOrigin, e);
                     }
-                    else
+                    else if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IOCAImageContainer)))
                     {
-                        throw new NotImplementedException("Image could not be displayed - no OBD/OBP fields found.");
+                        IOCAImageContainer ioc = loadedResource.Fields.Select(f => f.LowestLevelContainer).OfType<IOCAImageContainer>().FirstOrDefault();
+                        DrawIOCAImage(ioc, pageSegment.XOrigin, pageSegment.YOrigin, e);
                     }
                 }
             }
 
+            DrawPresentationText(e);
+
+            // Increment the current page index and check to see if there are any more
+            e.HasMorePages = ++curPageIndex < pageContainers.Count;
+        }
+
+        private void DrawIMImage(IMImageContainer imc, int xStartingPos, int yStartingPos, PrintPageEventArgs e)
+        {
+            // Build a bitmap out of the 2 dimensional array of booleans
+            Bitmap bmp = new Bitmap(imc.ImageData.GetUpperBound(0) + 1, imc.ImageData.GetUpperBound(1) + 1);
+            for (int y = 0; y < bmp.Height; y++)
+                for (int x = 0; x < bmp.Width; x++)
+                    bmp.SetPixel(x, y, imc.ImageData[x, y] ? Color.Black : Color.White);
+
+            // Get positional/scaling information from min offsets and IID field
+            IID imDescriptor = imc.GetStructure<IID>();
+            int xPos = xStartingPos + imc.Cells.Min(c => c.CellPosition.XOffset);
+            int yPos = yStartingPos + imc.Cells.Min(c => c.CellPosition.YOffset);
+            double xInchPos = Lookups.GetInches(xPos, imDescriptor.XUnitsPerBase, Lookups.eMeasurement.Inches) * 100;
+            double yInchPos = Lookups.GetInches(yPos, imDescriptor.YUnitsPerBase, Lookups.eMeasurement.Inches) * 100;
+            double xScale = Lookups.GetInches(bmp.Width, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit);
+            double yScale = Lookups.GetInches(bmp.Height, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit);
+
+            bmp.SetResolution((float)xScale, (float)yScale);
+            e.Graphics.DrawImage(bmp, (float)xInchPos, (float)yInchPos);
+        }
+
+        private void DrawIOCAImage(IOCAImageContainer imc, int xStartingPos, int yStartingPos, PrintPageEventArgs e)
+        {
+            // Each container may hold one image or several, as tiles. Draw each one with consideration to its offset from the original draw point
+            foreach (ImageContentContainer.ImageInfo image in imc.Images)
+            {
+                // Get the positioning and scaling info based on the current object environment container
+                OBD oaDescriptor = imc.GetStructure<OBD>();
+                OBP oaPosition = imc.GetStructure<OBP>();
+                if (oaDescriptor != null && oaPosition != null)
+                {
+                    // Get sizing info triplets
+                    ObjectAreaSize oaSize = oaDescriptor.GetTriplet<ObjectAreaSize>();
+                    MeasurementUnits mu = oaDescriptor.GetTriplet<MeasurementUnits>();
+
+                    // Get inch origins based on unit scaling
+                    int xUnitOrigin = xStartingPos + oaPosition.XOrigin + oaPosition.XContentOrigin;
+                    int yUnitOrigin = yStartingPos + oaPosition.YOrigin + oaPosition.YContentOrigin;
+                    float xInchOrigin = (float)(Lookups.GetInches(xUnitOrigin, mu.XUnitsPerBase, mu.BaseUnit) * 100);
+                    float yInchOrigin = (float)(Lookups.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
+
+                    // Get inch scaling values
+                    double xInchScale = Lookups.GetInches(oaSize.XExtent, mu.XUnitsPerBase, mu.BaseUnit);
+                    double yInchScale = Lookups.GetInches(oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
+
+                    // We have the inch value and number of pixels, so set DPI based on those values
+                    Bitmap bmp = new Bitmap(new MemoryStream(image.Data));
+                    float xDpi = (float)(bmp.Width / xInchScale);
+                    float yDpi = (float)(bmp.Height / yInchScale);
+                    bmp.SetResolution(xDpi, yDpi);
+
+                    e.Graphics.DrawImage(bmp, xInchOrigin, yInchOrigin);
+                }
+                else
+                {
+                    throw new NotImplementedException("Image could not be displayed - no OBD/OBP fields found.");
+                }
+            }
+        }
+
+        private void DrawPresentationText(PrintPageEventArgs e)
+        {
             // Get the active environment group
             BAG aeGroup = pageContainers[curPageIndex].GetStructure<BAG>();
             if (aeGroup != null)
@@ -139,10 +185,6 @@ namespace AFPParser.UI
             {
                 throw new NotImplementedException("Presentation text could not be displayed - no active environment group found.");
             }
-
-
-            // Increment the current page index and check to see if there are any more
-            e.HasMorePages = ++curPageIndex < pageContainers.Count;
         }
 
         private Font GetFont(SCFL sfcl, BAG activeEnvironment)

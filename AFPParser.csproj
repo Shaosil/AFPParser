@@ -52,7 +52,7 @@
     <Compile Include="Objects\ContainerAttribute.cs" />
     <Compile Include="Objects\Containers\FontObjectContainer.cs" />
     <Compile Include="Objects\Containers\IMImageContainer.cs" />
-    <Compile Include="Objects\Containers\ImageObjectContainer.cs" />
+    <Compile Include="Objects\Containers\IOCAImageContainer.cs" />
     <Compile Include="Objects\Containers\ImageContentContainer.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImage.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImageData.cs" />

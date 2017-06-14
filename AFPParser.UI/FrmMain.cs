@@ -158,7 +158,7 @@ namespace AFPParser.UI
             {
                 case eFileType.Document:
                     // Verify they want to view if there are missing resources
-                    if (afpFile.Resources.All(r => r.Fields.Any()) || MessageBox.Show("There are referenced resources that have not been located. Preview anyway?"
+                    if (afpFile.Resources.All(r => r.IsLoaded) || MessageBox.Show("There are referenced resources that have not been located. Preview anyway?"
                     , "Missing Resources", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         printParser = new PrintParser(afpFile);
@@ -184,7 +184,7 @@ namespace AFPParser.UI
                 case eFileType.IMImage:
                     int fileCounter = 1;
 
-                    List<ImageObjectContainer> iocs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<ImageObjectContainer>().Distinct().ToList();
+                    List<IOCAImageContainer> iocs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<IOCAImageContainer>().Distinct().ToList();
                     List<IMImageContainer> imcs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().Distinct().ToList();
 
                     if (iocs.Any() || imcs.Any())
@@ -199,7 +199,7 @@ namespace AFPParser.UI
                         // Generate a .png from the image data and save it to the exe directory
                         if (DocType == eFileType.IOCAImage)
                         {
-                            foreach (ImageObjectContainer ioc in iocs)
+                            foreach (IOCAImageContainer ioc in iocs)
                             {
                                 foreach (ImageContentContainer.ImageInfo image in ioc.Images)
                                 {

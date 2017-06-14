@@ -32,7 +32,7 @@ namespace AFPParser.StructuredFields
             sb.AppendLine();
 
             int count = 1;
-            foreach (ImageContentContainer.ImageInfo info in ((ImageObjectContainer)LowestLevelContainer).Images)
+            foreach (ImageContentContainer.ImageInfo info in ((IOCAImageContainer)LowestLevelContainer).Images)
             {
                 sb.AppendLine($"Raw image {count} data:");
                 sb.AppendLine(BitConverter.ToString(info.Data).Replace("-", " "));

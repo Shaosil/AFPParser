@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Drawing;
 using AFPParser.Triplets;
 using AFPParser.StructuredFields;
 using System.Collections.Generic;
 using AFPParser.PTXControlSequences;
 using AFPParser.ImageSelfDefiningFields;
-
+using System.Linq;
 namespace AFPParser
 {
     public static class Lookups
@@ -566,6 +567,15 @@ namespace AFPParser
             double measured = GetMeasurement(units, unitsPerBase);
             if (measurement == eMeasurement.Inches) measured /= 2.54;
             return measured;
+        }
+        #endregion
+
+        #region Extension Methods
+        public static List<string> GetNamesOfType(this IEnumerable<AFPFile.Resource> self, AFPFile.Resource.eResourceType rType)
+        {
+            // Return all non-blank names of resources of the specified type
+            return self.Where(r => r.ResourceType == rType && !string.IsNullOrWhiteSpace(r.ResourceName))
+                .Select(r => r.ResourceName).ToList();
         }
         #endregion
     }

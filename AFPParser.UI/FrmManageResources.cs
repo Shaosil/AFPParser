@@ -47,7 +47,7 @@ namespace AFPParser.UI
 
         private void RescanResources()
         {
-            File.ScanDirectoriesForResources(File.Resources.Where(r => !r.Fields.Any()));
+            File.ScanDirectoriesForResources(File.Resources.Where(r => !r.IsLoaded));
             dgvResources.DataSource = File.Resources;
         }
     }

@@ -33,9 +33,9 @@
             this.btnRemove = new System.Windows.Forms.Button();
             this.lstDirectories = new System.Windows.Forms.ListBox();
             this.dgvResources = new System.Windows.Forms.DataGridView();
-            this.lblResources = new System.Windows.Forms.Label();
             this.resourceBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.lblResources = new System.Windows.Forms.Label();
+            this.ResourceName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.resourceTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.messageDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgvResources)).BeginInit();
@@ -85,7 +85,7 @@
             this.dgvResources.BackgroundColor = System.Drawing.SystemColors.Window;
             this.dgvResources.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvResources.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.fileNameDataGridViewTextBoxColumn,
+            this.ResourceName,
             this.resourceTypeDataGridViewTextBoxColumn,
             this.messageDataGridViewTextBoxColumn});
             this.dgvResources.DataSource = this.resourceBindingSource;
@@ -97,6 +97,10 @@
             this.dgvResources.Size = new System.Drawing.Size(524, 374);
             this.dgvResources.TabIndex = 3;
             // 
+            // resourceBindingSource
+            // 
+            this.resourceBindingSource.DataSource = typeof(AFPParser.AFPFile.Resource);
+            // 
             // lblResources
             // 
             this.lblResources.AutoSize = true;
@@ -106,17 +110,13 @@
             this.lblResources.TabIndex = 4;
             this.lblResources.Text = "Resources";
             // 
-            // resourceBindingSource
+            // ResourceName
             // 
-            this.resourceBindingSource.DataSource = typeof(AFPParser.AFPFile.Resource);
-            // 
-            // fileNameDataGridViewTextBoxColumn
-            // 
-            this.fileNameDataGridViewTextBoxColumn.DataPropertyName = "FileName";
-            this.fileNameDataGridViewTextBoxColumn.FillWeight = 20F;
-            this.fileNameDataGridViewTextBoxColumn.HeaderText = "FileName";
-            this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
-            this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
+            this.ResourceName.DataPropertyName = "ResourceName";
+            this.ResourceName.FillWeight = 20F;
+            this.ResourceName.HeaderText = "ResourceName";
+            this.ResourceName.Name = "ResourceName";
+            this.ResourceName.ReadOnly = true;
             // 
             // resourceTypeDataGridViewTextBoxColumn
             // 
@@ -168,8 +168,9 @@
         private System.Windows.Forms.DataGridView dgvResources;
         private System.Windows.Forms.Label lblResources;
         private System.Windows.Forms.DataGridViewTextBoxColumn fileNameDataGridViewTextBoxColumn;
+        private System.Windows.Forms.BindingSource resourceBindingSource;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ResourceName;
         private System.Windows.Forms.DataGridViewTextBoxColumn resourceTypeDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn messageDataGridViewTextBoxColumn;
-        private System.Windows.Forms.BindingSource resourceBindingSource;
     }
 }
