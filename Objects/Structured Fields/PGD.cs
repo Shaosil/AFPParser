@@ -41,9 +41,7 @@ namespace AFPParser.StructuredFields
         {
             base.ParseData();
 
-            BaseUnit = Lookups.CommonMappings.AxisBase[Data[0]] == Lookups.CommonMappings.AxisBase[0]
-                ? Lookups.eMeasurement.Inches
-                : Lookups.eMeasurement.Centimeters;
+            BaseUnit = Lookups.GetBaseUnit(Data[0]);
             UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
             UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);

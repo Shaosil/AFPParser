@@ -26,12 +26,23 @@ namespace AFPParser.StructuredFields
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
+        public Lookups.eMeasurement BaseUnit { get; private set; }
+        public int HResolution { get; private set; }
+        public int VResolution { get; private set; }
+        public int XSize { get; set; }
+        public int YSize { get; set; }
         public IReadOnlyList<ImageSelfDefiningField> SDFs { get; private set; }
 
 		public IDD(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
 
         public override void ParseData()
         {
+            BaseUnit = Lookups.GetBaseUnit(Data[0]);
+            HResolution = (int)GetNumericValue(GetSectionedData(1, 2), false);
+            VResolution = (int)GetNumericValue(GetSectionedData(3, 2), false);
+            XSize = (int)GetNumericValue(GetSectionedData(5, 2), false);
+            YSize = (int)GetNumericValue(GetSectionedData(7, 2), false);
+
             // Since there is one IDD per image object container, it is efficient enough to load them at this point
             SDFs = ImageSelfDefiningField.GetAllSDFs(Data.Skip(9).ToArray());
         }

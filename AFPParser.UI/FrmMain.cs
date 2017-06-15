@@ -28,6 +28,7 @@ namespace AFPParser.UI
             opts = Options.LoadSettings(optionsFile);
 
             afpFile = new AFPFile();
+            if (opts.ResourceDirectories.Any()) afpFile.ResourceDirectories = opts.ResourceDirectories;
             afpFile.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
         }
 
@@ -148,7 +149,7 @@ namespace AFPParser.UI
 
         private void btnManageResources_Click(object sender, EventArgs e)
         {
-            new FrmManageResources(afpFile).ShowDialog();
+            new FrmManageResources(afpFile, opts).ShowDialog();
         }
 
         private void btnPreview_Click(object sender, EventArgs e)
@@ -204,6 +205,14 @@ namespace AFPParser.UI
                                 foreach (ImageContentContainer.ImageInfo image in ioc.Images)
                                 {
                                     Bitmap png = new Bitmap(new MemoryStream(image.Data));
+
+                                    // Get resolution from descriptor
+                                    IDD descriptor = ioc.GetStructure<IDD>();
+                                    float xScale = (float)Lookups.GetInches(png.Width, descriptor.HResolution, descriptor.BaseUnit);
+                                    float yScale = (float)Lookups.GetInches(png.Height, descriptor.VResolution, descriptor.BaseUnit);
+                                    png.SetResolution(png.Width / xScale, png.Height / yScale);
+
+                                    // Generate image
                                     png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                                 }
                             }
@@ -218,6 +227,11 @@ namespace AFPParser.UI
                                 for (int y = 0; y < png.Height; y++)
                                     for (int x = 0; x < png.Width; x++)
                                         png.SetPixel(x, y, imc.ImageData[x, y] ? descriptor.ImageColor : Color.White);
+
+                                // Get resolution from descriptor
+                                float xScale = (float)Lookups.GetInches(png.Width, descriptor.XUnitsPerBase, descriptor.BaseUnit);
+                                float yScale = (float)Lookups.GetInches(png.Height, descriptor.YUnitsPerBase, descriptor.BaseUnit);
+                                png.SetResolution(png.Width / xScale, png.Height / yScale);
 
                                 png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                             }

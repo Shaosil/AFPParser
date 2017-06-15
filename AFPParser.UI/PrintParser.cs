@@ -28,16 +28,16 @@ namespace AFPParser.UI
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
         {
-            // Draw each embedded IM image. Positional information is stored inside the IID field of each image container
-            foreach (IMImageContainer imc in afpFile.Fields.Select(f => f.LowestLevelContainer).Distinct().OfType<IMImageContainer>())
+            // Draw each embedded IM image in the current page. Positional information is stored inside the IID field of each image container
+            foreach (IMImageContainer imc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct().OfType<IMImageContainer>())
                 DrawIMImage(imc, 0, 0, e);
 
-            // Draw each embedded IOCA image. Positional information is stored inside of the OBD/OBP fields of each image container
-            foreach (IOCAImageContainer ioc in afpFile.Fields.Select(f => f.LowestLevelContainer).Distinct().OfType<IOCAImageContainer>())
+            // Draw each embedded IOCA image in the current page. Positional information is stored inside of the OBD/OBP fields of each image container
+            foreach (IOCAImageContainer ioc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct().OfType<IOCAImageContainer>())
                 DrawIOCAImage(ioc, 0, 0, e);
 
             // Include each IM and IOCA image in IPS by looking up the loaded resource
-            foreach (IPS pageSegment in afpFile.Fields.OfType<IPS>())
+            foreach (IPS pageSegment in pageContainers[curPageIndex].GetStructures<IPS>())
             {
                 // Find the first loaded image resource of the indicated name
                 AFPFile.Resource loadedResource = afpFile.Resources.FirstOrDefault(r => r.ResourceName == pageSegment.SegmentName.ToUpper().Trim()
@@ -45,15 +45,22 @@ namespace AFPParser.UI
 
                 if (loadedResource != null)
                 {
+                    // Get starting positional information by querying the active environment group
+                    Container aegContainer = pageContainers[curPageIndex].GetStructure<BAG>().LowestLevelContainer;
+                    PGD pageDescriptor = aegContainer.GetStructure<PGD>();
+                    float xInch = (float)Lookups.GetInches(pageSegment.XOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
+                    float yInch = (float)Lookups.GetInches(pageSegment.YOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
+
                     if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IMImageContainer)))
                     {
+
                         IMImageContainer imc = loadedResource.Fields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().FirstOrDefault();
-                        DrawIMImage(imc, pageSegment.XOrigin, pageSegment.YOrigin, e);
+                        DrawIMImage(imc, xInch, yInch, e);
                     }
                     else if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IOCAImageContainer)))
                     {
                         IOCAImageContainer ioc = loadedResource.Fields.Select(f => f.LowestLevelContainer).OfType<IOCAImageContainer>().FirstOrDefault();
-                        DrawIOCAImage(ioc, pageSegment.XOrigin, pageSegment.YOrigin, e);
+                        DrawIOCAImage(ioc, xInch, yInch, e);
                     }
                 }
             }
@@ -62,9 +69,11 @@ namespace AFPParser.UI
 
             // Increment the current page index and check to see if there are any more
             e.HasMorePages = ++curPageIndex < pageContainers.Count;
+
+            if (!e.HasMorePages) curPageIndex = 0;
         }
 
-        private void DrawIMImage(IMImageContainer imc, int xStartingPos, int yStartingPos, PrintPageEventArgs e)
+        private void DrawIMImage(IMImageContainer imc, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
         {
             // Build a bitmap out of the 2 dimensional array of booleans
             Bitmap bmp = new Bitmap(imc.ImageData.GetUpperBound(0) + 1, imc.ImageData.GetUpperBound(1) + 1);
@@ -74,18 +83,18 @@ namespace AFPParser.UI
 
             // Get positional/scaling information from min offsets and IID field
             IID imDescriptor = imc.GetStructure<IID>();
-            int xPos = xStartingPos + imc.Cells.Min(c => c.CellPosition.XOffset);
-            int yPos = yStartingPos + imc.Cells.Min(c => c.CellPosition.YOffset);
-            double xInchPos = Lookups.GetInches(xPos, imDescriptor.XUnitsPerBase, Lookups.eMeasurement.Inches) * 100;
-            double yInchPos = Lookups.GetInches(yPos, imDescriptor.YUnitsPerBase, Lookups.eMeasurement.Inches) * 100;
+            int xPos = imc.Cells.Min(c => c.CellPosition.XOffset);
+            int yPos = imc.Cells.Min(c => c.CellPosition.YOffset);
+            float xInchPos = xStartingInch + (float)(Lookups.GetInches(xPos, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit) * 100);
+            float yInchPos = yStartingInch + (float)(Lookups.GetInches(yPos, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit) * 100);
             double xScale = Lookups.GetInches(bmp.Width, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit);
             double yScale = Lookups.GetInches(bmp.Height, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit);
 
-            bmp.SetResolution((float)xScale, (float)yScale);
-            e.Graphics.DrawImage(bmp, (float)xInchPos, (float)yInchPos);
+            bmp.SetResolution((float)(bmp.Width / xScale), (float)(bmp.Height / yScale));
+            e.Graphics.DrawImage(bmp, xInchPos, yInchPos);
         }
 
-        private void DrawIOCAImage(IOCAImageContainer imc, int xStartingPos, int yStartingPos, PrintPageEventArgs e)
+        private void DrawIOCAImage(IOCAImageContainer imc, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
         {
             // Each container may hold one image or several, as tiles. Draw each one with consideration to its offset from the original draw point
             foreach (ImageContentContainer.ImageInfo image in imc.Images)
@@ -100,10 +109,10 @@ namespace AFPParser.UI
                     MeasurementUnits mu = oaDescriptor.GetTriplet<MeasurementUnits>();
 
                     // Get inch origins based on unit scaling
-                    int xUnitOrigin = xStartingPos + oaPosition.XOrigin + oaPosition.XContentOrigin;
-                    int yUnitOrigin = yStartingPos + oaPosition.YOrigin + oaPosition.YContentOrigin;
-                    float xInchOrigin = (float)(Lookups.GetInches(xUnitOrigin, mu.XUnitsPerBase, mu.BaseUnit) * 100);
-                    float yInchOrigin = (float)(Lookups.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
+                    int xUnitOrigin = oaPosition.XOrigin + oaPosition.XContentOrigin;
+                    int yUnitOrigin = oaPosition.YOrigin + oaPosition.YContentOrigin;
+                    float xInchOrigin = xStartingInch + (float)(Lookups.GetInches(xUnitOrigin, mu.XUnitsPerBase, mu.BaseUnit) * 100);
+                    float yInchOrigin = yStartingInch + (float)(Lookups.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
 
                     // Get inch scaling values
                     double xInchScale = Lookups.GetInches(oaSize.XExtent, mu.XUnitsPerBase, mu.BaseUnit);

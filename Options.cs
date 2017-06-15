@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Serialization;
+using System.Collections.Generic;
 
 [Serializable]
 public class Options
@@ -9,10 +10,12 @@ public class Options
 
     public string LastDirectory { get; set; }
     public string LastOpenedFile { get; set; }
+    public List<string> ResourceDirectories { get; set; }
 
     Options()
     {
         LastDirectory = Environment.CurrentDirectory;
+        ResourceDirectories = new List<string>();
     }
 
     public static Options LoadSettings(string path)

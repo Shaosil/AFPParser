@@ -11,7 +11,7 @@ namespace AFPParser
     {
         public event Action<string> ErrorEvent;
         public IReadOnlyList<StructuredField> Fields { get; private set; }
-        public List<string> ResourceDirectories { get; private set; }
+        public List<string> ResourceDirectories { get; set; }
         public IReadOnlyList<Resource> Resources { get; private set; }
 
         public AFPFile()

@@ -33,11 +33,11 @@
             this.btnRemove = new System.Windows.Forms.Button();
             this.lstDirectories = new System.Windows.Forms.ListBox();
             this.dgvResources = new System.Windows.Forms.DataGridView();
-            this.resourceBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.lblResources = new System.Windows.Forms.Label();
             this.ResourceName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.resourceTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.messageDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.resourceBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.lblResources = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvResources)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.resourceBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -97,19 +97,6 @@
             this.dgvResources.Size = new System.Drawing.Size(524, 374);
             this.dgvResources.TabIndex = 3;
             // 
-            // resourceBindingSource
-            // 
-            this.resourceBindingSource.DataSource = typeof(AFPParser.AFPFile.Resource);
-            // 
-            // lblResources
-            // 
-            this.lblResources.AutoSize = true;
-            this.lblResources.Location = new System.Drawing.Point(12, 164);
-            this.lblResources.Name = "lblResources";
-            this.lblResources.Size = new System.Drawing.Size(58, 13);
-            this.lblResources.TabIndex = 4;
-            this.lblResources.Text = "Resources";
-            // 
             // ResourceName
             // 
             this.ResourceName.DataPropertyName = "ResourceName";
@@ -134,6 +121,19 @@
             this.messageDataGridViewTextBoxColumn.Name = "messageDataGridViewTextBoxColumn";
             this.messageDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // resourceBindingSource
+            // 
+            this.resourceBindingSource.DataSource = typeof(AFPParser.AFPFile.Resource);
+            // 
+            // lblResources
+            // 
+            this.lblResources.AutoSize = true;
+            this.lblResources.Location = new System.Drawing.Point(12, 164);
+            this.lblResources.Name = "lblResources";
+            this.lblResources.Size = new System.Drawing.Size(58, 13);
+            this.lblResources.TabIndex = 4;
+            this.lblResources.Text = "Resources";
+            // 
             // FrmManageResources
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -153,6 +153,7 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "FrmManageResources";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmManageResources_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dgvResources)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.resourceBindingSource)).EndInit();
             this.ResumeLayout(false);

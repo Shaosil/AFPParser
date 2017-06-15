@@ -10,11 +10,13 @@ namespace AFPParser.UI
     {
         private BindingList<string> resourceDirectories;
         private AFPFile File;
+        private Options options;
 
-        public FrmManageResources(AFPFile file)
+        public FrmManageResources(AFPFile file, Options opts)
         {
             InitializeComponent();
             File = file;
+            options = opts;
             resourceDirectories = new BindingList<string>(file.ResourceDirectories);
 
             lstDirectories.DataSource = resourceDirectories;
@@ -49,6 +51,12 @@ namespace AFPParser.UI
         {
             File.ScanDirectoriesForResources(File.Resources.Where(r => !r.IsLoaded));
             dgvResources.DataSource = File.Resources;
+        }
+
+        private void FrmManageResources_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Store the list of directories in the options
+            options.ResourceDirectories = resourceDirectories.ToList();
         }
     }
 }
