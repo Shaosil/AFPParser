@@ -6,7 +6,7 @@ using AFPParser.StructuredFields;
 using System.Collections.Generic;
 using AFPParser.PTXControlSequences;
 using AFPParser.ImageSelfDefiningFields;
-using System.Linq;
+
 namespace AFPParser
 {
     public static class Lookups
@@ -198,7 +198,7 @@ namespace AFPParser
             { 0x81, typeof(PagePositionInformation) },
             { 0x82, typeof(ParameterValue) },
             { 0x83, typeof(PresentationControl) },
-            { 0x84, typeof(FontResolutionandMetricTechnology) },
+            { 0x84, typeof(FontResolutionAndMetricTechnology) },
             { 0x85, typeof(FinishingOperation) },
             { 0x86, typeof(TextFidelity) },
             { 0x87, typeof(MediaFidelity) },
@@ -548,6 +548,44 @@ namespace AFPParser
                 { 0x00, "10 Inches" },
                 { 0x01, "10 Centimeters" }
             };
+
+            public static Dictionary<byte, string> WidthClass = new Dictionary<byte, string>()
+            {
+                { 0x00, "Not Specified" },
+                { 0x01, "Ultralight" },
+                { 0x02, "Extralight" },
+                { 0x03, "Light" },
+                { 0x04, "Semilight" },
+                { 0x05, "Medium (normal)" },
+                { 0x06, "Semibold" },
+                { 0x07, "Bold" },
+                { 0x08, "Extrabold" },
+                { 0x09, "Ultrabold" }
+            };
+
+            public static Dictionary<byte, string> WeightClass = new Dictionary<byte, string>()
+            {
+                { 0x00, "Not Specified" },
+                { 0x01, "Ultracondensed" },
+                { 0x02, "Extracondensed" },
+                { 0x03, "Condensed" },
+                { 0x04, "Semicondensed" },
+                { 0x05, "Medium (normal)" },
+                { 0x06, "Semiexpanded" },
+                { 0x07, "Expanded" },
+                { 0x08, "Extraexpanded" },
+                { 0x09, "Ultraexpanded" }
+            };
+
+            public static Dictionary<byte, string> FontDesignFlags = new Dictionary<byte, string>()
+            {
+                { 0x00, "Not Italic|Italic" },
+                { 0x01, "Not Underscored|Underscored" },
+                { 0x03, "Solid|Hollow" },
+                { 0x04, "Not Overstruck|Overstruck" },
+                { 0x05, "Uniformly Spaced|Proportionally Spaced" },
+                { 0x06, "Not Pairwise Kerned|Pairwise Kerned" }
+            };
         }
 
         #region Conversion Functions
@@ -580,6 +618,11 @@ namespace AFPParser
             // Return all non-blank names of resources of the specified type
             return self.Where(r => r.ResourceType == rType && !string.IsNullOrWhiteSpace(r.ResourceName))
                 .Select(r => r.ResourceName).ToList();
+        }
+
+        public static AFPFile.Resource OfTypeAndName(this IEnumerable<AFPFile.Resource> self, AFPFile.Resource.eResourceType rType, string rName)
+        {
+            return self.FirstOrDefault(r => r.ResourceType == rType && r.ResourceName == rName);
         }
         #endregion
     }

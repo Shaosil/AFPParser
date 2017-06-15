@@ -1,3 +1,4 @@
+using System.Text;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
@@ -45,8 +46,8 @@ namespace AFPParser.StructuredFields
                     { 0x02, "Relative Metrics" }
                 }
             },
-            new Offset(6, Lookups.DataTypes.UBIN, "X Units Per Inch"),
-            new Offset(8, Lookups.DataTypes.UBIN, "Y Units Per Inch"),
+            new Offset(6, Lookups.DataTypes.UBIN, "X Units - CUSTOM PARSED"),
+            new Offset(8, Lookups.DataTypes.UBIN, "Y Units - CUSTOM PARSED"),
             new Offset(10, Lookups.DataTypes.UBIN, "Max Character Box Width"),
             new Offset(12, Lookups.DataTypes.UBIN, "Max Character Box Height"),
             new Offset(14, Lookups.DataTypes.UBIN, "FNO Repeating Group Length"),
@@ -63,10 +64,10 @@ namespace AFPParser.StructuredFields
             new Offset(17, Lookups.DataTypes.UBIN, "Raster Pattern Data Count"),
             new Offset(20, Lookups.DataTypes.UBIN, "FNP Repeating Group Length"),
             new Offset(21, Lookups.DataTypes.UBIN, "FNM Repeating Group Length"),
-            new Offset(22, Lookups.DataTypes.CODE, "Resolution X Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
-            new Offset(23, Lookups.DataTypes.CODE, "Resolution Y Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
-            new Offset(24, Lookups.DataTypes.UBIN, "Units Per X Base"),
-            new Offset(26, Lookups.DataTypes.UBIN, "Units Per Y Base"),
+            new Offset(22, Lookups.DataTypes.CODE, "Shape Resolution X Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(23, Lookups.DataTypes.CODE, "Shape Resolution Y Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(24, Lookups.DataTypes.UBIN, "Shape Units Per X Base - CUSTOM PARSED"),
+            new Offset(26, Lookups.DataTypes.UBIN, "Shape Units Per Y Base - CUSTOM PARSED"),
             new Offset(28, Lookups.DataTypes.UBIN, "Outline Pattern Data Count"),
             new Offset(32, Lookups.DataTypes.EMPTY, ""),
             new Offset(35, Lookups.DataTypes.UBIN, "FNN Repeating Group Length"),
@@ -119,6 +120,33 @@ namespace AFPParser.StructuredFields
                 FNNRGLength = (ushort)GetNumericValue(new[] { Data[35] }, false);
             if (Data.Length > 39)
                 FNNDataCount = (uint)GetNumericValue(GetSectionedData(36, 4), false);
+        }
+
+        protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
+        {
+            switch (oSet.StartingIndex)
+            {
+                case 6:
+                case 8:
+                case 24:
+                case 26:
+                    StringBuilder sb = new StringBuilder();
+                    int units = (int)GetNumericValue(GetSectionedData(oSet.StartingIndex, 2), false);
+                    if (units != 1000) units /= 10;
+
+                    if (oSet.StartingIndex == 24 || oSet.StartingIndex == 26) sb.Append("Shape ");
+                    if (oSet.StartingIndex == 6 || oSet.StartingIndex == 24) sb.Append("X");
+                    else sb.Append("Y");
+                    sb.Append($" Units per ");
+                    if (units == 1000) sb.Append("Em: ");
+                    else sb.Append("Base: ");
+                    sb.AppendLine($"{units}");
+
+                    return sb.ToString();
+
+                default:
+                    return base.GetSingleOffsetDescription(oSet, sectionedData);
+            }
         }
     }
 }

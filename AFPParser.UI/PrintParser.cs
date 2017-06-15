@@ -8,6 +8,7 @@ using System.Drawing.Printing;
 using System.Collections.Generic;
 using AFPParser.StructuredFields;
 using AFPParser.PTXControlSequences;
+using System.Windows.Forms;
 
 namespace AFPParser.UI
 {
@@ -179,7 +180,7 @@ namespace AFPParser.UI
                     {
                         Type sequenceType = sequence.GetType();
 
-                        if (sequenceType == typeof(SCFL)) curFont = GetFont((SCFL)sequence, aeGroup);
+                        if (sequenceType == typeof(SCFL)) curFont = GetFont((SCFL)sequence, aeGroup.LowestLevelContainer);
                         else if (sequenceType == typeof(AMI)) curXPosition = Lookups.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(AMB)) curYPosition = Lookups.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
                         else if (sequenceType == typeof(RMI)) curXPosition += Lookups.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
@@ -196,14 +197,45 @@ namespace AFPParser.UI
             }
         }
 
-        private Font GetFont(SCFL sfcl, BAG activeEnvironment)
+        private Font GetFont(SCFL sfcl, Container aegContainer)
         {
-            MCF2 map2 = activeEnvironment.LowestLevelContainer.GetStructure<MCF2>();
-            MCF1 map1 = activeEnvironment.LowestLevelContainer.GetStructure<MCF1>();
+            Font fnt = new Font(FontFamily.GenericMonospace, 6);
+            
+            MCF1 map1 = aegContainer.GetStructure<MCF1>();
 
-            // 
+            // MCF2 is not supported yet...
+            if (map1 != null)
+            {
+                // Get mapping info with the ID specified in the SCFL field
+                MCF1.MCF1Data mcfData = map1.MappedData.FirstOrDefault(m => m.ID == sfcl.FontId);
 
-            return new Font(FontFamily.GenericMonospace, 6);
+                if (mcfData != null)
+                {
+                    // If it already has a font character set specified, use that.
+                    AFPFile.Resource fontCharacterSet = null;
+                    if (!string.IsNullOrWhiteSpace(mcfData.FontCharacterSetName))
+                        fontCharacterSet = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, mcfData.FontCharacterSetName);
+                    else
+                    {
+                        // Otherwise, we need to load it from the coded font resource
+                        AFPFile.Resource codedFont = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodedFont, mcfData.CodedFontName);
+
+                        if (codedFont.IsLoaded)
+                        {
+                            CFI cfi = codedFont.Fields.OfType<CFI>().FirstOrDefault();
+                            if (cfi != null && cfi.FontInfoList.Any())
+                                fontCharacterSet = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, cfi.FontInfoList[0].FontCharacterSetName);
+                        }
+                    }
+
+                    if (fontCharacterSet != null)
+                    {
+                        // Find the raster pattern of....................
+                    }
+                }
+            }
+
+            return fnt;
         }
     }
 }

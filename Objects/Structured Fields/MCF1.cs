@@ -43,10 +43,11 @@ namespace AFPParser.StructuredFields
 
             while (curIndex < Data.Length)
             {
+                int id = (int)GetNumericValue(GetSectionedData(curIndex, 1), false);
                 string cfName = GetReadableDataPiece(curIndex + 4, 8);
                 string cpName = GetReadableDataPiece(curIndex + 12, 8);
                 string fcsName = GetReadableDataPiece(curIndex + 20, 8);
-                allFontData.Add(new MCF1Data(cfName, cpName, fcsName));
+                allFontData.Add(new MCF1Data(id, cfName, cpName, fcsName));
 
                 curIndex += skip;
             }
@@ -82,12 +83,14 @@ namespace AFPParser.StructuredFields
 
         public class MCF1Data
         {
+            public int ID { get; private set; }
             public string CodedFontName { get; private set; }
             public string CodePageName { get; private set; }
             public string FontCharacterSetName { get; private set; }
             
-            public MCF1Data(string cfName, string cpName, string fcsName)
+            public MCF1Data(int id, string cfName, string cpName, string fcsName)
             {
+                ID = id;
                 CodedFontName = cfName;
                 CodePageName = cpName;
                 FontCharacterSetName = fcsName;
