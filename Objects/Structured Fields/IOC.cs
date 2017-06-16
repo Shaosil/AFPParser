@@ -13,8 +13,8 @@ namespace AFPParser.StructuredFields
         {
             new Offset(0, Lookups.DataTypes.UBIN, "X Axis Origin"),
             new Offset(3, Lookups.DataTypes.UBIN, "Y Axis Origin"),
-            new Offset(6, Lookups.DataTypes.CODE, "X Axis Rotation") { Mappings = Lookups.CommonMappings.Rotations },
-            new Offset(8, Lookups.DataTypes.CODE, "Y Axis Rotation") { Mappings = Lookups.CommonMappings.Rotations },
+            new Offset(6, Lookups.DataTypes.CODE, "X Axis Rotation") { Mappings = CommonMappings.Rotations },
+            new Offset(8, Lookups.DataTypes.CODE, "Y Axis Rotation") { Mappings = CommonMappings.Rotations },
             new Offset(18, Lookups.DataTypes.CODE, "Image Mapping - CUSTOM PARSED")
         };
 

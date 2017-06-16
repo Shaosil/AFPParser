@@ -7,11 +7,11 @@ namespace AFPParser.Triplets
 		private static string _desc = "Specifies the attributes of the desired font in a coded font reference.";
         private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "Char Stroke Thickness") { Mappings = Lookups.CommonMappings.WeightClass },
-            new Offset(1, Lookups.DataTypes.CHAR, "Char Width Class") { Mappings = Lookups.CommonMappings.WidthClass },
+            new Offset(0, Lookups.DataTypes.CODE, "Char Stroke Thickness") { Mappings = CommonMappings.WeightClass },
+            new Offset(1, Lookups.DataTypes.CHAR, "Char Width Class") { Mappings = CommonMappings.WidthClass },
             new Offset(2, Lookups.DataTypes.UBIN, "Vertical Font Size"),
             new Offset(4, Lookups.DataTypes.UBIN, "Horizontal Font Size"),
-            new Offset(6, Lookups.DataTypes.BITS, "Font Design Flags") { Mappings = Lookups.CommonMappings.FontDesignFlags },
+            new Offset(6, Lookups.DataTypes.BITS, "Font Design Flags") { Mappings = CommonMappings.FontDesignFlags },
             new Offset(7, Lookups.DataTypes.EMPTY, ""),
             new Offset(17, Lookups.DataTypes.BITS, "Font Use Flags")
             {

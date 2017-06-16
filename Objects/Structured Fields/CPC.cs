@@ -11,7 +11,7 @@ namespace AFPParser.StructuredFields
 		private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Default Graphic Character GID"),
-            new Offset(8, Lookups.DataTypes.BITS, "Default Character Use Flags") { Mappings = Lookups.CommonMappings.CharacterUseFlags },
+            new Offset(8, Lookups.DataTypes.BITS, "Default Character Use Flags") { Mappings = CommonMappings.CharacterUseFlags },
             new Offset(9, Lookups.DataTypes.CODE, "CPI Repeating Group Length")
             {
                 Mappings = new Dictionary<byte, string>()

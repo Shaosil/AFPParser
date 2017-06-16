@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
@@ -42,6 +41,60 @@ namespace AFPParser.StructuredFields
         }
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public IReadOnlyList<Info> InfoList { get; private set; }
+
 		public FNI(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+
+        public override void ParseData()
+        {
+            // Store properties of each character
+            List<Info> allInfo = new List<Info>();
+            int curIndex = 0;
+
+            while (curIndex < Data.Length)
+            {
+                string gid = GetReadableDataPiece(curIndex + 0, 8);
+                int charInc = (int)GetNumericValue(GetSectionedData(curIndex + 8, 2), false);
+                int ascHeight = (int)GetNumericValue(GetSectionedData(curIndex + 10, 2), true);
+                int descDepth = (int)GetNumericValue(GetSectionedData(curIndex + 12, 2), true);
+                int fnmIdx = (int)GetNumericValue(GetSectionedData(curIndex + 16, 2), false);
+                int a = (int)GetNumericValue(GetSectionedData(curIndex + 18, 2), true);
+                int b = (int)GetNumericValue(GetSectionedData(curIndex + 20, 2), true);
+                int c = (int)GetNumericValue(GetSectionedData(curIndex + 22, 2), true);
+                int baseline = (int)GetNumericValue(GetSectionedData(curIndex + 26, 2), true);
+
+                allInfo.Add(new Info(gid, charInc, ascHeight, descDepth, fnmIdx, a, b, c, baseline));
+
+                curIndex += RepeatingGroupLength;
+            }
+
+            InfoList = allInfo;
+        }
+        public class Info
+        {
+            public string GCGID { get; private set; }
+            public int CharIncrement { get; private set; }
+            public int AscenderHeight { get; private set; }
+            public int DescenderDepth { get; private set; }
+            public int FNMIndex { get; private set; }
+            public int ASpace { get; private set; }
+            public int BSpace { get; private set; }
+            public int CSpace { get; private set; }
+            public int BaselineOffset { get; private set; }
+
+            public Info(string gid, int charInc, int ascHeight, int descDepth, int fnmIdx, int a, int b, int c, int baseline)
+            {
+                GCGID = gid;
+                CharIncrement = charInc;
+                AscenderHeight = ascHeight;
+                DescenderDepth = descDepth;
+                FNMIndex = fnmIdx;
+                ASpace = a;
+                BSpace = b;
+                CSpace = c;
+                BaselineOffset = baseline;
+            }
+        }
+    }
 }

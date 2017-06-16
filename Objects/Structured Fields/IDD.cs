@@ -10,7 +10,7 @@ namespace AFPParser.StructuredFields
 		private static string _desc = "Carries the parameters that define the size and resolution of the Image Presentation Space, and the parameters required to interpret the Image Segment.";
 		private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(0, Lookups.DataTypes.CODE, "Unit Base") { Mappings = CommonMappings.AxisBase },
             new Offset(1, Lookups.DataTypes.UBIN, "Horizontal Resolution"),
             new Offset(3, Lookups.DataTypes.UBIN, "Vertical Resolution"),
             new Offset(5, Lookups.DataTypes.UBIN, "Horizontal Size"),
@@ -26,7 +26,7 @@ namespace AFPParser.StructuredFields
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Lookups.eMeasurement BaseUnit { get; private set; }
+        public Convertors.eMeasurement BaseUnit { get; private set; }
         public int HResolution { get; private set; }
         public int VResolution { get; private set; }
         public int XSize { get; set; }
@@ -37,7 +37,7 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            BaseUnit = Lookups.GetBaseUnit(Data[0]);
+            BaseUnit = Convertors.GetBaseUnit(Data[0]);
             HResolution = (int)GetNumericValue(GetSectionedData(1, 2), false);
             VResolution = (int)GetNumericValue(GetSectionedData(3, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(5, 2), false);

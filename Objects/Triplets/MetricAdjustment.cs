@@ -7,7 +7,7 @@ namespace AFPParser.Triplets
         private static string _desc = "Supplies metric values that can be used to adjust some of the metrics in an outline coded font.";
         private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(0, Lookups.DataTypes.CODE, "Unit Base") { Mappings = CommonMappings.AxisBase },
             new Offset(1, Lookups.DataTypes.UBIN, "Units per X Base"),
             new Offset(3, Lookups.DataTypes.UBIN, "Units per Y Base"),
             new Offset(5, Lookups.DataTypes.SBIN, "Uniform Char Horizontal Increment"),

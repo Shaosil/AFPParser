@@ -14,7 +14,7 @@ namespace AFPParser.StructuredFields
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.EMPTY, ""),
-            new Offset(2, Lookups.DataTypes.UBIN, "Character Rotation") { Mappings = Lookups.CommonMappings.Rotations },
+            new Offset(2, Lookups.DataTypes.UBIN, "Character Rotation") { Mappings = CommonMappings.Rotations },
             new Offset(4, Lookups.DataTypes.SBIN, "Max Baseline Offset"),
             new Offset(6, Lookups.DataTypes.UBIN, "Max Character Increment"),
             new Offset(8, Lookups.DataTypes.UBIN, "Space Character Increment"),

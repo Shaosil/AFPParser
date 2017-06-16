@@ -7,8 +7,8 @@ namespace AFPParser.Triplets
         private static string _desc = "Specifies units of measure for a presentation space.";
         private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "X Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
-            new Offset(1, Lookups.DataTypes.CODE, "Y Unit Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(0, Lookups.DataTypes.CODE, "X Unit Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(1, Lookups.DataTypes.CODE, "Y Unit Base") { Mappings = CommonMappings.AxisBase },
             new Offset(2, Lookups.DataTypes.UBIN, "X Units per Base"),
             new Offset(4, Lookups.DataTypes.UBIN, "Y Units per Base")
         };
@@ -17,7 +17,7 @@ namespace AFPParser.Triplets
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Lookups.eMeasurement BaseUnit { get; private set; }
+        public Convertors.eMeasurement BaseUnit { get; private set; }
         public int XUnitsPerBase { get; private set; }
         public int YUnitsPerBase { get; private set; }
 
@@ -25,7 +25,7 @@ namespace AFPParser.Triplets
 
         public override void ParseData()
         {
-            BaseUnit = Lookups.GetBaseUnit(Data[0]);
+            BaseUnit = Convertors.GetBaseUnit(Data[0]);
             XUnitsPerBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
             YUnitsPerBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
         }

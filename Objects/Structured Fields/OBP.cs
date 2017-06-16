@@ -13,13 +13,13 @@ namespace AFPParser.StructuredFields
             new Offset(1, Lookups.DataTypes.EMPTY, ""), // RGLength, always 23, and always only one group...
             new Offset(2, Lookups.DataTypes.SBIN, "X Axis Area Origin"),
             new Offset(5, Lookups.DataTypes.SBIN, "Y Axis Area Origin"),
-            new Offset(8, Lookups.DataTypes.CODE, "X Axis Rotation") { Mappings = Lookups.CommonMappings.Rotations },
-            new Offset(10, Lookups.DataTypes.CODE, "Y Axis Rotation") { Mappings = Lookups.CommonMappings.Rotations },
+            new Offset(8, Lookups.DataTypes.CODE, "X Axis Rotation") { Mappings = CommonMappings.Rotations },
+            new Offset(10, Lookups.DataTypes.CODE, "Y Axis Rotation") { Mappings = CommonMappings.Rotations },
             new Offset(12, Lookups.DataTypes.EMPTY, ""),
             new Offset(13, Lookups.DataTypes.SBIN, "X Axis Content Origin"),
             new Offset(16, Lookups.DataTypes.SBIN, "Y Axis Content Origin"),
-            new Offset(19, Lookups.DataTypes.CODE, "X Axis Content Rotation") { Mappings = Lookups.CommonMappings.Rotations },
-            new Offset(21, Lookups.DataTypes.CODE, "Y Axis Content Rotation") { Mappings = Lookups.CommonMappings.Rotations },
+            new Offset(19, Lookups.DataTypes.CODE, "X Axis Content Rotation") { Mappings = CommonMappings.Rotations },
+            new Offset(21, Lookups.DataTypes.CODE, "Y Axis Content Rotation") { Mappings = CommonMappings.Rotations },
             new Offset(23, Lookups.DataTypes.CODE, "Reference Coordinate System")
             {
                 Mappings = new Dictionary<byte, string>()

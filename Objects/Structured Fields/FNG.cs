@@ -31,17 +31,18 @@ namespace AFPParser.StructuredFields
 
             if (isRaster)
             {
-                foreach (bool[,] pattern in fontContainer.RasterPatterns)
+                foreach (KeyValuePair<string, bool[,]> kvp in fontContainer.RasterPatterns)
                 {
-                    for (int y = 0; y <= pattern.GetUpperBound(1); y++)
+                    sb.AppendLine($"GID: {kvp.Key}");
+                    for (int y = 0; y <= kvp.Value.GetUpperBound(1); y++)
                     {
-                        for (int x = 0; x <= pattern.GetUpperBound(0); x++)
-                            sb.Append(pattern[x, y] ? "#" : ".");
+                        for (int x = 0; x <= kvp.Value.GetUpperBound(0); x++)
+                            sb.Append(kvp.Value[x, y] ? "#" : ".");
 
                         sb.AppendLine(); // Move to the next row of bits
                     }
 
-                    sb.AppendLine(); // Put a space in between patterns
+                    sb.AppendLine(); sb.AppendLine(); // Double space between characters
                 }
             }
             else

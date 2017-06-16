@@ -11,8 +11,8 @@ namespace AFPParser.StructuredFields
         private static string _desc = "The Presentation Text Data Descriptor structured field contains the descriptor data for a presentation text data object.";
         private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "X Axis Base") { Mappings = Lookups.CommonMappings.AxisBase },
-            new Offset(1, Lookups.DataTypes.CODE, "Y Axis Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(0, Lookups.DataTypes.CODE, "X Axis Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(1, Lookups.DataTypes.CODE, "Y Axis Base") { Mappings = CommonMappings.AxisBase },
             new Offset(2, Lookups.DataTypes.UBIN, "Xp Units per Base"),
             new Offset(4, Lookups.DataTypes.UBIN, "Yp Units per Base"),
             new Offset(6, Lookups.DataTypes.UBIN, "Xp Extent"),
@@ -29,7 +29,7 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Lookups.eMeasurement BaseUnit { get; private set; }
+        public Convertors.eMeasurement BaseUnit { get; private set; }
         public int UnitsPerXBase { get; private set; }
         public int UnitsPerYBase { get; private set; }
         public int XSize { get; private set; }
@@ -52,7 +52,7 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            BaseUnit = Lookups.GetBaseUnit(Data[0]);
+            BaseUnit = Convertors.GetBaseUnit(Data[0]);
             UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
             UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);
@@ -67,7 +67,7 @@ namespace AFPParser.StructuredFields
             sb.AppendLine();
             sb.AppendLine();
             sb.Append("Presentation space: ");
-            sb.Append($"{Lookups.GetMeasurement(XSize, UnitsPerXBase)} x {Lookups.GetMeasurement(YSize, UnitsPerYBase)}");
+            sb.Append($"{Convertors.GetMeasurement(XSize, UnitsPerXBase)} x {Convertors.GetMeasurement(YSize, UnitsPerYBase)}");
             sb.AppendLine($" {BaseUnit.ToString()}");
 
             return sb.ToString();

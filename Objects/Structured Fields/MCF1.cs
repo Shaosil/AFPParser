@@ -18,7 +18,7 @@ namespace AFPParser.StructuredFields
 			new Offset(4, Lookups.DataTypes.CHAR, "Coded Font Name"),
 			new Offset(12, Lookups.DataTypes.CHAR, "Code Page Name"),
 			new Offset(20, Lookups.DataTypes.CHAR, "Font Character Set Name"),
-			new Offset(28, Lookups.DataTypes.CODE, "Character Rotation") { Mappings = Lookups.CommonMappings.Rotations }
+			new Offset(28, Lookups.DataTypes.CODE, "Character Rotation") { Mappings = CommonMappings.Rotations }
         };
 
 		public override string Abbreviation => _abbr;

@@ -7,8 +7,8 @@ namespace AFPParser.Containers
 {
     public class FontObjectContainer : Container
     {
-        // Store any raster data as multiple two dimensional arrays of bools
-        public IReadOnlyList<bool[,]> RasterPatterns { get; private set; }
+        // Store each character pattern as a two dimensional array of bools paired to a hex code
+        public IReadOnlyDictionary<string, bool[,]> RasterPatterns { get; private set; }
 
         public override void ParseContainerData()
         {
@@ -16,19 +16,20 @@ namespace AFPParser.Containers
             FNM patternsMap = GetStructure<FNM>();
             if (patternsMap != null)
             {
-                List<bool[,]> rasterPatterns = new List<bool[,]>();
+                FNI firstFNI = GetStructure<FNI>();
+                Dictionary<string, bool[,]> rasterPatterns = new Dictionary<string, bool[,]>();
                 byte[] allFNGData = GetStructures<FNG>().SelectMany(f => f.Data).ToArray();
                 int indexCounter = 0;
 
-                foreach (FNM.PatternData pData in patternsMap.AllPatternData)
+                for (int i = 0; i < patternsMap.AllPatternData.Count; i++)
                 {
                     // Subtract the next offset (or length of data if at end) by this one to find out how many bytes to take
-                    IEnumerable<FNM.PatternData> higherPatterns = patternsMap.AllPatternData.Where(p => p.DataOffset > pData.DataOffset);
-                    int bytesToTake = (int)((higherPatterns.Any() ? higherPatterns.Min(p => p.DataOffset) : (uint)allFNGData.Length) - pData.DataOffset);
+                    int bytesToTake = (int)((i < patternsMap.AllPatternData.Count - 1 ? patternsMap.AllPatternData[i + 1].DataOffset : (uint)allFNGData.Length) 
+                        - patternsMap.AllPatternData[i].DataOffset);
 
                     // Create an empty array of bools from our box width and height
                     // The array sizes are the number of bits in the minimum number of bytes required to support the bit size
-                    int numBitsWide = (int)Math.Ceiling((pData.BoxWidth + 1) / 8.0) * 8;
+                    int numBitsWide = (int)Math.Ceiling((patternsMap.AllPatternData[i].BoxWidth + 1) / 8.0) * 8;
                     int numRows = bytesToTake / (numBitsWide / 8);
                     bool[,] curPattern = new bool[numBitsWide, numRows];
                     for (int y = 0; y < numRows; y++)
@@ -38,7 +39,10 @@ namespace AFPParser.Containers
                             for (int b = 0; b < 8; b++)
                                 curPattern[x + b, y] = (curByte & (1 << (7 - b))) > 0;
                         }
-                    rasterPatterns.Add(curPattern);
+
+                    // Lookup the GCGID from the first FNI for this pattern
+                    string thisGID = firstFNI.InfoList.First(fni => fni.FNMIndex == i).GCGID;
+                    rasterPatterns.Add(thisGID, curPattern);
                 }
 
                 RasterPatterns = rasterPatterns;

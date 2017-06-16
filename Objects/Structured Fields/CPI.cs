@@ -15,7 +15,7 @@ namespace AFPParser.StructuredFields
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Graphic Character GID"),
-            new Offset(8, Lookups.DataTypes.BITS, "Graphic Character Use Flags") { Mappings = Lookups.CommonMappings.CharacterUseFlags },
+            new Offset(8, Lookups.DataTypes.BITS, "Graphic Character Use Flags") { Mappings = CommonMappings.CharacterUseFlags },
             new Offset(9, Lookups.DataTypes.EMPTY, "Code Point")
         };
 
@@ -26,7 +26,29 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public IReadOnlyList<Info> CPIInfos { get; private set; }
+
         public CPI(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            int curIndex = 0;
+            CPC cpcField = LowestLevelContainer.GetStructure<CPC>();
+            List<Info> allInfo = new List<Info>();
+
+            while (curIndex < Data.Length)
+            {
+                string gid = GetReadableDataPiece(curIndex + 0, 8);
+                byte[] codePoints = GetSectionedData(curIndex + 9, cpcField.IsSingleByteCodePage ? 1 : 2);
+                allInfo.Add(new Info(gid, codePoints));
+
+                // 10 bytes RG Length for single bytes, 11 for double
+                curIndex += cpcField.IsSingleByteCodePage ? 10 : 11;
+            }
+
+            CPIInfos = allInfo;
+        }
 
         protected override string GetOffsetDescriptions()
         {
@@ -76,6 +98,18 @@ namespace AFPParser.StructuredFields
             }
 
             return sb.ToString();
+        }
+
+        public class Info
+        {
+            public string GID { get; private set; }
+            public byte[] CodePoints { get; private set; } // Single byte or double byte code points
+
+            public Info(string gid, byte[] codePoints)
+            {
+                GID = gid;
+                CodePoints = codePoints;
+            }
         }
     }
 }

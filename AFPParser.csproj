@@ -54,6 +54,11 @@
     <Compile Include="Objects\Containers\IMImageContainer.cs" />
     <Compile Include="Objects\Containers\IOCAImageContainer.cs" />
     <Compile Include="Objects\Containers\ImageContentContainer.cs" />
+    <Compile Include="Objects\Helpers\Code Page GIDs\1140.cs" />
+    <Compile Include="Objects\Helpers\Code Page GIDs\1252.cs" />
+    <Compile Include="Objects\Helpers\Convertors.cs" />
+    <Compile Include="Objects\Helpers\Extensions.cs" />
+    <Compile Include="Objects\Helpers\Mappings.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImage.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImageData.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BeginImageContent.cs" />
@@ -304,7 +309,7 @@
     <Compile Include="Objects\Triplets\LocalDateandTimeStamp.cs" />
     <Compile Include="Objects\Triplets\UniversalDateandTimeStamp.cs" />
     <Compile Include="Objects\Triplets\PresentationSpaceMixingRule.cs" />
-    <Compile Include="Lookups.cs" />
+    <Compile Include="Objects\Helpers\Lookups.cs" />
     <Compile Include="Objects\Triplets\UP3iFinishingOperation.cs" />
     <Compile Include="Objects\Offset.cs" />
     <Compile Include="Options.cs" />
@@ -313,6 +318,7 @@
     <Compile Include="Objects\StructuredField.cs" />
     <Compile Include="Objects\Triplet.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

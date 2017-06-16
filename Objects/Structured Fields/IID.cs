@@ -11,8 +11,8 @@ namespace AFPParser.StructuredFields
 		private static string _desc = "Contains the resolution, size, and color information of the IM image.";
 		private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(12, Lookups.DataTypes.CODE, "X Axis Base") { Mappings = Lookups.CommonMappings.AxisBase },
-            new Offset(13, Lookups.DataTypes.CODE, "Y Axis Base") { Mappings = Lookups.CommonMappings.AxisBase },
+            new Offset(12, Lookups.DataTypes.CODE, "X Axis Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(13, Lookups.DataTypes.CODE, "Y Axis Base") { Mappings = CommonMappings.AxisBase },
             new Offset(14, Lookups.DataTypes.UBIN, "X Units per Base"),
             new Offset(16, Lookups.DataTypes.UBIN, "Y Units per Base"),
             new Offset(18, Lookups.DataTypes.UBIN, "X Size"),
@@ -32,7 +32,7 @@ namespace AFPParser.StructuredFields
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Lookups.eMeasurement BaseUnit { get; private set; }
+        public Convertors.eMeasurement BaseUnit { get; private set; }
         public int XSize { get; private set; }
         public int YSize { get; private set; }
         public int XUnitsPerBase { get; private set; }
@@ -53,7 +53,7 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            BaseUnit = Lookups.GetBaseUnit(Data[12]);
+            BaseUnit = Convertors.GetBaseUnit(Data[12]);
             XSize = (int)GetNumericValue(GetSectionedData(18, 2), false);
             YSize = (int)GetNumericValue(GetSectionedData(20, 2), false);
             XUnitsPerBase = (int)GetNumericValue(GetSectionedData(14, 2), false);
