@@ -17,7 +17,7 @@ namespace AFPParser.Triplets
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Convertors.eMeasurement BaseUnit { get; private set; }
+        public Converters.eMeasurement BaseUnit { get; private set; }
         public int XUnitsPerBase { get; private set; }
         public int YUnitsPerBase { get; private set; }
 
@@ -25,7 +25,7 @@ namespace AFPParser.Triplets
 
         public override void ParseData()
         {
-            BaseUnit = Convertors.GetBaseUnit(Data[0]);
+            BaseUnit = Converters.GetBaseUnit(Data[0]);
             XUnitsPerBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
             YUnitsPerBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
         }

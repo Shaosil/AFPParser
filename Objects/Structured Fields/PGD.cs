@@ -29,7 +29,7 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Convertors.eMeasurement BaseUnit { get; private set; }
+        public Converters.eMeasurement BaseUnit { get; private set; }
         public int UnitsPerXBase { get; private set; }
         public int UnitsPerYBase { get; private set; }
         public int XSize { get; private set; }
@@ -41,7 +41,7 @@ namespace AFPParser.StructuredFields
         {
             base.ParseData();
 
-            BaseUnit = Convertors.GetBaseUnit(Data[0]);
+            BaseUnit = Converters.GetBaseUnit(Data[0]);
             UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
             UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);
@@ -56,7 +56,7 @@ namespace AFPParser.StructuredFields
             sb.AppendLine();
             sb.AppendLine();
             sb.Append("Page size: ");
-            sb.Append($"{Convertors.GetMeasurement(XSize, UnitsPerXBase)} x {Convertors.GetMeasurement(YSize, UnitsPerYBase)}");
+            sb.Append($"{Converters.GetMeasurement(XSize, UnitsPerXBase)} x {Converters.GetMeasurement(YSize, UnitsPerYBase)}");
             sb.AppendLine($" {BaseUnit.ToString()}");
 
             return sb.ToString();

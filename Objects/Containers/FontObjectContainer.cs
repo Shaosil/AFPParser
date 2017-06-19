@@ -8,7 +8,7 @@ namespace AFPParser.Containers
     public class FontObjectContainer : Container
     {
         // Store each character pattern as a two dimensional array of bools paired to a hex code
-        public IReadOnlyDictionary<string, bool[,]> RasterPatterns { get; private set; }
+        public IReadOnlyDictionary<FNI.Info, bool[,]> RasterPatterns { get; private set; }
 
         public override void ParseContainerData()
         {
@@ -17,7 +17,7 @@ namespace AFPParser.Containers
             if (patternsMap != null)
             {
                 FNI firstFNI = GetStructure<FNI>();
-                Dictionary<string, bool[,]> rasterPatterns = new Dictionary<string, bool[,]>();
+                Dictionary<FNI.Info, bool[,]> rasterPatterns = new Dictionary<FNI.Info, bool[,]>();
                 byte[] allFNGData = GetStructures<FNG>().SelectMany(f => f.Data).ToArray();
                 int indexCounter = 0;
 
@@ -41,8 +41,7 @@ namespace AFPParser.Containers
                         }
 
                     // Lookup the GCGID from the first FNI for this pattern
-                    string thisGID = firstFNI.InfoList.First(fni => fni.FNMIndex == i).GCGID;
-                    rasterPatterns.Add(thisGID, curPattern);
+                    rasterPatterns.Add(firstFNI.InfoList.First(fni => fni.FNMIndex == i), curPattern);
                 }
 
                 RasterPatterns = rasterPatterns;

@@ -168,7 +168,6 @@
         private System.Windows.Forms.ListBox lstDirectories;
         private System.Windows.Forms.DataGridView dgvResources;
         private System.Windows.Forms.Label lblResources;
-        private System.Windows.Forms.DataGridViewTextBoxColumn fileNameDataGridViewTextBoxColumn;
         private System.Windows.Forms.BindingSource resourceBindingSource;
         private System.Windows.Forms.DataGridViewTextBoxColumn ResourceName;
         private System.Windows.Forms.DataGridViewTextBoxColumn resourceTypeDataGridViewTextBoxColumn;

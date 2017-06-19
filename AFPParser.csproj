@@ -56,7 +56,7 @@
     <Compile Include="Objects\Containers\ImageContentContainer.cs" />
     <Compile Include="Objects\Helpers\Code Page GIDs\1140.cs" />
     <Compile Include="Objects\Helpers\Code Page GIDs\1252.cs" />
-    <Compile Include="Objects\Helpers\Convertors.cs" />
+    <Compile Include="Objects\Helpers\Converters.cs" />
     <Compile Include="Objects\Helpers\Extensions.cs" />
     <Compile Include="Objects\Helpers\Mappings.cs" />
     <Compile Include="Objects\Image Self Defining Fields\BandImage.cs" />

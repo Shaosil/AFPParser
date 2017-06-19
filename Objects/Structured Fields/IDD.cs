@@ -26,7 +26,7 @@ namespace AFPParser.StructuredFields
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Convertors.eMeasurement BaseUnit { get; private set; }
+        public Converters.eMeasurement BaseUnit { get; private set; }
         public int HResolution { get; private set; }
         public int VResolution { get; private set; }
         public int XSize { get; set; }
@@ -37,7 +37,7 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            BaseUnit = Convertors.GetBaseUnit(Data[0]);
+            BaseUnit = Converters.GetBaseUnit(Data[0]);
             HResolution = (int)GetNumericValue(GetSectionedData(1, 2), false);
             VResolution = (int)GetNumericValue(GetSectionedData(3, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(5, 2), false);

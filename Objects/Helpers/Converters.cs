@@ -2,7 +2,7 @@
 
 namespace AFPParser
 {
-    public static class Convertors
+    public static class Converters
     {
         public enum eMeasurement { Inches, Centimeters }
         public static eMeasurement GetBaseUnit(byte b)
@@ -11,7 +11,7 @@ namespace AFPParser
         }
         public static double GetMeasurement(int units, int unitsPerBase)
         {
-            return Math.Round(units / (unitsPerBase / 10.0), 2);
+            return Math.Round(units / (unitsPerBase / 10.0), 3);
         }
         public static double GetInches(int units, int unitsPerBase, eMeasurement measurement)
         {

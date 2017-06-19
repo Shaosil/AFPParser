@@ -159,7 +159,7 @@ namespace AFPParser.UI
             {
                 case eFileType.Document:
                     // Verify they want to view if there are missing resources
-                    if (afpFile.Resources.All(r => r.IsLoaded) || MessageBox.Show("There are referenced resources that have not been located. Preview anyway?"
+                    if (afpFile.Resources.All(r => r.IsLoaded || r.IsNETCodePage) || MessageBox.Show("There are referenced resources that have not been located. Preview anyway?"
                     , "Missing Resources", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         printParser = new PrintParser(afpFile);
@@ -172,8 +172,8 @@ namespace AFPParser.UI
 
                         // Set page size by checking the first PGD. Width and height are in 1/100 inch
                         PGD pgd = afpFile.Fields.OfType<PGD>().First();
-                        int xWidth = (int)(Convertors.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
-                        int yWidth = (int)(Convertors.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
+                        int xWidth = (int)(Converters.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
+                        int yWidth = (int)(Converters.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
                         ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
 
                         ppd.ShowDialog();
@@ -208,8 +208,8 @@ namespace AFPParser.UI
 
                                     // Get resolution from descriptor
                                     IDD descriptor = ioc.GetStructure<IDD>();
-                                    float xScale = (float)Convertors.GetInches(png.Width, descriptor.HResolution, descriptor.BaseUnit);
-                                    float yScale = (float)Convertors.GetInches(png.Height, descriptor.VResolution, descriptor.BaseUnit);
+                                    float xScale = (float)Converters.GetInches(png.Width, descriptor.HResolution, descriptor.BaseUnit);
+                                    float yScale = (float)Converters.GetInches(png.Height, descriptor.VResolution, descriptor.BaseUnit);
                                     png.SetResolution(png.Width / xScale, png.Height / yScale);
 
                                     // Generate image
@@ -229,8 +229,8 @@ namespace AFPParser.UI
                                         png.SetPixel(x, y, imc.ImageData[x, y] ? descriptor.ImageColor : Color.White);
 
                                 // Get resolution from descriptor
-                                float xScale = (float)Convertors.GetInches(png.Width, descriptor.XUnitsPerBase, descriptor.BaseUnit);
-                                float yScale = (float)Convertors.GetInches(png.Height, descriptor.YUnitsPerBase, descriptor.BaseUnit);
+                                float xScale = (float)Converters.GetInches(png.Width, descriptor.XUnitsPerBase, descriptor.BaseUnit);
+                                float yScale = (float)Converters.GetInches(png.Height, descriptor.YUnitsPerBase, descriptor.BaseUnit);
                                 png.SetResolution(png.Width / xScale, png.Height / yScale);
 
                                 png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);

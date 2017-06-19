@@ -58,27 +58,8 @@ namespace AFPParser
                 // Try to find all referenced files
                 ScanDirectoriesForResources(referencedResources);
 
-                // Combine both lists of resources
-                List<Resource> allResources = Resources.Concat(referencedResources).ToList();
-
-                // Remove any code pages that are already defined in .NET
-                List<int> netEncodings = Encoding.GetEncodings().Where(e => e.CodePage <= 9999).Select(e => e.CodePage).ToList();
-                for (int i = 0; i < allResources.Count;)
-                {
-                    if (allResources[i].ResourceType != Resource.eResourceType.CodePage) { i++; continue; }
-
-                    string c = allResources[i].ResourceName;
-                    int ourCodePage = 0;
-                    if (c.Length >= 4)
-                        int.TryParse(c.Substring(c.Length - 4), out ourCodePage);
-                    if (ourCodePage != 0 && netEncodings.Contains(ourCodePage))
-                        allResources.RemoveAt(i);
-                    else
-                        i++; // Only increment if we haven't removed the current index
-                }
-
-                // Assign to readonly property
-                Resources = allResources;
+                // Combine and assign to readonly property
+                Resources = Resources.Concat(referencedResources).ToList();
             }
             catch (Exception ex)
             {
@@ -274,6 +255,9 @@ namespace AFPParser
 
         public class Resource
         {
+            // Store .NET's code pages that are 4 digits or less
+            private static IReadOnlyList<int> netEncodings = Encoding.GetEncodings().Where(e => e.CodePage <= 9999).Select(e => e.CodePage).ToList();
+
             public enum eResourceType { Unknown, IMImage, IOCAImage, CodePage, CodedFont, FontCharacterSet, PageSegment }
 
             public IReadOnlyList<StructuredField> Fields { get; set; }
@@ -281,7 +265,18 @@ namespace AFPParser
             public eResourceType ResourceType { get; private set; }
             public bool IsLoaded => Fields.Any();
             public bool IsEmbedded { get; private set; }
-            public string Message => IsEmbedded ? "Embedded" : IsLoaded ? "Loaded" : "File not found";
+            public bool IsNETCodePage { get; private set; }
+            public string Message
+            {
+                get
+                {
+                    return
+                        IsEmbedded ? "Embedded"
+                        : IsLoaded ? "Loaded"
+                        : IsNETCodePage ? "File Not Found - Defaulting to .NET's definition"
+                        : "File Not Found";
+                }
+            }
 
             public Resource(string fName, eResourceType rType, bool embedded = false)
             {
@@ -289,6 +284,18 @@ namespace AFPParser
                 ResourceName = fName.ToUpper().Trim();
                 ResourceType = rType;
                 IsEmbedded = embedded;
+
+                // If we are a code page resource, see if we also exist in .NET
+                if (ResourceType == eResourceType.CodePage)
+                {
+                    // Compare the last four digits of our code page to .NET's existing list.
+                    int ourCodePage = 0;
+                    if (ResourceName.Length >= 4)
+                        int.TryParse(ResourceName.Substring(ResourceName.Length - 4), out ourCodePage);
+
+                    // If we have a match, we will use .NET's, since it's likely a custom file doesn't exist
+                    if (ourCodePage > 0) IsNETCodePage = true;
+                }
             }
         }
     }

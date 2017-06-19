@@ -31,9 +31,9 @@ namespace AFPParser.StructuredFields
 
             if (isRaster)
             {
-                foreach (KeyValuePair<string, bool[,]> kvp in fontContainer.RasterPatterns)
+                foreach (KeyValuePair<FNI.Info, bool[,]> kvp in fontContainer.RasterPatterns)
                 {
-                    sb.AppendLine($"GID: {kvp.Key}");
+                    sb.AppendLine($"GID: {kvp.Key.GCGID}");
                     for (int y = 0; y <= kvp.Value.GetUpperBound(1); y++)
                     {
                         for (int x = 0; x <= kvp.Value.GetUpperBound(0); x++)

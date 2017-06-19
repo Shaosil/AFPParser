@@ -2,13 +2,13 @@
 using System.IO;
 using System.Linq;
 using System.Drawing;
+using System.Reflection;
 using AFPParser.Triplets;
 using AFPParser.Containers;
 using System.Drawing.Printing;
 using System.Collections.Generic;
 using AFPParser.StructuredFields;
 using AFPParser.PTXControlSequences;
-using System.Reflection;
 
 namespace AFPParser.UI
 {
@@ -17,6 +17,15 @@ namespace AFPParser.UI
         private AFPFile afpFile;
         private List<Container> pageContainers;
         private int curPageIndex = 0;
+
+        // PTX Storage
+        private Container aeContainer = null;
+        private int xUnitsPerBase = 0;
+        private int yUnitsPerBase = 0;
+        private Converters.eMeasurement measurement = Converters.eMeasurement.Inches;
+        private Dictionary<string, byte> codePageMapping = CodePages.C1252;
+        private AFPFile.Resource fontCharacterSet = null;
+        private Color curColor = Color.Black;
 
         public PrintParser(AFPFile file)
         {
@@ -49,8 +58,8 @@ namespace AFPParser.UI
                     // Get starting positional information by querying the active environment group
                     Container aegContainer = pageContainers[curPageIndex].GetStructure<BAG>().LowestLevelContainer;
                     PGD pageDescriptor = aegContainer.GetStructure<PGD>();
-                    float xInch = (float)Convertors.GetInches(pageSegment.XOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
-                    float yInch = (float)Convertors.GetInches(pageSegment.YOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
+                    float xInch = (float)Converters.GetInches(pageSegment.XOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
+                    float yInch = (float)Converters.GetInches(pageSegment.YOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
 
                     if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IMImageContainer)))
                     {
@@ -86,10 +95,10 @@ namespace AFPParser.UI
             IID imDescriptor = imc.GetStructure<IID>();
             int xPos = imc.Cells.Min(c => c.CellPosition.XOffset);
             int yPos = imc.Cells.Min(c => c.CellPosition.YOffset);
-            float xInchPos = xStartingInch + (float)(Convertors.GetInches(xPos, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit) * 100);
-            float yInchPos = yStartingInch + (float)(Convertors.GetInches(yPos, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit) * 100);
-            double xScale = Convertors.GetInches(bmp.Width, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit);
-            double yScale = Convertors.GetInches(bmp.Height, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit);
+            float xInchPos = xStartingInch + (float)(Converters.GetInches(xPos, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit) * 100);
+            float yInchPos = yStartingInch + (float)(Converters.GetInches(yPos, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit) * 100);
+            double xScale = Converters.GetInches(bmp.Width, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit);
+            double yScale = Converters.GetInches(bmp.Height, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit);
 
             bmp.SetResolution((float)(bmp.Width / xScale), (float)(bmp.Height / yScale));
             e.Graphics.DrawImage(bmp, xInchPos, yInchPos);
@@ -112,12 +121,12 @@ namespace AFPParser.UI
                     // Get inch origins based on unit scaling
                     int xUnitOrigin = oaPosition.XOrigin + oaPosition.XContentOrigin;
                     int yUnitOrigin = oaPosition.YOrigin + oaPosition.YContentOrigin;
-                    float xInchOrigin = xStartingInch + (float)(Convertors.GetInches(xUnitOrigin, mu.XUnitsPerBase, mu.BaseUnit) * 100);
-                    float yInchOrigin = yStartingInch + (float)(Convertors.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
+                    float xInchOrigin = xStartingInch + (float)(Converters.GetInches(xUnitOrigin, mu.XUnitsPerBase, mu.BaseUnit) * 100);
+                    float yInchOrigin = yStartingInch + (float)(Converters.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
 
                     // Get inch scaling values
-                    double xInchScale = Convertors.GetInches(oaSize.XExtent, mu.XUnitsPerBase, mu.BaseUnit);
-                    double yInchScale = Convertors.GetInches(oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
+                    double xInchScale = Converters.GetInches(oaSize.XExtent, mu.XUnitsPerBase, mu.BaseUnit);
+                    double yInchScale = Converters.GetInches(oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
 
                     // We have the inch value and number of pixels, so set DPI based on those values
                     Bitmap bmp = new Bitmap(new MemoryStream(image.Data));
@@ -136,16 +145,48 @@ namespace AFPParser.UI
 
         private void DrawPresentationText(PrintPageEventArgs e)
         {
-            // Get the active environment group
-            BAG aeGroup = pageContainers[curPageIndex].GetStructure<BAG>();
-            if (aeGroup != null)
+            // Store presentation text/page descriptor information
+            GetDescriptorInfo();
+
+            // Parse each PTX's control sequences
+            foreach (PTX text in pageContainers[curPageIndex].GetStructures<PTX>())
             {
+                // Keep a running tab of information by running through all of the control sequences
+                double curXPosition = 0;
+                double curYPosition = 0;
+                codePageMapping = CodePages.C1252;
+                fontCharacterSet = null;
+                curColor = Color.Black;
+
+                foreach (PTXControlSequence sequence in text.CSIs)
+                {
+                    Type sequenceType = sequence.GetType();
+
+                    if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence, out codePageMapping, out fontCharacterSet);
+                    else if (sequenceType == typeof(AMI)) curXPosition = Converters.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(AMB)) curYPosition = Converters.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(RMI)) curXPosition += Converters.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(RMB)) curYPosition += Converters.GetInches(((RMB)sequence).Increment, yUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(STC)) curColor = ((STC)sequence).TextColor;
+                    else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
+                    else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, (float)curXPosition, (float)curYPosition, e);
+                }
+            }
+        }
+
+        private void GetDescriptorInfo()
+        {
+            BAG activeEnvironmentGroup = pageContainers[curPageIndex].GetStructure<BAG>();
+
+            if (activeEnvironmentGroup != null)
+            {
+                aeContainer = activeEnvironmentGroup.LowestLevelContainer;
+
                 // Grab the Presentation Text Descriptor and store the units per base and base unit
                 PGD pageDescriptor = pageContainers[curPageIndex].GetStructure<PGD>();
                 PTD1 descriptor1 = pageContainers[curPageIndex].GetStructure<PTD1>();
                 PTD2 descriptor2 = pageContainers[curPageIndex].GetStructure<PTD2>();
-                int xUnitsPerBase, yUnitsPerBase;
-                Convertors.eMeasurement measurement;
+
                 if (descriptor2 != null)
                 {
                     xUnitsPerBase = descriptor2.UnitsPerXBase;
@@ -164,31 +205,6 @@ namespace AFPParser.UI
                     yUnitsPerBase = pageDescriptor.UnitsPerYBase;
                     measurement = pageDescriptor.BaseUnit;
                 }
-                
-                // Parse each PTX's control sequences
-                foreach (PTX text in pageContainers[curPageIndex].GetStructures<PTX>())
-                {
-                    // Keep a running tab of information by running through all of the control sequences
-                    Dictionary<string, byte> codePageMapping = CodePages.C1252;
-                    AFPFile.Resource fontCharacterSet = null;
-                    Color curColor = Color.Black;
-                    double curXPosition = 0;
-                    double curYPosition = 0;
-
-                    foreach (PTXControlSequence sequence in text.CSIs)
-                    {
-                        Type sequenceType = sequence.GetType();
-
-                        if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence, aeGroup.LowestLevelContainer, out codePageMapping, out fontCharacterSet);
-                        else if (sequenceType == typeof(AMI)) curXPosition = Convertors.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
-                        else if (sequenceType == typeof(AMB)) curYPosition = Convertors.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
-                        else if (sequenceType == typeof(RMI)) curXPosition += Convertors.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
-                        else if (sequenceType == typeof(RMB)) curYPosition += Convertors.GetInches(((RMB)sequence).Increment, yUnitsPerBase, measurement) * 100;
-                        else if (sequenceType == typeof(STC)) curColor = ((STC)sequence).TextColor;
-                        else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
-                        //else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, curColor, (float)curXPosition, (float)curYPosition, codePageMapping, fontCharacterSet, e);
-                    }
-                }
             }
             else
             {
@@ -196,51 +212,72 @@ namespace AFPParser.UI
             }
         }
 
-        private void DrawStringAsImage(byte[] data, Color curColor, float curXPosition, float curYPosition, Dictionary<string, byte> codePageMapping, AFPFile.Resource fontCharacterSet, PrintPageEventArgs e)
+        private void DrawStringAsImage(byte[] data, float curXPosition, float curYPosition, PrintPageEventArgs e)
         {
-            // Build a list of images that will be used (all unique points of data should be associated with raster data by GID)
-            Dictionary<byte, Bitmap> bmps = new Dictionary<byte, Bitmap>();
-            foreach (KeyValuePair<string, bool[,]> kvp in ((FontObjectContainer)fontCharacterSet.Fields[0].LowestLevelContainer).RasterPatterns)
+            if (fontCharacterSet != null)
             {
-                // Lookup byte by GID in our code page mappings table
-                if (codePageMapping.ContainsKey(kvp.Key))
+                // Build a list of images that will be used (all unique points of data should be associated with raster data by GID)
+                List<KeyValuePair<Bitmap, FNI.Info>> bmps = new List<KeyValuePair<Bitmap, FNI.Info>>();
+                IReadOnlyDictionary<FNI.Info, bool[,]> patterns = ((FontObjectContainer)fontCharacterSet.Fields[0].LowestLevelContainer).RasterPatterns;
+
+                foreach (byte b in data)
                 {
-                    byte curByte = codePageMapping[kvp.Key];
+                    // Find GID
+                    if (codePageMapping.ContainsValue(b))
+                    {
+                        string gid = codePageMapping.First(c => c.Value == b).Key;
 
-                    // Build a basic bitmap out of raster information
-                    Bitmap bmp = new Bitmap(kvp.Value.GetUpperBound(0) + 1, kvp.Value.GetUpperBound(1) + 1);
-                    for (int y = 0; y < bmp.Height; y++)
-                        for (int x = 0; x < bmp.Width; x++)
-                            if (kvp.Value[x, y])
-                                bmp.SetPixel(x, y, curColor);
-                            else
-                                bmp.SetPixel(x, y, Color.White);
+                        // Get raster pattern of this GID
+                        KeyValuePair<FNI.Info, bool[,]> thisPattern = patterns.FirstOrDefault(p => p.Key.GCGID == gid);
+                        if (thisPattern.Key != null)
+                        {
+                            // Build a basic bitmap out of raster information
+                            Bitmap bmp = new Bitmap(thisPattern.Value.GetUpperBound(0) + 1, thisPattern.Value.GetUpperBound(1) + 1);
+                            for (int y = 0; y < bmp.Height; y++)
+                                for (int x = 0; x < bmp.Width; x++)
+                                    if (thisPattern.Value[x, y])
+                                        bmp.SetPixel(x, y, curColor);
 
-                    bmps.Add(curByte, bmp);
+                            // Set resolution based on active descriptor's measurement units
+                            float xResolution = (float)Converters.GetInches(bmp.Width, xUnitsPerBase, measurement);
+                            float yResolution = (float)Converters.GetInches(bmp.Height, yUnitsPerBase, measurement);
+                            bmp.SetResolution(bmp.Width / xResolution, bmp.Height / yResolution);
+
+                            bmps.Add(new KeyValuePair<Bitmap, FNI.Info>(bmp, thisPattern.Key));
+                        }
+                    }
                 }
-            }
 
-            // For each byte in our data string, lookup which bitmap to display and throw it on the screen
-            foreach (byte b in data)
-            {
-                if (bmps.ContainsKey(b))
+                // For each byte in our data string, lookup which bitmap to display and throw it on the screen
+                foreach (KeyValuePair<Bitmap, FNI.Info> kvp in bmps)
                 {
-                    e.Graphics.DrawImage(bmps[b], curXPosition, curYPosition);
+                    // Convert FNI units (1/1000 of an em) to inches. 1 em = the HEIGHT of the character
+                    float emInches = (kvp.Key.Height / kvp.Key.VerticalResolution) * 100;
+                    //float xInchWidth = (kvp.Key.Width / kvp.Key.HorizontalResolution) * 100;
+                    //float yInchWidth = (kvp.Key.Height / kvp.Key.VerticalResolution) * 100;
+                    float aSpaceInches = emInches * (kvp.Value.ASpace / 1000f);
+                    //float bSpaceInches = xInchWidth * (kvp.Value.BSpace / 1000f);
+                    //float cSpaceInches = xInchWidth * (kvp.Value.CSpace / 1000f);
+                    float baselineOffsetInches = emInches * (kvp.Value.BaselineOffset / 1000f);
+                    float charIncrement = emInches * (kvp.Value.CharIncrement / 1000f);
+
+                    // Draw image
+                    e.Graphics.DrawImage(kvp.Key, curXPosition - aSpaceInches, curYPosition - baselineOffsetInches);
 
                     // Increment our spacing by our character increment for this byte
-                    curXPosition += bmps[b].Width;
+                    curXPosition += charIncrement;
                 }
             }
         }
 
-        private void SetCodePageAndFont(SCFL sfcl, Container aegContainer, out Dictionary<string, byte> codePageMappings, out AFPFile.Resource fontCharacterSet)
+        private void SetCodePageAndFont(SCFL sfcl, out Dictionary<string, byte> codePageMappings, out AFPFile.Resource fontCharacterSet)
         {
             // Default code page to 1252
             string curCodePage = "1252";
             codePageMappings = CodePages.C1252;
             fontCharacterSet = null;
             
-            MCF1 map1 = aegContainer.GetStructure<MCF1>();
+            MCF1 map1 = aeContainer.GetStructure<MCF1>();
 
             // MCF2 is not supported yet...
             if (map1 != null)
@@ -274,7 +311,7 @@ namespace AFPParser.UI
 
                     // If code page is a resource, build the GID mapping dictionary manually.
                     AFPFile.Resource codePageResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodePage, curCodePage);
-                    if (codePageResource != null)
+                    if (codePageResource != null && codePageResource.IsLoaded)
                     {
                         codePageMappings = new Dictionary<string, byte>();
                         foreach (CPI.Info cpiInfo in codePageResource.Fields.OfType<CPI>().First().CPIInfos)
