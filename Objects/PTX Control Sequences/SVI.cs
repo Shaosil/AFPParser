@@ -15,6 +15,14 @@ namespace AFPParser.PTXControlSequences
 		public override string Description => _desc;
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public int Increment { get; private set; }
+
 		public SVI(byte[] data) : base(data) { }
-	}
+
+        public override void ParseData()
+        {
+            Increment = (int)GetNumericValue(GetSectionedData(0, 2), true);
+        }
+    }
 }

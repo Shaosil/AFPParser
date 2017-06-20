@@ -2,12 +2,12 @@ using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
 {
-	public class FND : StructuredField
-	{
-		private static string _abbr = "FND";
-		private static string _title = "Font Descriptor";
-		private static string _desc = "Specifies the overall characteristics of a font character set.";
-		private static List<Offset> _oSets = new List<Offset>()
+    public class FND : StructuredField
+    {
+        private static string _abbr = "FND";
+        private static string _title = "Font Descriptor";
+        private static string _desc = "Specifies the overall characteristics of a font character set.";
+        private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Typeface Description"),
             new Offset(32, Lookups.DataTypes.CODE, "Weight Class") { Mappings = CommonMappings.WeightClass },
@@ -29,13 +29,24 @@ namespace AFPParser.StructuredFields
             new Offset(80, Lookups.DataTypes.TRIPS, ""),
         };
 
-		public override string Abbreviation => _abbr;
-		public override string Title => _title;
-		public override string Description => _desc;
-		protected override bool IsRepeatingGroup => false;
-		protected override int RepeatingGroupStart => 0;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Abbreviation => _abbr;
+        public override string Title => _title;
+        public override string Description => _desc;
+        protected override bool IsRepeatingGroup => false;
+        protected override int RepeatingGroupStart => 0;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public FND(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
-	}
+        // Parsed Data
+        public int NominalVerticalSize { get; private set; }
+        public int NominalHorizontalSize { get; private set; }
+        public float EmInches => (NominalVerticalSize / 10) / 72f;
+
+        public FND(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            NominalVerticalSize = (int)GetNumericValue(GetSectionedData(36, 2), false);
+            NominalHorizontalSize = (int)GetNumericValue(GetSectionedData(42, 2), false);
+        }
+    }
 }

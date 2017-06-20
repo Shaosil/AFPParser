@@ -48,7 +48,25 @@ namespace AFPParser.StructuredFields
         }
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
+        // Parsed Data
+        public IReadOnlyList<Info> FNOInfo { get; private set; }
+
         public FNO(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+
+        public override void ParseData()
+        {
+            // Get all groups
+            int curIndx = 0;
+            List<Info> allInfo = new List<Info>();
+
+            while (curIndx < Data.Length)
+            {
+                allInfo.Add(new Info((int)GetNumericValue(GetSectionedData(curIndx + 8, 2), false)));
+                curIndx += RepeatingGroupLength;
+            }
+
+            FNOInfo = allInfo;
+        }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
@@ -89,6 +107,16 @@ namespace AFPParser.StructuredFields
             }
 
             return sb.ToString();
+        }
+
+        public class Info
+        {
+            public int SpaceCharIncrement { get; private set; }
+
+            public Info(int spaceCharInc)
+            {
+                SpaceCharIncrement = spaceCharInc;
+            }
         }
     }
 }
