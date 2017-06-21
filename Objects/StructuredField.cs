@@ -98,6 +98,7 @@ namespace AFPParser
 
                         // For Triplets, parse them all at once
                         case Lookups.DataTypes.TRIPS:
+                            sb.AppendLine();
                             foreach (Triplet t in Triplets)
                                 sb.AppendLine(t.GetFullDescription());
                             break;

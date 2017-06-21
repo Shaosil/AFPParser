@@ -39,6 +39,7 @@ namespace AFPParser
             { "D3A8CB", typeof(BPM) }, // Begin Page Map
             { "D3A85F", typeof(BPS) }, // Begin Page Segment
             { "D3A89B", typeof(BPT) }, // Begin Presentation Text Object
+            { "D3A8A5", typeof(BPF) }, // Begin Print File
             { "D3A8CE", typeof(BRS) }, // Begin Resource
             { "D3A8C6", typeof(BRG) }, // Begin Resource Group
             { "D3A8D9", typeof(BSG) }, // Begin Resource Environment Group
@@ -67,6 +68,7 @@ namespace AFPParser
             { "D3A9CB", typeof(EPM) }, // End Page Map
             { "D3A95F", typeof(EPS) }, // End Page Segment
             { "D3A99B", typeof(EPT) }, // End Presentation Text
+            { "D3A9A5", typeof(EPF) }, // End Print File
             { "D3A9CE", typeof(ERS) }, // End Resource
             { "D3A9C6", typeof(ERG) }, // End Resource Group
             { "D3A9D9", typeof(ESG) }, // End Resource Environment Group

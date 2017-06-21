@@ -48,6 +48,8 @@ namespace AFPParser.Triplets
                 formattedDate = formattedDate.AddHours(hoursAhead).AddMinutes(minutesAhead);
             }
 
+            sb.AppendLine($"Date: {formattedDate}");
+
             return sb.ToString();
         }
     }

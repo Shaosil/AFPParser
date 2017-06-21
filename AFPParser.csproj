@@ -136,8 +136,10 @@
     <Compile Include="Objects\Structured Fields\BNG.cs" />
     <Compile Include="Objects\Structured Fields\BOC.cs" />
     <Compile Include="Objects\Structured Fields\BOG.cs" />
+    <Compile Include="Objects\Structured Fields\EPF.cs" />
     <Compile Include="Objects\Structured Fields\BPG.cs" />
     <Compile Include="Objects\Structured Fields\BPM.cs" />
+    <Compile Include="Objects\Structured Fields\BPF.cs" />
     <Compile Include="Objects\Structured Fields\BPS.cs" />
     <Compile Include="Objects\Structured Fields\BPT.cs" />
     <Compile Include="Objects\Structured Fields\BRG.cs" />

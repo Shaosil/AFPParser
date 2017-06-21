@@ -87,7 +87,7 @@ namespace AFPParser
 
             if (Offsets.Any())
                 // Write out each implemented offset's description
-                foreach (Offset oSet in Offsets)
+                foreach (Offset oSet in Offsets.Where(o => o.StartingIndex < Data.Length))
                 {
                     // Get sectioned data
                     IEnumerable<Offset> nextOffsets = Offsets.Where(o => o.StartingIndex > oSet.StartingIndex);
