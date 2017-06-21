@@ -20,6 +20,8 @@ namespace AFPParser.UI
 
         // PTX Storage
         private Container aeContainer = null;
+        private float curXPosition = 0;
+        private float curYPosition = 0;
         private int xUnitsPerBase = 0;
         private int yUnitsPerBase = 0;
         private float interCharAdjInch = 0;
@@ -100,10 +102,10 @@ namespace AFPParser.UI
             int yPos = imc.Cells.Min(c => c.CellPosition.YOffset);
             float xInchPos = xStartingInch + (float)(Converters.GetInches(xPos, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit) * 100);
             float yInchPos = yStartingInch + (float)(Converters.GetInches(yPos, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit) * 100);
-            double widthInches = Converters.GetInches(bmp.Width, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit);
             double heightInches = Converters.GetInches(bmp.Height, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit);
 
-            bmp.SetResolution((float)(bmp.Width / widthInches), (float)(bmp.Height / heightInches));
+            float dpi = (float)Math.Round(bmp.Height / heightInches);
+            bmp.SetResolution(dpi, dpi);
             e.Graphics.DrawImage(bmp, xInchPos, yInchPos);
         }
 
@@ -128,14 +130,12 @@ namespace AFPParser.UI
                     float yInchOrigin = yStartingInch + (float)(Converters.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
 
                     // Get inch scaling values
-                    double widthInches = Converters.GetInches(oaSize.XExtent, mu.XUnitsPerBase, mu.BaseUnit);
                     double heightInches = Converters.GetInches(oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
 
                     // We have the inch value and number of pixels, so set DPI based on those values
                     Bitmap bmp = new Bitmap(new MemoryStream(image.Data));
-                    float xDpi = (float)(bmp.Width / widthInches);
-                    float yDpi = (float)(bmp.Height / heightInches);
-                    bmp.SetResolution(xDpi, yDpi);
+                    float dpi = (float)Math.Round(bmp.Height / heightInches);
+                    bmp.SetResolution(dpi, dpi);
 
                     e.Graphics.DrawImage(bmp, xInchOrigin, yInchOrigin);
                 }
@@ -154,11 +154,9 @@ namespace AFPParser.UI
             // Parse each PTX's control sequences
             foreach (PTX text in pageContainers[curPageIndex].GetStructures<PTX>())
             {
-                // Keep a running tab of information by running through all of the control sequences
-                double curXPosition = 0;
-                double curYPosition = 0;
-
                 // Reset PTX variables at the beginning of each PTX field
+                curXPosition = 0;
+                curYPosition = 0;
                 interCharAdjInch = 0;
                 varSpaceCharInch = 0;
                 codePageMapping = CodePages.C1252;
@@ -170,15 +168,15 @@ namespace AFPParser.UI
                     Type sequenceType = sequence.GetType();
 
                     if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence, out codePageMapping, out codePage, out fontCharacterSet);
-                    else if (sequenceType == typeof(AMI)) curXPosition = Converters.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
-                    else if (sequenceType == typeof(AMB)) curYPosition = Converters.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
-                    else if (sequenceType == typeof(RMI)) curXPosition += Converters.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
-                    else if (sequenceType == typeof(RMB)) curYPosition += Converters.GetInches(((RMB)sequence).Increment, yUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(AMI)) curXPosition = (float)Converters.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(AMB)) curYPosition = (float)Converters.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(RMI)) curXPosition += (float)Converters.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(RMB)) curYPosition += (float)Converters.GetInches(((RMB)sequence).Increment, yUnitsPerBase, measurement) * 100;
                     else if (sequenceType == typeof(STC)) curColor = ((STC)sequence).TextColor;
                     else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
-                    else if (sequenceType == typeof(SIA)) interCharAdjInch = (((SIA)sequence).Adjustment * (((SIA)sequence).Forward ? 1 : -1)) / 1440f;
-                    else if (sequenceType == typeof(SVI)) varSpaceCharInch = ((SVI)sequence).Increment / 1440f;
-                    else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, (float)curXPosition, (float)curYPosition, e);
+                    else if (sequenceType == typeof(SIA)) interCharAdjInch = ((((SIA)sequence).Adjustment * (((SIA)sequence).Forward ? 1 : -1)) / 1440f) * 100;
+                    else if (sequenceType == typeof(SVI)) varSpaceCharInch = (((SVI)sequence).Increment / 1440f) * 100;
+                    else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, e);
                 }
             }
         }
@@ -221,7 +219,7 @@ namespace AFPParser.UI
             }
         }
 
-        private void DrawStringAsImage(byte[] data, float curXPosition, float curYPosition, PrintPageEventArgs e)
+        private void DrawStringAsImage(byte[] data, PrintPageEventArgs e)
         {
             if (fontCharacterSet != null)
             {
@@ -257,9 +255,9 @@ namespace AFPParser.UI
                                             bmp.SetPixel(x, y, curColor);
 
                                 // Since we know how many inches 1 em is, we can determine inch width and height of each character
-                                float widthInches = emInchSize * (thisPattern.Key.CharIncrement / 1000f);
                                 float heightInches = emInchSize * ((thisPattern.Key.AscenderHeight + thisPattern.Key.DescenderDepth) / 1000f);
-                                bmp.SetResolution(bmp.Width / widthInches, bmp.Height / heightInches);
+                                float dpi = (float)Math.Round(bmp.Height / heightInches);
+                                bmp.SetResolution(dpi, dpi);
 
                                 bmps.Add(new KeyValuePair<Bitmap, FNI.Info>(bmp, thisPattern.Key));
                             }
@@ -272,9 +270,7 @@ namespace AFPParser.UI
                 {
                     // If the BMP is null, increment our X position by (variable space character increment)
                     if (kvp.Key == null)
-                    {
                         curXPosition += GetVariableSpaceIncrementInch();
-                    }
                     else
                     {
                         float aSpaceInches = emInchSize * (kvp.Value.ASpace / 1000f) * 100;

@@ -22,7 +22,9 @@ namespace AFPParser.PTXControlSequences
 
         public override void ParseData()
         {
+            // Don't set if FFFF
             Increment = (int)GetNumericValue(GetSectionedData(0, 2), true);
+            if (Increment < 0) Increment = 0;
         }
     }
 }
