@@ -15,7 +15,7 @@ namespace AFPParser.Triplets
                     { 0x02, "Relative Metrics" }
                 }
             },
-            new Offset(1, Lookups.DataTypes.CODE, "Raster Pattern Resolution Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(1, Lookups.DataTypes.CODE, "Raster Pattern Resolution Base") { Mappings = CommonMappings.UnitBase },
             new Offset(2, Lookups.DataTypes.UBIN, "Raster Units per Base")
         };
 

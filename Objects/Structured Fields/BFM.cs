@@ -6,8 +6,12 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "BFM";
 		private static string _title = "Begin Form Map";
-		private static string _desc = "The Begin Form Map structured field begins a form map object, also called a form definition or formdef.A form map is a print control resource object that contains one or more medium map resource objects that are invokable on document and page boundaries and that specify a complete set of presentation controls.It also contains an optional document environment group(DEG) that defines the presentation environment for the form map.";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Begins a form map object, also called a form definition or formdef.";
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Form Map Name"),
+            new Offset(8, Lookups.DataTypes.TRIPS, "")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

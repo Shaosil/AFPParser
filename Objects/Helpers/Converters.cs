@@ -7,7 +7,7 @@ namespace AFPParser
         public enum eMeasurement { Inches, Centimeters }
         public static eMeasurement GetBaseUnit(byte b)
         {
-            return CommonMappings.AxisBase[b] == CommonMappings.AxisBase[0] ? eMeasurement.Inches : eMeasurement.Centimeters;
+            return CommonMappings.UnitBase[b] == CommonMappings.UnitBase[0] ? eMeasurement.Inches : eMeasurement.Centimeters;
         }
         public static double GetMeasurement(int units, int unitsPerBase)
         {

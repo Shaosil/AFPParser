@@ -176,9 +176,52 @@ namespace AFPParser.UI
                     else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
                     else if (sequenceType == typeof(SIA)) interCharAdjInch = ((((SIA)sequence).Adjustment * (((SIA)sequence).Forward ? 1 : -1)) / 1440f) * 100;
                     else if (sequenceType == typeof(SVI)) varSpaceCharInch = (((SVI)sequence).Increment / 1440f) * 100;
+                    else if (sequenceType == typeof(DIR) || sequenceType == typeof(DBR)) DrawLine(sequence, e);
                     else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, e);
                 }
             }
+        }
+
+        private void DrawLine(PTXControlSequence sequence, PrintPageEventArgs e)
+        {
+            // Inline (horizontal) or Baseline (vertical)?
+            bool isInline = sequence.GetType() == typeof(DIR);
+
+            // Get the width of the line first (1/1440 of an inch)
+            int width = (int)sequence.GetType().GetProperty("RuleWidth").GetValue(sequence);
+
+            // One dot will be visible if the width is greater than....?
+            float widthInches = (width / 1440f) * 100;
+            float dotInches = (1 / (float)(isInline ? e.PageSettings.PrinterResolution.X : e.PageSettings.PrinterResolution.Y)) * 100;
+
+            // Prepare X,Y origin/destination
+            int length = (int)sequence.GetType().GetProperty("RuleLength").GetValue(sequence);
+            float xOrig = curXPosition, yOrig = curYPosition, xDest = curXPosition, yDest = curYPosition;
+
+            // If the width > 1 dot, shift the line points by half the width to un-center it
+            if (widthInches > dotInches)
+            {
+                if (isInline)
+                {
+                    // Shift Y
+                    yOrig -= widthInches / 2f;
+                    yDest -= widthInches / 2f;
+                }
+                else
+                {
+                    // Shift X
+                    xOrig -= widthInches / 2f;
+                    xDest -= widthInches / 2f;
+                }
+            }
+
+            // Set destination
+            if (isInline)
+                xDest += (length / 1440f) * 100;
+            else
+                yDest += (length / 1440f) * 100;
+
+            e.Graphics.DrawLine(new Pen(curColor), xOrig, yOrig, xDest, yDest);
         }
 
         private void GetDescriptorInfo()

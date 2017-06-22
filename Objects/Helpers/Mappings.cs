@@ -20,7 +20,7 @@ namespace AFPParser
                 { 0x02, "To be incremented|Not to be incremented" }
             };
 
-        public static Dictionary<byte, string> AxisBase = new Dictionary<byte, string>()
+        public static Dictionary<byte, string> UnitBase = new Dictionary<byte, string>()
             {
                 { 0x00, "10 Inches" },
                 { 0x01, "10 Centimeters" }

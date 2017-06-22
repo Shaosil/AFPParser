@@ -6,8 +6,11 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "EFM";
 		private static string _title = "End Form Map";
-		private static string _desc = "The End Form Map structured field terminates the form map object initiated by a Begin Form Map structured field";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Terminates the form map object initiated by a Begin Form Map structured field";
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Form Map Name")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

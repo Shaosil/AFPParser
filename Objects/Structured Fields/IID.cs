@@ -11,8 +11,8 @@ namespace AFPParser.StructuredFields
 		private static string _desc = "Contains the resolution, size, and color information of the IM image.";
 		private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(12, Lookups.DataTypes.CODE, "X Axis Base") { Mappings = CommonMappings.AxisBase },
-            new Offset(13, Lookups.DataTypes.CODE, "Y Axis Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(12, Lookups.DataTypes.CODE, "X Axis Base") { Mappings = CommonMappings.UnitBase },
+            new Offset(13, Lookups.DataTypes.CODE, "Y Axis Base") { Mappings = CommonMappings.UnitBase },
             new Offset(14, Lookups.DataTypes.UBIN, "X Units per Base"),
             new Offset(16, Lookups.DataTypes.UBIN, "Y Units per Base"),
             new Offset(18, Lookups.DataTypes.UBIN, "X Size"),

@@ -6,8 +6,11 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "EMM";
 		private static string _title = "End Medium Map";
-		private static string _desc = "The End Medium Map structured field terminates the medium map object initiated by a Begin Medium Map structured field";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Terminates the medium map object initiated by a Begin Medium Map structured field";
+		private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.CHAR, "Medium Map Name")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

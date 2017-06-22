@@ -6,8 +6,12 @@ namespace AFPParser.StructuredFields
 	{
 		private static string _abbr = "PGP";
 		private static string _title = "Page Position (Format 1)";
-		private static string _desc = "The Page Position structured field specifies the position and orientation of a page's presentation space on the medium presentation space for the physical medium. The PGP may be located in a medium map or in the document environment group of a form map.When present in the active medium map, it overrides a PGP in the document environment group of the form map. If N-up partitioning is specified by the Medium Modification Control structured field in the active medium map, the medium presentation spaces on the front and back sides of a sheet are divided into N partitions; and the Page Position structured field specifies the partition into  which each page is mapped and with respect to which the page presentation space is positioned and oriented.  Read More on Docs";
-		private static List<Offset> _oSets = new List<Offset>();
+		private static string _desc = "Specifies the position and orientation of a page's presentation space on the medium presentation space for the physical medium.";
+        private static List<Offset> _oSets = new List<Offset>()
+        {
+            new Offset(0, Lookups.DataTypes.UBIN, "X Origin"),
+            new Offset(3, Lookups.DataTypes.UBIN, "Y Origin")
+        };
 
 		public override string Abbreviation => _abbr;
 		public override string Title => _title;

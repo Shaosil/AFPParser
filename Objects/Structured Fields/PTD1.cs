@@ -11,8 +11,8 @@ namespace AFPParser.StructuredFields
         private static string _desc = "Specifies the size of a text object presentation space and the measurement units used for size and for all linear measurements within the text object.";
         private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "X Axis Unit Base") { Mappings = CommonMappings.AxisBase },
-            new Offset(1, Lookups.DataTypes.CODE, "Y Axis Unit Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(0, Lookups.DataTypes.CODE, "X Axis Unit Base") { Mappings = CommonMappings.UnitBase },
+            new Offset(1, Lookups.DataTypes.CODE, "Y Axis Unit Base") { Mappings = CommonMappings.UnitBase },
             new Offset(2, Lookups.DataTypes.UBIN, "Units Per X Base"),
             new Offset(4, Lookups.DataTypes.UBIN, "Units Per Y Base"),
             new Offset(6, Lookups.DataTypes.UBIN, "X Axis Space Extent"),

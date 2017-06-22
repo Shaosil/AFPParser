@@ -14,7 +14,7 @@ namespace AFPParser
         public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, IMAGESDFS, UBIN, SBIN, COLOR };
 
         #region Structured Fields
-        public static Dictionary<string, Type> StructuredFields = new Dictionary<string, Type>()
+        public static IReadOnlyDictionary<string, Type> StructuredFields = new Dictionary<string, Type>()
         {
             { "D3A8C9", typeof(BAG) }, // Begin Active Environment Group
             { "D3A8EB", typeof(BBC) }, // Begin Bar Code Object
@@ -150,7 +150,7 @@ namespace AFPParser
         #endregion
 
         #region Triplets
-        public static Dictionary<byte, Type> Triplets = new Dictionary<byte, Type>()
+        public static IReadOnlyDictionary<byte, Type> Triplets = new Dictionary<byte, Type>()
         {
             { 0x01, typeof(GCSGID_CPGID_CCSID) },
             { 0x02, typeof(FullyQualifiedName) },
@@ -218,7 +218,7 @@ namespace AFPParser
         #endregion
 
         #region PTX Control Sequences
-        public static Dictionary<byte, Type> PTXControlSequences = new Dictionary<byte, Type>()
+        public static IReadOnlyDictionary<byte, Type> PTXControlSequences = new Dictionary<byte, Type>()
         {
             { 0x6A, typeof(UCT) },
             { 0x6D, typeof(GLC) },
@@ -277,7 +277,7 @@ namespace AFPParser
         #endregion
 
         #region Image Self Defining Fields
-        public static Dictionary<byte, Type> ImageSelfDefiningFields = new Dictionary<byte, Type>()
+        public static IReadOnlyDictionary<byte, Type> ImageSelfDefiningFields = new Dictionary<byte, Type>()
         {
             { 0x70, typeof(BeginSegment)},
             { 0x71, typeof(EndSegment)},
@@ -309,7 +309,7 @@ namespace AFPParser
         #endregion
 
         #region Standard OCA Color Table
-        public static Dictionary<byte, Color> StandardOCAColors = new Dictionary<byte, Color>()
+        public static IReadOnlyDictionary<byte, Color> StandardOCAColors = new Dictionary<byte, Color>()
         {
             { 0x01, Color.Blue },
             { 0x02, Color.Red },
@@ -327,6 +327,32 @@ namespace AFPParser
             { 0x0E, Color.DarkGoldenrod },
             { 0x0F, Color.Gray },
             { 0x10, Color.Brown }
+        };
+        #endregion
+
+        #region MMC Keywords
+        public static IReadOnlyDictionary<byte, string> MMCKeywords = new Dictionary<byte, string>()
+        {
+            { 0x0E, "Horizontal print adjustment" },
+            { 0x90, "Media destination selector — high" },
+            { 0x91, "Media destination selector — low" },
+            { 0xA0, "Medium information" },
+            { 0xA1, "Fixed perforation cut" },
+            { 0xA2, "Fixed separation cut" },
+            { 0xB4, "Presentation subsystem set-up ID: high-order byte" },
+            { 0xB5, "Presentation subsystem set-up ID: low-order byte" },
+            { 0xD1, "Offset stack/edge mark change" },
+            { 0xE0, "Media source selection format" },
+            { 0xE1, "Media source selector" },
+            { 0xE8, "Media type local ID: high-order byte" },
+            { 0xE9, "Media type local ID: low-order byte" },
+            { 0xF1, "Forms flash" },
+            { 0xF2, "Medium overlay local identifier" },
+            { 0xF3, "Text suppression local identifier" },
+            { 0xF4, "Duplex control" },
+            { 0xF8, "Print quality control" },
+            { 0xF9, "Constant forms control" },
+            { 0xFC, "N-up format control" }
         };
         #endregion
     }

@@ -10,7 +10,7 @@ namespace AFPParser.StructuredFields
 		private static string _desc = "Carries the parameters that define the size and resolution of the Image Presentation Space, and the parameters required to interpret the Image Segment.";
 		private static List<Offset> _oSets = new List<Offset>()
         {
-            new Offset(0, Lookups.DataTypes.CODE, "Unit Base") { Mappings = CommonMappings.AxisBase },
+            new Offset(0, Lookups.DataTypes.CODE, "Unit Base") { Mappings = CommonMappings.UnitBase },
             new Offset(1, Lookups.DataTypes.UBIN, "Horizontal Resolution"),
             new Offset(3, Lookups.DataTypes.UBIN, "Vertical Resolution"),
             new Offset(5, Lookups.DataTypes.UBIN, "Horizontal Size"),
