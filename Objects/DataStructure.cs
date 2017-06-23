@@ -10,7 +10,7 @@ namespace AFPParser
 {
     public abstract class DataStructure
     {
-        public static Regex RegexIsNotBlank = new Regex("\\w");
+        public static Regex RegexIsReadableText = new Regex("^[\\w\\s]*$");
 
         public const string EBCDIC = "IBM037";
 
@@ -129,7 +129,7 @@ namespace AFPParser
         {
             // Convert to EBCDIC, and if there are no valid characters, blank it out
             string ebcdicString = Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length));
-            if (!RegexIsNotBlank.IsMatch(ebcdicString)) ebcdicString = string.Empty;
+            if (!RegexIsReadableText.IsMatch(ebcdicString)) ebcdicString = string.Empty;
             return ebcdicString;
         }
 

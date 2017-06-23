@@ -72,7 +72,7 @@ namespace AFPParser
                 for (int i = 0; i < Offsets.Count; i++)
                 {
                     // If we are past the data length, break out of the loop
-                    if (skip >= Data.Length) break;
+                    if (skip > Data.Length) break;
 
                     // Get the length of the current repeating group if it is retrieved in each section (if there is not a fixed length)
                     if (IsRepeatingGroup && RepeatingGroupLength == 0 && i == 0)

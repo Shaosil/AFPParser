@@ -9,6 +9,7 @@ using System.Drawing.Printing;
 using System.Collections.Generic;
 using AFPParser.StructuredFields;
 using AFPParser.PTXControlSequences;
+using System.Diagnostics;
 
 namespace AFPParser.UI
 {
@@ -17,6 +18,9 @@ namespace AFPParser.UI
         private AFPFile afpFile;
         private List<Container> pageContainers;
         private int curPageIndex = 0;
+
+        // Raster pattern cache for text
+        List<FontCache> fontCaches;
 
         // PTX Storage
         private Container aeContainer = null;
@@ -27,9 +31,9 @@ namespace AFPParser.UI
         private float interCharAdjInch = 0;
         private float varSpaceCharInch = 0;
         private Converters.eMeasurement measurement = Converters.eMeasurement.Inches;
-        private Dictionary<string, byte> codePageMapping = CodePages.C1252;
-        private AFPFile.Resource codePage = null;
-        private AFPFile.Resource fontCharacterSet = null;
+        private string curCodePage = string.Empty;
+        private string curFontCharSet = string.Empty;
+        private AFPFile.Resource curFontCharSetResource = null;
         private Color curColor = Color.Black;
 
         public PrintParser(AFPFile file)
@@ -39,6 +43,141 @@ namespace AFPParser.UI
             // Capture all pages' containers
             pageContainers = afpFile.Fields.OfType<BPG>().Select(p => p.LowestLevelContainer).ToList();
             if (pageContainers.Count == 0) pageContainers = new List<Container>() { afpFile.Fields[0].LowestLevelContainer };
+
+            CacheGraphicCharacters();
+        }
+
+        private void CacheGraphicCharacters()
+        {
+            curCodePage = "";
+            curFontCharSet = "";
+            fontCaches = new List<FontCache>();
+
+            // On every page, store a unique list of every used code point, as well as associated font information
+            foreach (Container pc in pageContainers)
+            {
+                foreach (PTX ptx in pc.GetStructures<PTX>())
+                {
+                    foreach (PTXControlSequence cs in ptx.CSIs)
+                    {
+                        // Store active code page and coded font
+                        if (cs.GetType() == typeof(SCFL))
+                        {
+                            // Lookup info from MCF1 data on this page
+                            MCF1.MCF1Data mcfData = pc.GetStructure<MCF1>().MappedData.First(m => m.ID == ((SCFL)cs).FontId);
+
+                            // If we have a coded font, we need to load that resource. Otherwise, get the values from here
+                            if (mcfData != null)
+                            {
+                                AFPFile.Resource codedFontResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodedFont, mcfData.CodedFontName);
+                                CFI resourceCFI = codedFontResource != null && codedFontResource.IsLoaded ? codedFontResource.Fields.OfType<CFI>().FirstOrDefault() : null;
+
+                                if (resourceCFI != null && resourceCFI.FontInfoList.Any())
+                                {
+                                    // Get the code page and font char set from the resource
+                                    curCodePage = resourceCFI.FontInfoList[0].CodePageName;
+                                    curFontCharSet = resourceCFI.FontInfoList[0].FontCharacterSetName;
+                                }
+                                else
+                                {
+                                    // Store mcf's code page and font char set specifiers
+                                    curCodePage = mcfData.CodePageName;
+                                    curFontCharSet = mcfData.FontCharacterSetName;
+                                }
+                            }
+                        }
+                        else if (cs.GetType() == typeof(TRN))
+                            foreach (byte b in cs.Data)
+                                // Add a new font cache item if this exact combo (byte/code page/char set) does not yet exist
+                                if (!fontCaches.Any(f => f.CodePoint == b && f.CodePage == curCodePage && f.FontCharSet == curFontCharSet))
+                                    fontCaches.Add(new FontCache(b, curCodePage, curFontCharSet));
+                    }
+                }
+            }
+
+            // For each byte/code point/font, generate a bitmap by looking up its resource
+            curCodePage = "";
+            curFontCharSet = "";
+            Dictionary<byte, string> cpMappings = CodePages.C1252;
+            AFPFile.Resource fontResource = null;
+            FontObjectContainer foc = null;
+            float emInchSize = 0;
+            byte vsc = 0;
+            foreach (FontCache fc in fontCaches.OrderBy(f => f.CodePage).ThenBy(f => f.FontCharSet))
+            {
+                // Generate new code page mappings if needed
+                if (fc.CodePage != curCodePage)
+                {
+                    cpMappings = new Dictionary<byte, string>();
+
+                    // If the code page is a resource, generate from scratch
+                    AFPFile.Resource cp = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodePage, fc.CodePage);
+                    if (cp != null && cp.IsLoaded)
+                    {
+                        foreach (CPI.Info info in cp.Fields.OfType<CPI>().First().CPIInfos)
+                            cpMappings.Add(info.CodePoints[0], info.GID);
+
+                        // Is variable space char if the byte equals the one specified by the code page descriptor
+                        vsc = cp.Fields.OfType<CPC>().First().VariableSpaceCharacter;
+                    }
+                    // Else, get by looking up last 4 page digits
+                    else
+                    {
+                        // Get probably name of static field in Code Pages lookups
+                        string sectionedCodePage = string.Empty;
+                        if (fc.CodePage.Length >= 4) sectionedCodePage = $"C{fc.CodePage.Substring(fc.CodePage.Length - 4)}";
+
+                        // Find the matching lookup method in our code page helper class
+                        FieldInfo field = typeof(CodePages).GetField(sectionedCodePage);
+                        if (field != null) cpMappings = (Dictionary<byte, string>)field.GetValue(null);
+
+                        // Is variable space character if the byte GID equals SP010000
+                        vsc = cpMappings.First(c => c.Value == "SP010000").Key;
+                    }
+
+                    curCodePage = fc.CodePage;
+                }
+
+                // Lookup new font character set if needed
+                if (fc.FontCharSet != curFontCharSet)
+                {
+                    fontResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, fc.FontCharSet);
+                    curFontCharSet = fc.FontCharSet;
+                    foc = (FontObjectContainer)fontResource.Fields[0].LowestLevelContainer;
+                    emInchSize = foc.GetStructure<FND>().EmInches;
+                }
+
+                // Generate a bitmap for this code point by looking up the raster pattern of the FCS by current code page
+                string gid = cpMappings.ContainsKey(fc.CodePoint) ? cpMappings[fc.CodePoint] : string.Empty;
+                if (!string.IsNullOrEmpty(gid) && fontResource != null && fontResource.IsLoaded)
+                {
+                    // Get raster pattern info of GID
+                    KeyValuePair<FNI.Info, bool[,]> pattern = foc.RasterPatterns.FirstOrDefault(p => p.Key.GCGID == gid);
+
+                    // Build bitmap
+                    if (pattern.Key != null)
+                    {
+                        // Set font and variable space info here
+                        fc.FontInfo = pattern.Key;
+                        fc.IsVariableSpaceChar = fc.CodePoint == vsc;
+                        fc.EmInchSize = emInchSize;
+
+                        Bitmap bmp = new Bitmap(pattern.Value.GetUpperBound(0) + 1, pattern.Value.GetUpperBound(1) + 1);
+                        for (int y = 0; y < bmp.Height; y++)
+                            for (int x = 0; x < bmp.Width; x++)
+                                if (pattern.Value[x, y])
+                                    bmp.SetPixel(x, y, curColor);
+
+                        // Since we know how many inches 1 em is, we can determine inch width and height of each character
+                        float heightInches = emInchSize * ((pattern.Key.AscenderHeight + pattern.Key.DescenderDepth) / 1000f);
+                        float dpi = (float)Math.Round(bmp.Height / heightInches);
+                        bmp.SetResolution(dpi, dpi);
+
+                        // Assign to font cache
+                        fc.Pattern = bmp;
+                    }
+                }
+            }
         }
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
@@ -159,15 +298,16 @@ namespace AFPParser.UI
                 curYPosition = 0;
                 interCharAdjInch = 0;
                 varSpaceCharInch = 0;
-                codePageMapping = CodePages.C1252;
-                fontCharacterSet = null;
+                curCodePage = string.Empty;
+                curFontCharSet = string.Empty;
+                curFontCharSetResource = null;
                 curColor = Color.Black;
 
                 foreach (PTXControlSequence sequence in text.CSIs)
                 {
                     Type sequenceType = sequence.GetType();
 
-                    if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence, out codePageMapping, out codePage, out fontCharacterSet);
+                    if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence);
                     else if (sequenceType == typeof(AMI)) curXPosition = (float)Converters.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
                     else if (sequenceType == typeof(AMB)) curYPosition = (float)Converters.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
                     else if (sequenceType == typeof(RMI)) curXPosition += (float)Converters.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
@@ -264,69 +404,27 @@ namespace AFPParser.UI
 
         private void DrawStringAsImage(byte[] data, PrintPageEventArgs e)
         {
-            if (fontCharacterSet != null)
+            // Find the matching cached item that matches each byte, code page, and font character set
+            foreach (byte b in data)
             {
-                // Build a list of images that will be used (all unique points of data should be associated with raster data by GID)
-                FontObjectContainer foc = (FontObjectContainer)fontCharacterSet.Fields[0].LowestLevelContainer;
-                List<KeyValuePair<Bitmap, FNI.Info>> bmps = new List<KeyValuePair<Bitmap, FNI.Info>>();
+                FontCache fc = fontCaches.First(f => f.CodePoint == b && f.CodePage == curCodePage && f.FontCharSet == curFontCharSet);
 
-                // Point size = (nominal font size / 10). There are 72 points in an inch
-                FND descriptor = foc.GetStructure<FND>();
-                float emInchSize = descriptor.EmInches;
-
-                foreach (byte b in data)
+                // If this byte is a space character, just increment our x position
+                if (fc.IsVariableSpaceChar)
+                    curXPosition += GetVariableSpaceIncrementInch();
+                else if (fc.Pattern != null)
                 {
-                    // Find GID
-                    if (codePageMapping.ContainsValue(b))
-                    {
-                        string gid = codePageMapping.First(c => c.Value == b).Key;
+                    // If BMP is null, no graphic character was found. Skip these entirely
+                    float aSpaceInches = fc.EmInchSize * (fc.FontInfo.ASpace / 1000f) * 100;
+                    float cSpaceInches = fc.EmInchSize * (fc.FontInfo.CSpace / 1000f) * 100;
+                    float baselineOffsetInches = fc.EmInchSize * (fc.FontInfo.BaselineOffset / 1000f) * 100;
+                    float charIncrement = fc.EmInchSize * (fc.FontInfo.CharIncrement / 1000f) * 100;
 
-                        // If this is a variable space character, only increment our X position by the defined value
-                        if ((codePage != null && codePage.IsLoaded && b == codePage.Fields.OfType<CPC>().First().VariableSpaceCharacter) || gid == "SP010000")
-                            bmps.Add(new KeyValuePair<Bitmap, FNI.Info>());
-                        else
-                        {
-                            // Get raster pattern of this GID
-                            KeyValuePair<FNI.Info, bool[,]> thisPattern = foc.RasterPatterns.FirstOrDefault(p => p.Key.GCGID == gid);
-                            if (thisPattern.Key != null)
-                            {
-                                // Build a basic bitmap out of raster information
-                                Bitmap bmp = new Bitmap(thisPattern.Value.GetUpperBound(0) + 1, thisPattern.Value.GetUpperBound(1) + 1);
-                                for (int y = 0; y < bmp.Height; y++)
-                                    for (int x = 0; x < bmp.Width; x++)
-                                        if (thisPattern.Value[x, y])
-                                            bmp.SetPixel(x, y, curColor);
+                    // Draw image
+                    e.Graphics.DrawImage(fc.Pattern, curXPosition - aSpaceInches, curYPosition - baselineOffsetInches);
 
-                                // Since we know how many inches 1 em is, we can determine inch width and height of each character
-                                float heightInches = emInchSize * ((thisPattern.Key.AscenderHeight + thisPattern.Key.DescenderDepth) / 1000f);
-                                float dpi = (float)Math.Round(bmp.Height / heightInches);
-                                bmp.SetResolution(dpi, dpi);
-
-                                bmps.Add(new KeyValuePair<Bitmap, FNI.Info>(bmp, thisPattern.Key));
-                            }
-                        }
-                    }
-                }
-
-                // For each byte in our data string, lookup which bitmap to display and throw it on the screen
-                foreach (KeyValuePair<Bitmap, FNI.Info> kvp in bmps)
-                {
-                    // If the BMP is null, increment our X position by (variable space character increment)
-                    if (kvp.Key == null)
-                        curXPosition += GetVariableSpaceIncrementInch();
-                    else
-                    {
-                        float aSpaceInches = emInchSize * (kvp.Value.ASpace / 1000f) * 100;
-                        float cSpaceInches = emInchSize * (kvp.Value.CSpace / 1000f) * 100;
-                        float baselineOffsetInches = emInchSize * (kvp.Value.BaselineOffset / 1000f) * 100;
-                        float charIncrement = emInchSize * (kvp.Value.CharIncrement / 1000f) * 100;
-
-                        // Draw image
-                        e.Graphics.DrawImage(kvp.Key, curXPosition - aSpaceInches, curYPosition - baselineOffsetInches);
-
-                        // Increment our spacing by our character increment (+- adjustment) for this byte
-                        curXPosition += charIncrement + interCharAdjInch;
-                    }
+                    // Increment our spacing by our character increment (+- adjustment) for this byte
+                    curXPosition += charIncrement + interCharAdjInch;
                 }
             }
         }
@@ -336,29 +434,26 @@ namespace AFPParser.UI
             // 1 - The current variable space character increment
             if (varSpaceCharInch != 0) return varSpaceCharInch;
 
-            if (fontCharacterSet != null)
+            if (curFontCharSetResource != null)
             {
-                float emInches = fontCharacterSet.Fields.OfType<FND>().First().EmInches;
+                float emInches = curFontCharSetResource.Fields.OfType<FND>().First().EmInches;
 
                 // 2 - The default variable space character increment of the active coded font
-                int fontCharInc = fontCharacterSet.Fields.OfType<FNO>().First().FNOInfo[0].SpaceCharIncrement;
+                int fontCharInc = curFontCharSetResource.Fields.OfType<FNO>().First().FNOInfo[0].SpaceCharIncrement;
                 if (fontCharInc != 0) return emInches * (fontCharInc / 1000f) * 100;
 
                 // 3 - The character increment of the default variable space character code point
-                FNI.Info info = fontCharacterSet.Fields.OfType<FNI>().First().InfoList.FirstOrDefault(i => i.GCGID == "SP010000");
+                FNI.Info info = curFontCharSetResource.Fields.OfType<FNI>().First().InfoList.FirstOrDefault(i => i.GCGID == "SP010000");
                 if (info != null) return emInches * (info.CharIncrement / 1000f) * 100;
             }
 
             return 0;
         }
 
-        private void SetCodePageAndFont(SCFL sfcl, out Dictionary<string, byte> codePageMappings, out AFPFile.Resource codePage, out AFPFile.Resource fontCharacterSet)
+        private void SetCodePageAndFont(SCFL sfcl)
         {
-            // Default code page to 1252
-            string curCodePageStr = "1252";
-            codePageMappings = CodePages.C1252;
-            codePage = null;
-            fontCharacterSet = null;
+            curCodePage = string.Empty;
+            curFontCharSet = string.Empty;
 
             MCF1 map1 = aeContainer.GetStructure<MCF1>();
 
@@ -373,8 +468,8 @@ namespace AFPParser.UI
                     // If it already has a code page/font character set specified, use that.
                     if (!string.IsNullOrWhiteSpace(mcfData.CodePageName) && !string.IsNullOrWhiteSpace(mcfData.FontCharacterSetName))
                     {
-                        curCodePageStr = mcfData.CodePageName;
-                        fontCharacterSet = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, mcfData.FontCharacterSetName);
+                        curCodePage = mcfData.CodePageName;
+                        curFontCharSet = mcfData.FontCharacterSetName;
                     }
                     else
                     {
@@ -386,33 +481,35 @@ namespace AFPParser.UI
                             CFI cfi = codedFont.Fields.OfType<CFI>().FirstOrDefault();
                             if (cfi != null && cfi.FontInfoList.Any())
                             {
-                                curCodePageStr = cfi.FontInfoList[0].CodePageName;
-                                fontCharacterSet = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, cfi.FontInfoList[0].FontCharacterSetName);
+                                curCodePage = cfi.FontInfoList[0].CodePageName;
+                                curFontCharSet = cfi.FontInfoList[0].FontCharacterSetName;
                             }
                         }
                     }
-
-                    // If code page is a resource, build the GID mapping dictionary manually.
-                    codePage = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodePage, curCodePageStr);
-                    if (codePage != null && codePage.IsLoaded)
-                    {
-                        codePageMappings = new Dictionary<string, byte>();
-                        foreach (CPI.Info cpiInfo in codePage.Fields.OfType<CPI>().First().CPIInfos)
-                            codePageMappings.Add(cpiInfo.GID, cpiInfo.CodePoints[0]); // Only single byte code points are supported for now
-                    }
-                    // Else, if we have a predefined lookup table for the code page ID, use that
-                    else
-                    {
-                        string sectionedCodePage = string.Empty;
-                        if (curCodePageStr.Length >= 4)
-                            sectionedCodePage = $"C{curCodePageStr.Substring(curCodePageStr.Length - 4)}";
-
-                        // Find the matching lookup method in our code page helper class
-                        FieldInfo field = typeof(CodePages).GetField(sectionedCodePage);
-                        if (field != null)
-                            codePageMappings = (Dictionary<string, byte>)field.GetValue(null);
-                    }
                 }
+            }
+
+            if (!string.IsNullOrWhiteSpace(curFontCharSet))
+                curFontCharSetResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, curFontCharSet);
+        }
+
+        [DebuggerDisplay("0x{CodePoint.ToString(\"X\"),nq} / {CodePage,nq} / {FontCharSet,nq}")]
+        private class FontCache
+        {
+            public byte CodePoint { get; private set; }
+            public string CodePage { get; private set; }
+            public string FontCharSet { get; private set; }
+
+            public FNI.Info FontInfo { get; set; }
+            public float EmInchSize { get; set; }
+            public bool IsVariableSpaceChar { get; set; }
+            public Bitmap Pattern { get; set; }
+
+            public FontCache(byte code, string page, string font)
+            {
+                CodePoint = code;
+                CodePage = page;
+                FontCharSet = font;
             }
         }
     }
