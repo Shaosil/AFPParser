@@ -4,12 +4,13 @@ using System.Linq;
 using System.Drawing;
 using System.Reflection;
 using AFPParser.Triplets;
+using System.Diagnostics;
 using AFPParser.Containers;
+using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.Collections.Generic;
 using AFPParser.StructuredFields;
 using AFPParser.PTXControlSequences;
-using System.Diagnostics;
 
 namespace AFPParser.UI
 {
@@ -166,7 +167,7 @@ namespace AFPParser.UI
                         for (int y = 0; y < bmp.Height; y++)
                             for (int x = 0; x < bmp.Width; x++)
                                 if (pattern.Value[x, y])
-                                    bmp.SetPixel(x, y, curColor);
+                                    bmp.SetPixel(x, y, Color.Black); // Set to black - we remap colors later
 
                         // Since we know how many inches 1 em is, we can determine inch width and height of each character
                         float heightInches = emInchSize * ((pattern.Key.AscenderHeight + pattern.Key.DescenderDepth) / 1000f);
@@ -182,6 +183,9 @@ namespace AFPParser.UI
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
         {
+            // Fancy filtering
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
             // Draw each embedded IM image in the current page. Positional information is stored inside the IID field of each image container
             foreach (IMImageContainer imc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct().OfType<IMImageContainer>())
                 DrawIMImage(imc, 0, 0, e);
@@ -233,7 +237,8 @@ namespace AFPParser.UI
             Bitmap bmp = new Bitmap(imc.ImageData.GetUpperBound(0) + 1, imc.ImageData.GetUpperBound(1) + 1);
             for (int y = 0; y < bmp.Height; y++)
                 for (int x = 0; x < bmp.Width; x++)
-                    bmp.SetPixel(x, y, imc.ImageData[x, y] ? Color.Black : Color.White);
+                    if (imc.ImageData[x, y])
+                        bmp.SetPixel(x, y, Color.Black);
 
             // Get positional/scaling information from min offsets and IID field
             IID imDescriptor = imc.GetStructure<IID>();
@@ -420,8 +425,27 @@ namespace AFPParser.UI
                     float baselineOffsetInches = fc.EmInchSize * (fc.FontInfo.BaselineOffset / 1000f) * 100;
                     float charIncrement = fc.EmInchSize * (fc.FontInfo.CharIncrement / 1000f) * 100;
 
+                    // Change color if needed
+                    ImageAttributes imAttr = new ImageAttributes();
+                    if (curColor != Color.Black)
+                    {
+                        ColorMap[] map = new ColorMap[1] { new ColorMap() { OldColor = Color.Black } };
+                        map[0].NewColor = curColor;
+                        imAttr.SetRemapTable(map);
+                    }
+
                     // Draw image
-                    e.Graphics.DrawImage(fc.Pattern, curXPosition - aSpaceInches, curYPosition - baselineOffsetInches);
+                    float leftX = curXPosition - aSpaceInches;
+                    float rightX = leftX + ((fc.Pattern.Width / fc.Pattern.HorizontalResolution) * 100);
+                    float topY = curYPosition - baselineOffsetInches;
+                    float bottomY = topY + ((fc.Pattern.Height / fc.Pattern.VerticalResolution) * 100);
+                    e.Graphics.DrawImage(
+                        fc.Pattern,
+                        new PointF[] { new PointF(leftX, topY), new PointF(rightX, topY), new PointF(leftX, bottomY) },
+                        new RectangleF(0, 0, fc.Pattern.Width, fc.Pattern.Height),
+                        GraphicsUnit.Pixel,
+                        imAttr);
+                    //e.Graphics.DrawImage(fc.Pattern, curXPosition - aSpaceInches, curYPosition - baselineOffsetInches);
 
                     // Increment our spacing by our character increment (+- adjustment) for this byte
                     curXPosition += charIncrement + interCharAdjInch;
