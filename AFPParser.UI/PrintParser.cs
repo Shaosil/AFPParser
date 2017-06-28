@@ -36,6 +36,7 @@ namespace AFPParser.UI
         private string curFontCharSet = string.Empty;
         private AFPFile.Resource curFontCharSetResource = null;
         private Color curColor = Color.Black;
+        private int curTextIOrient = 0;
 
         public PrintParser(AFPFile file)
         {
@@ -45,14 +46,16 @@ namespace AFPParser.UI
             pageContainers = afpFile.Fields.OfType<BPG>().Select(p => p.LowestLevelContainer).ToList();
             if (pageContainers.Count == 0) pageContainers = new List<Container>() { afpFile.Fields[0].LowestLevelContainer };
 
-            CacheGraphicCharacters();
+            fontCaches = new List<FontCache>();
         }
 
-        private void CacheGraphicCharacters()
+        private void RefreshGraphicCharactersCache()
         {
+            // Do nothing if the images are already cached
+            if (fontCaches.Any()) return;
+
             curCodePage = "";
             curFontCharSet = "";
-            fontCaches = new List<FontCache>();
 
             // On every page, store a unique list of every used code point, as well as associated font information
             foreach (Container pc in pageContainers)
@@ -183,6 +186,9 @@ namespace AFPParser.UI
 
         public void BuildPrintPage(object sender, PrintPageEventArgs e)
         {
+            // Build font cache if needed
+            RefreshGraphicCharactersCache();
+
             // Fancy filtering
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 
@@ -307,24 +313,50 @@ namespace AFPParser.UI
                 curFontCharSet = string.Empty;
                 curFontCharSetResource = null;
                 curColor = Color.Black;
+                curTextIOrient = 0;
 
                 foreach (PTXControlSequence sequence in text.CSIs)
                 {
                     Type sequenceType = sequence.GetType();
 
                     if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence);
-                    else if (sequenceType == typeof(AMI)) curXPosition = (float)Converters.GetInches(((AMI)sequence).Displacement, xUnitsPerBase, measurement) * 100;
-                    else if (sequenceType == typeof(AMB)) curYPosition = (float)Converters.GetInches(((AMB)sequence).Displacement, yUnitsPerBase, measurement) * 100;
-                    else if (sequenceType == typeof(RMI)) curXPosition += (float)Converters.GetInches(((RMI)sequence).Increment, xUnitsPerBase, measurement) * 100;
-                    else if (sequenceType == typeof(RMB)) curYPosition += (float)Converters.GetInches(((RMB)sequence).Increment, yUnitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(AMI) || sequenceType == typeof(AMB)) AbsoluteMove(sequence);
+                    else if (sequenceType == typeof(RMI) || sequenceType == typeof(RMB)) RelativeMove(sequence);
                     else if (sequenceType == typeof(STC)) curColor = ((STC)sequence).TextColor;
                     else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
                     else if (sequenceType == typeof(SIA)) interCharAdjInch = ((((SIA)sequence).Adjustment * (((SIA)sequence).Forward ? 1 : -1)) / 1440f) * 100;
                     else if (sequenceType == typeof(SVI)) varSpaceCharInch = (((SVI)sequence).Increment / 1440f) * 100;
                     else if (sequenceType == typeof(DIR) || sequenceType == typeof(DBR)) DrawLine(sequence, e);
+                    else if (sequenceType == typeof(STO)) curTextIOrient = ((STO)sequence).IDegrees;
                     else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, e);
                 }
             }
+        }
+
+        private void AbsoluteMove(PTXControlSequence sequence)
+        {
+            int disp = (int)sequence.GetType().GetProperty("Displacement").GetValue(sequence);
+
+            // Set either X or Y, based on current text orientation
+            if ((sequence.GetType() == typeof(AMI) && (curTextIOrient == 0 || curTextIOrient == 180))
+            || sequence.GetType() == typeof(AMB) && (curTextIOrient == 90 || curTextIOrient == 270))
+                curXPosition = (float)Converters.GetInches(disp, xUnitsPerBase, measurement) * 100;
+            else
+                curYPosition = (float)Converters.GetInches(disp, yUnitsPerBase, measurement) * 100;
+        }
+
+        private void RelativeMove(PTXControlSequence sequence)
+        {
+            int disp = (int)sequence.GetType().GetProperty("Displacement").GetValue(sequence);
+            int positiveXMultiplier = curTextIOrient != 180 ? 1 : -1;
+            int positiveYMultiplier = curTextIOrient != 270 ? 1 : -1;
+
+            // Set either X or Y, based on current text orientation
+            if ((sequence.GetType() == typeof(AMI) && (curTextIOrient == 0 || curTextIOrient == 180))
+            || sequence.GetType() == typeof(AMB) && (curTextIOrient == 90 || curTextIOrient == 270))
+                curXPosition += ((float)Converters.GetInches(disp, xUnitsPerBase, measurement) * 100) * positiveXMultiplier;
+            else
+                curYPosition += ((float)Converters.GetInches(disp, yUnitsPerBase, measurement) * 100) * positiveYMultiplier;
         }
 
         private void DrawLine(PTXControlSequence sequence, PrintPageEventArgs e)
@@ -414,9 +446,18 @@ namespace AFPParser.UI
             {
                 FontCache fc = fontCaches.First(f => f.CodePoint == b && f.CodePage == curCodePage && f.FontCharSet == curFontCharSet);
 
+                // Keep multipliers to easily handle adding or subtracting the value (going back or forward/up or down)
+                int positiveXMultiplier = curTextIOrient != 180 ? 1 : -1;
+                int positiveYMultiplier = curTextIOrient != 270 ? 1 : -1;
+
                 // If this byte is a space character, just increment our x position
                 if (fc.IsVariableSpaceChar)
-                    curXPosition += GetVariableSpaceIncrementInch();
+                {
+                    if (curTextIOrient == 0 || curTextIOrient == 180)
+                        curXPosition += GetVariableSpaceIncrementInch() * positiveXMultiplier;
+                    else
+                        curYPosition += GetVariableSpaceIncrementInch() * positiveYMultiplier;
+                }
                 else if (fc.Pattern != null)
                 {
                     // If BMP is null, no graphic character was found. Skip these entirely
@@ -434,21 +475,45 @@ namespace AFPParser.UI
                         imAttr.SetRemapTable(map);
                     }
 
+                    // Rotate image if needed
+                    Bitmap characterImage = new Bitmap(fc.Pattern);
+                    if (curTextIOrient == 90)
+                        characterImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                    else if (curTextIOrient == 180)
+                        characterImage.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                    else if (curTextIOrient == 270)
+                        characterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    // Determine corner positions based on current rotation
+                    float leftX = 0, rightX = 0, topY = 0, bottomY = 0;
+                    if (curTextIOrient == 0 || curTextIOrient == 180)
+                    {
+                        leftX = curXPosition - (aSpaceInches * positiveXMultiplier);
+                        rightX = leftX + ((characterImage.Width / fc.Pattern.HorizontalResolution) * 100);
+                        topY = curYPosition - (baselineOffsetInches * positiveYMultiplier);
+                        bottomY = topY + ((characterImage.Height / fc.Pattern.VerticalResolution) * 100);
+                    }
+                    else
+                    {
+                        leftX = curXPosition - (baselineOffsetInches * positiveXMultiplier);
+                        rightX = leftX + ((characterImage.Height / fc.Pattern.VerticalResolution) * 100);
+                        topY = curYPosition - (aSpaceInches * positiveYMultiplier);
+                        bottomY = topY + ((characterImage.Width / fc.Pattern.HorizontalResolution) * 100);
+                    }
+
                     // Draw image
-                    float leftX = curXPosition - aSpaceInches;
-                    float rightX = leftX + ((fc.Pattern.Width / fc.Pattern.HorizontalResolution) * 100);
-                    float topY = curYPosition - baselineOffsetInches;
-                    float bottomY = topY + ((fc.Pattern.Height / fc.Pattern.VerticalResolution) * 100);
                     e.Graphics.DrawImage(
-                        fc.Pattern,
+                        characterImage,
                         new PointF[] { new PointF(leftX, topY), new PointF(rightX, topY), new PointF(leftX, bottomY) },
-                        new RectangleF(0, 0, fc.Pattern.Width, fc.Pattern.Height),
+                        new RectangleF(PointF.Empty, characterImage.Size),
                         GraphicsUnit.Pixel,
                         imAttr);
-                    //e.Graphics.DrawImage(fc.Pattern, curXPosition - aSpaceInches, curYPosition - baselineOffsetInches);
 
                     // Increment our spacing by our character increment (+- adjustment) for this byte
-                    curXPosition += charIncrement + interCharAdjInch;
+                    if (curTextIOrient == 0 || curTextIOrient == 180)
+                        curXPosition += (charIncrement + interCharAdjInch) * positiveXMultiplier;
+                    else
+                        curYPosition += (charIncrement + interCharAdjInch) * positiveYMultiplier;
                 }
             }
         }

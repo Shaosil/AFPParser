@@ -10,7 +10,7 @@ namespace AFPParser
 {
     public abstract class DataStructure
     {
-        public static Regex RegexIsReadableText = new Regex("^[\\w\\s]*$");
+        public static Regex RegexReadableText = new Regex("[\\w\\s]*");
 
         public const string EBCDIC = "IBM037";
 
@@ -127,10 +127,8 @@ namespace AFPParser
 
         protected string GetReadableDataPiece(int startIndex, int length)
         {
-            // Convert to EBCDIC, and if there are no valid characters, blank it out
-            string ebcdicString = Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length));
-            if (!RegexIsReadableText.IsMatch(ebcdicString)) ebcdicString = string.Empty;
-            return ebcdicString;
+            // Convert to EBCDIC, only grabbing valid characters
+            return RegexReadableText.Match(Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length))).Value;
         }
 
         // Returns a proper Endian array of booleans. 8 bits per byte

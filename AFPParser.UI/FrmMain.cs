@@ -67,6 +67,9 @@ namespace AFPParser.UI
                         
                         // Change form title
                         Text = $"AFP Parser - {fInfo.Name}";
+
+                        // Create new print parser object for this file
+                        printParser = new PrintParser(afpFile);
                     }
                 }
                 finally
@@ -162,8 +165,6 @@ namespace AFPParser.UI
                     if (afpFile.Resources.All(r => r.IsLoaded || r.IsNETCodePage) || MessageBox.Show("There are referenced resources that have not been located. Preview anyway?"
                     , "Missing Resources", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        printParser = new PrintParser(afpFile);
-
                         // Set up a print preview dialog and wire it to our print parser's build event
                         PrintPreviewDialog ppd = new PrintPreviewDialog() { Document = new PrintDocument() { DocumentName = opts.LastOpenedFile } };
                         ppd.Controls.OfType<ToolStrip>().First().Items["printToolStripButton"].Visible = false; // Temp disable until we actually might want to print something

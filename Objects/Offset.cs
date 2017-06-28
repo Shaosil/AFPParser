@@ -52,7 +52,7 @@ namespace AFPParser
                         case Lookups.DataTypes.CHAR:
                         case Lookups.DataTypes.CODE:
                             string decoded = Encoding.GetEncoding(DataStructure.EBCDIC).GetString(data);
-                            if (!DataStructure.RegexIsReadableText.IsMatch(decoded))
+                            if (string.IsNullOrWhiteSpace(DataStructure.RegexReadableText.Match(decoded).Value))
                                 decoded = "(BLANK)";
                             sb.Append(decoded);
                             break;
