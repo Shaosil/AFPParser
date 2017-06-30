@@ -29,7 +29,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public IReadOnlyList<Info> CPIInfos { get; private set; }
 
-        public CPI(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+        public CPI(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

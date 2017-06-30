@@ -10,6 +10,6 @@ namespace AFPParser.ImageSelfDefiningFields
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public EndTile(int paramLength, string id, byte[] data) : base(paramLength, id, data) { }
+        public EndTile(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
     }
 }

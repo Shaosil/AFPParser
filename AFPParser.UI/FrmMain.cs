@@ -53,7 +53,7 @@ namespace AFPParser.UI
                     opts.LastOpenedFile = fInfo.Name;
 
                     // Parse the AFP file
-                    if (afpFile.LoadData(dialog.FileName))
+                    if (afpFile.LoadData(dialog.FileName, true))
                     {
                         // Data bind the list box
                         afpFileBindingSource.DataSource = null;

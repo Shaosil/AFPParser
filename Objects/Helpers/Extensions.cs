@@ -1,10 +1,13 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace AFPParser
 {
     public static class Extensions
     {
+        public static Regex RegexReadableText = new Regex("[\\w\\s]*");
+
         public static List<string> GetNamesOfType(this IEnumerable<AFPFile.Resource> self, AFPFile.Resource.eResourceType rType)
         {
             // Return all non-blank names of resources of the specified type

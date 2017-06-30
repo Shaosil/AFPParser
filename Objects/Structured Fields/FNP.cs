@@ -40,6 +40,6 @@ namespace AFPParser.StructuredFields
         }
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public FNP(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+		public FNP(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }

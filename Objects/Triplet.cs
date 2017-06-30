@@ -10,12 +10,7 @@ namespace AFPParser
         // Properties which must be implemented by individual triplets
         protected override string StructureName => "Triplet";
 
-        public Triplet(byte[] allData) : base(allData[0], allData[1].ToString("X2"), 2)
-        {
-            // Set data starting at offset 2
-            for (int i = 0; i < Data.Length; i++)
-                Data[i] = allData[2 + i];
-        }
+        public Triplet(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 
         public static List<Triplet> GetAllTriplets(byte[] tripletData)
         {
@@ -37,9 +32,15 @@ namespace AFPParser
             {
                 // Get the type of triplet, create the object, and add it to the list
                 Type tripletType = typeof(Triplets.UNKNOWN);
-                if (Lookups.Triplets.ContainsKey(triplet[1]))
-                    tripletType = Lookups.Triplets[triplet[1]];
-                allTrips.Add((Triplet)Activator.CreateInstance(tripletType, triplet));
+                if (Lookups.Triplets.ContainsKey(triplet[1])) tripletType = Lookups.Triplets[triplet[1]];
+
+                // Get data for constructor
+                string id = triplet[1].ToString("X2");
+                byte[] introducer = new byte[2];
+                byte[] data = new byte[triplet.Length - 2];
+                Array.ConstrainedCopy(triplet, 0, introducer, 0, 2);
+                Array.ConstrainedCopy(triplet, 2, data, 0, data.Length);
+                allTrips.Add((Triplet)Activator.CreateInstance(tripletType, id, introducer, data));
             }
 
             // Parse all triplet data
@@ -53,7 +54,7 @@ namespace AFPParser
             StringBuilder sb = new StringBuilder();
 
             // Use spaced class name instead of title
-            sb.AppendLine($"{SpacedClassName} ({StructureName} 0x{ID})");
+            sb.AppendLine($"{SpacedClassName} ({StructureName} 0x{HexID})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();

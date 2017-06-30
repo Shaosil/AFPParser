@@ -1,9 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
-using AFPParser.StructuredFields;
 
 namespace AFPParser
 {
@@ -24,10 +22,10 @@ namespace AFPParser
         // Parsed Data
         public IReadOnlyList<Triplet> Triplets { get; private set; }
 
-        public StructuredField(int length, string id, byte flag, int sequence) : base(length, id, 8)
+        public StructuredField(string id, byte[] introducer, byte[] data) : base(id, introducer, data)
         {
-            Flag = flag;
-            Sequence = sequence;
+            Flag = introducer[5];
+            Sequence = (int)GetNumericValue(new byte[2] { introducer[6], introducer[7] }, false);
             Triplets = new List<Triplet>();
         }
 

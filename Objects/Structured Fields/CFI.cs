@@ -35,7 +35,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public IReadOnlyList<FontInfo> FontInfoList { get; private set; }
 
-		public CFI(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+		public CFI(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

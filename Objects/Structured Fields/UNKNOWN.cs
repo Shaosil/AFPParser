@@ -8,7 +8,7 @@ namespace AFPParser.StructuredFields
 
         public override string Title { get { return "UNKNOWN"; } }
 
-        public override string Description { get { return $"UNKNOWN HEX CODE: {ID}"; } }
+        public override string Description { get { return $"UNKNOWN HEX CODE: {HexID}"; } }
 
         protected override bool IsRepeatingGroup { get { return false; } }
 
@@ -16,6 +16,6 @@ namespace AFPParser.StructuredFields
 
         protected override int RepeatingGroupStart { get { return 0; } }
 
-        public UNKNOWN(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+        public UNKNOWN(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
     }
 }

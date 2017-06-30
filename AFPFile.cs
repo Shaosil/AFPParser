@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using AFPParser.Containers;
 using System.Collections.Generic;
 using AFPParser.StructuredFields;
-using System.Text;
 
 namespace AFPParser
 {
@@ -22,44 +22,48 @@ namespace AFPParser
             Resources = new List<Resource>();
         }
 
-        public bool LoadData(string path)
+        public bool LoadData(string path, bool parseData)
         {
             try
             {
                 // Load all data into main fields property
-                Resources = new List<Resource>();
-                Fields = LoadFields(path);
+                Fields = LoadFields(path, parseData);
 
-                // Store embedded resources
-                List<Resource> embeddedResources = new List<Resource>();
-                List<Container> allContainers = Fields.Where(f => f.LowestLevelContainer != null).Select(f => f.LowestLevelContainer).Distinct().ToList();
-
-                // Gather embedded IM, IOCA, and Font containers
-                IEnumerable<Container> IOCAContainers = allContainers.OfType<IOCAImageContainer>();
-                IEnumerable<Container> IMContainers = allContainers.OfType<IMImageContainer>();
-                IEnumerable<Container> fontContainers = allContainers.OfType<FontObjectContainer>();
-                IEnumerable<Container> codedFontContainers = allContainers.Where(c => c.Structures[0].GetType() == typeof(BCF));
-                IEnumerable<Container> codePageContainers = allContainers.Where(c => c.Structures[0].GetType() == typeof(BCP));
-
-                // Add all embedded resources to the resource list
-                foreach (Container c in IOCAContainers.Concat(IMContainers).Concat(fontContainers).Concat(codedFontContainers).Concat(codePageContainers))
+                // Only load resources if we have parsed the data
+                if (parseData)
                 {
-                    // Each container has a property called "ObjectName" that can be used to get the resource name here
-                    string resName = c.Structures[0].GetType().GetProperty("ObjectName").GetValue(c.Structures[0]).ToString();
-                    Resource newResource = new Resource(resName, GetResourceTypeByContainer(c), true);
-                    newResource.Fields = c.Structures.Cast<StructuredField>().ToList();
-                    embeddedResources.Add(newResource);
+                    // Store embedded resources
+                    Resources = new List<Resource>();
+                    List<Resource> embeddedResources = new List<Resource>();
+                    List<Container> allContainers = Fields.Where(f => f.LowestLevelContainer != null).Select(f => f.LowestLevelContainer).Distinct().ToList();
+
+                    // Gather embedded IM, IOCA, and Font containers
+                    IEnumerable<Container> IOCAContainers = allContainers.OfType<IOCAImageContainer>();
+                    IEnumerable<Container> IMContainers = allContainers.OfType<IMImageContainer>();
+                    IEnumerable<Container> fontContainers = allContainers.OfType<FontObjectContainer>();
+                    IEnumerable<Container> codedFontContainers = allContainers.Where(c => c.Structures[0].GetType() == typeof(BCF));
+                    IEnumerable<Container> codePageContainers = allContainers.Where(c => c.Structures[0].GetType() == typeof(BCP));
+
+                    // Add all embedded resources to the resource list
+                    foreach (Container c in IOCAContainers.Concat(IMContainers).Concat(fontContainers).Concat(codedFontContainers).Concat(codePageContainers))
+                    {
+                        // Each container has a property called "ObjectName" that can be used to get the resource name here
+                        string resName = c.Structures[0].GetType().GetProperty("ObjectName").GetValue(c.Structures[0]).ToString();
+                        Resource newResource = new Resource(resName, GetResourceTypeByContainer(c), true);
+                        newResource.Fields = c.Structures.Cast<StructuredField>().ToList();
+                        embeddedResources.Add(newResource);
+                    }
+
+                    // Add embedded and external referenced resources
+                    Resources = embeddedResources; // Do this first as to avoid duplicates
+                    List<Resource> referencedResources = LoadReferencedResources(Fields);
+
+                    // Try to find all referenced files
+                    ScanDirectoriesForResources(referencedResources);
+
+                    // Combine and assign to readonly property
+                    Resources = Resources.Concat(referencedResources).ToList();
                 }
-
-                // Add embedded and external referenced resources
-                Resources = embeddedResources; // Do this first as to avoid duplicates
-                List<Resource> referencedResources = LoadReferencedResources(Fields);
-
-                // Try to find all referenced files
-                ScanDirectoriesForResources(referencedResources);
-
-                // Combine and assign to readonly property
-                Resources = Resources.Concat(referencedResources).ToList();
             }
             catch (Exception ex)
             {
@@ -70,7 +74,7 @@ namespace AFPParser
             return true;
         }
 
-        private List<StructuredField> LoadFields(string path)
+        private List<StructuredField> LoadFields(string path, bool parseData)
         {
             List<StructuredField> fields = new List<StructuredField>();
 
@@ -82,7 +86,7 @@ namespace AFPParser
             List<StructuredField> fieldList = new List<StructuredField>();
             while (curIdx < byteList.Length - 1)
             {
-                byte[] lengthBytes = new byte[2], sequenceBytes = new byte[2], identifierBytes = new byte[3];
+                byte[] lengthBytes = new byte[2], identifierBytes = new byte[3], introducer = new byte[8];
                 string curOffsetHex = $"0x{curIdx.ToString("X8")}";
 
                 // Check for 0x5A prefix on each field
@@ -94,44 +98,37 @@ namespace AFPParser
                     throw new Exception($"No room for SFI at offset {curOffsetHex}. Is it a true AFP file?");
 
                 // Read the introducer
-                Array.ConstrainedCopy(byteList, curIdx + 1, lengthBytes, 0, 2);
-                Array.ConstrainedCopy(byteList, curIdx + 3, identifierBytes, 0, 3);
-                Array.ConstrainedCopy(byteList, curIdx + 7, sequenceBytes, 0, 2);
+                Array.ConstrainedCopy(byteList, curIdx + 1, introducer, 0, 8);
+                Array.ConstrainedCopy(introducer, 0, lengthBytes, 0, 2);
+                Array.ConstrainedCopy(introducer, 2, identifierBytes, 0, 3);
 
                 // Get introducer section
                 int length = (int)DataStructure.GetNumericValue(lengthBytes, false);
                 string hex = BitConverter.ToString(identifierBytes).Replace("-", "");
-                byte flag = byteList[curIdx + 6];
-                int sequence = (int)DataStructure.GetNumericValue(sequenceBytes, false);
 
                 // Check the length isn't over what we can read
                 if (curIdx + 1 + length > byteList.Length)
                     throw new Exception($"Invalid field length of {length} at offset {curOffsetHex}. Is it a true AFP file?");
 
-                // Lookup what type of field we need by the structured fields hex dictionary
-                Type fieldType = typeof(StructuredFields.UNKNOWN);
-                if (Lookups.StructuredFields.ContainsKey(hex))
-                    fieldType = Lookups.StructuredFields[hex];
-                StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, length, hex, flag, sequence);
+                // Get the data
+                byte[] data = new byte[length - 8];
+                Array.ConstrainedCopy(byteList, curIdx + 9, data, 0, length - 8);
 
-                // Populate the data byte by byte
-                for (int i = 0; i < field.Data.Length; i++)
-                {
-                    // If we read a length that isn't true (in case of a non-AFP file), make sure we don't go out of index bounds
-                    int byteIndex = curIdx + 9 + i;
-                    if (byteIndex >= byteList.Length) break;
-                    field.Data[i] = byteList[curIdx + 9 + i];
-                }
+                // Lookup what type of field we need by the structured fields hex dictionary
+                Type fieldType = typeof(UNKNOWN);
+                if (Lookups.StructuredFields.ContainsKey(hex)) fieldType = Lookups.StructuredFields[hex];
+                StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, hex, introducer, data);
 
                 // Append to AFP file
                 fields.Add(field);
 
                 // Go to next 5A
-                curIdx += field.Length + 1;
+                curIdx += length + 1;
             }
 
             // Now that all fields have been set, parse all data into their own storage methods
-            ParseData(fields);
+            if (parseData)
+                ParseData(fields);
 
             return fields;
         }
@@ -142,7 +139,7 @@ namespace AFPParser
             List<Container> activeContainers = new List<Container>();
             foreach (StructuredField sf in fields)
             {
-                string typeCode = sf.ID.Substring(2, 2);
+                string typeCode = sf.HexID.Substring(2, 2);
 
                 // If this is a BEGIN tag, create a new container and add it to the list, and set it as active
                 if (typeCode == "A8")
@@ -167,7 +164,7 @@ namespace AFPParser
                 sf.ParseData();
                 
                 // Parse container data after parsing all fields inside of it
-                if (sf.ID.Substring(2, 2) == "A9") sf.LowestLevelContainer.ParseContainerData();
+                if (sf.HexID.Substring(2, 2) == "A9") sf.LowestLevelContainer.ParseContainerData();
             }
         }
 
@@ -176,7 +173,7 @@ namespace AFPParser
             List<Resource> allResources = new List<Resource>();
 
             // Add referenced page segments
-            foreach (string s in fileFields.OfType<IPS>().Select(f => f.SegmentName).Distinct())
+            foreach (string s in fileFields.OfType<IPS>().Where(f => f.SegmentName != null).Select(f => f.SegmentName).Distinct())
                 allResources.Add(new Resource(s, Resource.eResourceType.PageSegment));
 
             // Helper lists
@@ -223,7 +220,7 @@ namespace AFPParser
                 FileInfo matchingFile = allFiles.FirstOrDefault(f => f.Name.ToUpper().Trim() == r.ResourceName);
                 if (matchingFile != null)
                 {
-                    r.Fields = LoadFields(matchingFile.FullName);
+                    r.Fields = LoadFields(matchingFile.FullName, true);
 
                     // Also see if there are any additional resources to load from within those fields
                     List<Resource> extraResources = LoadReferencedResources(r.Fields);

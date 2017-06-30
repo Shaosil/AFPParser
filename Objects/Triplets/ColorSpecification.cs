@@ -30,6 +30,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public ColorSpecification(byte[] allData) : base(allData) { }
+        public ColorSpecification(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 	}
 }

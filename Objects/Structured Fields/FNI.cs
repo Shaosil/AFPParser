@@ -44,7 +44,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public IReadOnlyList<Info> InfoList { get; private set; }
 
-		public FNI(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+		public FNI(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

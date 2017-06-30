@@ -24,6 +24,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public MediumOrientation(byte[] allData) : base(allData) { }
+        public MediumOrientation(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 	}
 }

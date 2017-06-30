@@ -18,7 +18,7 @@ namespace AFPParser.PTXControlSequences
         // Parsed Data
         public int Displacement { get; private set; }
 
-        public AMB(byte[] data) : base(data) { }
+        public AMB(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

@@ -10,6 +10,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public FinishingOperation(byte[] allData) : base(allData) { }
+        public FinishingOperation(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 	}
 }

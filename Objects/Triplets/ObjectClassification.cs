@@ -31,6 +31,6 @@ namespace AFPParser.Triplets
 		public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public ObjectClassification(byte[] allData) : base(allData) { }
+		public ObjectClassification(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 	}
 }

@@ -27,8 +27,7 @@ namespace AFPParser.UI
         private Container aeContainer = null;
         private float curInlinePos = 0;
         private float curBaselinePos = 0;
-        private int xUnitsPerBase = 0;
-        private int yUnitsPerBase = 0;
+        private int unitsPerBase = 0;
         private float interCharAdjInch = 0;
         private float varSpaceCharInch = 0;
         private Converters.eMeasurement measurement = Converters.eMeasurement.Inches;
@@ -322,8 +321,10 @@ namespace AFPParser.UI
                     Type sequenceType = sequence.GetType();
 
                     if (sequenceType == typeof(SCFL)) SetCodePageAndFont((SCFL)sequence);
-                    else if (sequenceType == typeof(AMI) || sequenceType == typeof(AMB)) AbsoluteMove(sequence);
-                    else if (sequenceType == typeof(RMI) || sequenceType == typeof(RMB)) RelativeMove(sequence);
+                    else if (sequenceType == typeof(AMI)) curInlinePos = (float)Converters.GetInches(((AMI)sequence).Displacement, unitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(RMI)) curInlinePos += (float)Converters.GetInches(((RMI)sequence).Increment, unitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(AMB)) curBaselinePos = (float)Converters.GetInches(((AMB)sequence).Displacement, unitsPerBase, measurement) * 100;
+                    else if (sequenceType == typeof(RMB)) curBaselinePos += (float)Converters.GetInches(((RMB)sequence).Increment, unitsPerBase, measurement) * 100;
                     else if (sequenceType == typeof(STC)) curColor = ((STC)sequence).TextColor;
                     else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
                     else if (sequenceType == typeof(SIA)) interCharAdjInch = ((((SIA)sequence).Adjustment * (((SIA)sequence).Forward ? 1 : -1)) / 1440f) * 100;
@@ -333,30 +334,6 @@ namespace AFPParser.UI
                     else if (sequenceType == typeof(TRN)) DrawStringAsImage(sequence.Data, e);
                 }
             }
-        }
-
-        private void AbsoluteMove(PTXControlSequence sequence)
-        {
-            int disp = (int)sequence.GetType().GetProperty("Displacement").GetValue(sequence);
-
-            // Set either X or Y, based on current text orientation
-            if (sequence.GetType() == typeof(AMI))
-                curInlinePos = (float)Converters.GetInches(disp, xUnitsPerBase, measurement) * 100;
-            else
-                curBaselinePos = (float)Converters.GetInches(disp, yUnitsPerBase, measurement) * 100;
-        }
-
-        private void RelativeMove(PTXControlSequence sequence)
-        {
-            int disp = (int)sequence.GetType().GetProperty("Displacement").GetValue(sequence);
-            int positiveXMultiplier = curIOrient != 180 ? 1 : -1;
-            int positiveYMultiplier = curIOrient != 270 ? 1 : -1;
-
-            // Set either X or Y, based on current text orientation
-            if (sequence.GetType() == typeof(AMI))
-                curInlinePos += ((float)Converters.GetInches(disp, xUnitsPerBase, measurement) * 100) * positiveXMultiplier;
-            else
-                curBaselinePos += ((float)Converters.GetInches(disp, yUnitsPerBase, measurement) * 100) * positiveYMultiplier;
         }
 
         private void DrawLine(PTXControlSequence sequence, PrintPageEventArgs e)
@@ -416,20 +393,17 @@ namespace AFPParser.UI
 
                 if (descriptor2 != null)
                 {
-                    xUnitsPerBase = descriptor2.UnitsPerXBase;
-                    yUnitsPerBase = descriptor2.UnitsPerYBase;
+                    unitsPerBase = descriptor2.UnitsPerXBase;
                     measurement = descriptor2.BaseUnit;
                 }
                 else if (descriptor1 != null)
                 {
-                    xUnitsPerBase = descriptor1.UnitsPerXBase;
-                    yUnitsPerBase = descriptor1.UnitsPerYBase;
+                    unitsPerBase = descriptor1.UnitsPerXBase;
                     measurement = descriptor1.BaseUnit;
                 }
                 else
                 {
-                    xUnitsPerBase = pageDescriptor.UnitsPerXBase;
-                    yUnitsPerBase = pageDescriptor.UnitsPerYBase;
+                    unitsPerBase = pageDescriptor.UnitsPerXBase;
                     measurement = pageDescriptor.BaseUnit;
                 }
             }
@@ -447,7 +421,7 @@ namespace AFPParser.UI
                 FontCache fc = fontCaches.First(f => f.CodePoint == b && f.CodePage == curCodePage && f.FontCharSet == curFontCharSet);
                 
                 // If this byte is a space character, just increment our x position
-                if (fc.IsVariableSpaceChar)
+                if (fc.IsVariableSpaceChar || fc.Pattern == null)
                     curInlinePos += GetVariableSpaceIncrementInch();
                 else if (fc.Pattern != null)
                 {

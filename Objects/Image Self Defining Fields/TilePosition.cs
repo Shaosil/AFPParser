@@ -18,7 +18,7 @@ namespace AFPParser.ImageSelfDefiningFields
         public uint XOffset { get; private set; }
         public uint YOffset { get; private set; }
 
-        public TilePosition(int paramLength, string id, byte[] data) : base(paramLength, id, data) { }
+        public TilePosition(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

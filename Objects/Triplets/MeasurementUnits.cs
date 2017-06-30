@@ -21,7 +21,7 @@ namespace AFPParser.Triplets
         public int XUnitsPerBase { get; private set; }
         public int YUnitsPerBase { get; private set; }
 
-        public MeasurementUnits(byte[] allData) : base(allData) { }
+        public MeasurementUnits(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 
         public override void ParseData()
         {

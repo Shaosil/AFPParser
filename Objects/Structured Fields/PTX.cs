@@ -17,9 +17,12 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public List<PTXControlSequence> CSIs { get; set; }
+        public IReadOnlyList<PTXControlSequence> CSIs { get; private set; }
 
-        public PTX(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+        public PTX(string id, byte[] introducer, byte[] data) : base(id, introducer, data)
+        {
+            CSIs = new List<PTXControlSequence>();
+        }
 
         protected override string GetOffsetDescriptions()
         {

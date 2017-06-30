@@ -35,7 +35,7 @@ namespace AFPParser.StructuredFields
         public int XSize { get; private set; }
         public int YSize { get; private set; }
 
-        public PTD2(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+        public PTD2(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {

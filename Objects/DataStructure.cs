@@ -4,20 +4,18 @@ using System.Text;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace AFPParser
 {
     public abstract class DataStructure
     {
-        public static Regex RegexReadableText = new Regex("[\\w\\s]*");
-
         public const string EBCDIC = "IBM037";
 
         // Properties directly converted from raw hex data
-        public int Length { get; private set; }
-        public string ID { get; private set; }
-        public byte[] Data { get; private set; }
+        public string HexID { get; private set; }
+        public byte[] Introducer { get; private set; }
+        public byte[] Data { get; set; }
+        public int Length => Introducer.Length + Data.Length;
 
         // Readable information, usually looked up or hard coded by referencing documentation
         public virtual string Title { get; }
@@ -61,11 +59,11 @@ namespace AFPParser
             }
         }
 
-        public DataStructure(int length, string id, int introducerLength)
+        public DataStructure(string id, byte[] introducer, byte[] data)
         {
-            Length = length;
-            ID = id;
-            Data = new byte[Length - introducerLength];
+            HexID = id;
+            Introducer = introducer;
+            Data = data;
         }
 
         public abstract void ParseData();
@@ -74,7 +72,7 @@ namespace AFPParser
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"{Title} ({StructureName} 0x{ID})");
+            sb.AppendLine($"{Title} ({StructureName} 0x{HexID})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();
@@ -128,7 +126,7 @@ namespace AFPParser
         protected string GetReadableDataPiece(int startIndex, int length)
         {
             // Convert to EBCDIC, only grabbing valid characters
-            return RegexReadableText.Match(Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length))).Value;
+            return Extensions.RegexReadableText.Match(Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length))).Value;
         }
 
         // Returns a proper Endian array of booleans. 8 bits per byte

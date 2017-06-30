@@ -44,7 +44,7 @@ namespace AFPParser.StructuredFields
         public int XContentOrigin { get; private set; }
         public int YContentOrigin { get; private set; }
 
-        public OBP(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+        public OBP(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

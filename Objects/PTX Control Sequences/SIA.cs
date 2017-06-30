@@ -23,7 +23,7 @@ namespace AFPParser.PTXControlSequences
         public int Adjustment { get; private set; }
         public bool Forward { get; private set; }
 
-        public SIA(byte[] data) : base(data) { }
+        public SIA(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

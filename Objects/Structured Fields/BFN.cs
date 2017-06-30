@@ -25,7 +25,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public string ObjectName { get; private set; }
 
-        public BFN(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+        public BFN(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

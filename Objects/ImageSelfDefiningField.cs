@@ -10,12 +10,7 @@ namespace AFPParser
         // Properties which must be implemented by individual SDFs
         protected override string StructureName => "Image Self Defining Field";
 
-        public ImageSelfDefiningField(int paramLength, string id, byte[] data) : base(paramLength, id, id.Length - 2)
-        {
-            // Set data
-            for (int i = 0; i < Data.Length; i++)
-                Data[i] = data[i];
-        }
+        public ImageSelfDefiningField(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public static List<ImageSelfDefiningField> GetAllSDFs(byte[] sdfData)
         {
@@ -31,18 +26,19 @@ namespace AFPParser
                 // Check the first byte of the code. If it's 0xFE, this is an extended format SDF and will have two byte codes and lengths instead of one
                 bool isExtended = sdfData[i] == 0xFE;
 
-                // Get the ID, length, and data bytes
+                // Get the ID, length, introducer, and data bytes
                 string sId = isExtended ? BitConverter.ToString(new[] { sdfData[i], sdfData[i + 1] }).Replace("-", "") : sdfData[i].ToString("X2");
                 byte id = byte.Parse(sId.Substring(sId.Length - 2, 2), System.Globalization.NumberStyles.HexNumber);
                 int length = (int)GetNumericValue(isExtended ? new[] { sdfData[i + 2], sdfData[i + 3] } : new[] { sdfData[i + 1] }, false);
+                byte[] introducer = new byte[isExtended ? 4 : 2];
                 byte[] data = new byte[length];
+                Array.ConstrainedCopy(sdfData, i, introducer, 0, introducer.Length);
                 Array.ConstrainedCopy(sdfData, i + (isExtended ? 4 : 2), data, 0, length);
 
                 // Create an instance of the lookup type
                 Type iSDFType = typeof(ImageSelfDefiningFields.UNKNOWN);
-                if (Lookups.ImageSelfDefiningFields.ContainsKey(id))
-                    iSDFType = Lookups.ImageSelfDefiningFields[id];
-                ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, length, sId, data);
+                if (Lookups.ImageSelfDefiningFields.ContainsKey(id)) iSDFType = Lookups.ImageSelfDefiningFields[id];
+                ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, sId, introducer, data);
 
                 // If this is a begin tag, add a new container to our active list
                 if (beginCodes.Contains(id))

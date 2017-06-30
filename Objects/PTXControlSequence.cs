@@ -11,19 +11,14 @@ namespace AFPParser
         public abstract string Abbreviation { get; }
         protected override string StructureName => "Control Sequence";
 
-        public PTXControlSequence(byte[] allData) : base(allData[0], allData[1].ToString("X2"), 2)
-        {
-            // Set data starting at offset 2
-            for (int i = 0; i < Data.Length; i++)
-                Data[i] = allData[2 + i];
-        }
+        public PTXControlSequence(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override string GetFullDescription()
         {
             StringBuilder sb = new StringBuilder();
 
             // Use description instead of title
-            sb.AppendLine($"{Description} ({StructureName} 0x{ID})");
+            sb.AppendLine($"{Description} ({StructureName} 0x{HexID})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();
@@ -43,18 +38,21 @@ namespace AFPParser
             int curIndex = 2;
             while (curIndex < csData.Length)
             {
-                // Get the one byte length
+                // Get the one byte length, ID, and type
                 int length = csData[curIndex];
+                string id = csData[curIndex + 1].ToString("X2");
                 byte CSTypeByte = csData[curIndex + 1];
 
-                // Get our current CSI by length
-                byte[] sectionedCSI = csData.Skip(curIndex).Take(length).ToArray();
+                // Get the introducer and contents
+                byte[] introducer = new byte[2];
+                byte[] data = new byte[length - 2];
+                Array.ConstrainedCopy(csData, curIndex, introducer, 0, 2);
+                Array.ConstrainedCopy(csData, curIndex + 2, data, 0, data.Length);
 
                 // Build and add the sequence by data type
                 Type CSType = typeof(PTXControlSequences.UNKNOWN);
-                if (Lookups.PTXControlSequences.ContainsKey(CSTypeByte))
-                    CSType = Lookups.PTXControlSequences[CSTypeByte];
-                PTXControlSequence sequence = (PTXControlSequence)Activator.CreateInstance(CSType, sectionedCSI);
+                if (Lookups.PTXControlSequences.ContainsKey(CSTypeByte)) CSType = Lookups.PTXControlSequences[CSTypeByte];
+                PTXControlSequence sequence = (PTXControlSequence)Activator.CreateInstance(CSType, id, introducer, data);
                 csiList.Add(sequence);
 
                 // Skip an extra 2 bytes if the CSI we just read is unchained, since the next CSI will contain the prefixes

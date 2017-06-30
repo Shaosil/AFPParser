@@ -20,6 +20,6 @@ namespace AFPParser.Triplets
 		public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public PresentationControl(byte[] allData) : base(allData) { }
+		public PresentationControl(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
 	}
 }

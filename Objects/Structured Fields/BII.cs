@@ -24,7 +24,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public string ObjectName { get; private set; }
 
-		public BII(int length, string hex, byte flag, int sequence) : base (length, hex, flag, sequence) { }
+		public BII(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

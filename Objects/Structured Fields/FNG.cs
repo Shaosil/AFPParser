@@ -19,7 +19,7 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public FNG(int length, string hex, byte flag, int sequence) : base(length, hex, flag, sequence) { }
+        public FNG(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         protected override string GetOffsetDescriptions()
         {
@@ -37,7 +37,7 @@ namespace AFPParser.StructuredFields
                     for (int y = 0; y <= kvp.Value.GetUpperBound(1); y++)
                     {
                         for (int x = 0; x <= kvp.Value.GetUpperBound(0); x++)
-                            sb.Append(kvp.Value[x, y] ? "#" : ".");
+                            sb.Append((kvp.Value[x, y] ? "#" : ".") + " ");
 
                         sb.AppendLine(); // Move to the next row of bits
                     }
