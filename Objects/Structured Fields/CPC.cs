@@ -46,6 +46,6 @@ namespace AFPParser.StructuredFields
         public bool IsSingleByteCodePage => Data.Length > 9 && new byte[] { 0x0A, 0xFE }.Contains(Data[9]);
         public byte VariableSpaceCharacter => Data[11];
 
-        public CPC(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public CPC(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
     }
 }

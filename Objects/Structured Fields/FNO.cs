@@ -51,7 +51,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public IReadOnlyList<Info> FNOInfo { get; private set; }
 
-        public FNO(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public FNO(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

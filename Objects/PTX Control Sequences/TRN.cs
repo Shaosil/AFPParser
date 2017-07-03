@@ -15,6 +15,6 @@ namespace AFPParser.PTXControlSequences
 		public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public TRN(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public TRN(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }

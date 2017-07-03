@@ -24,7 +24,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public int CFIRGLength { get; private set; }
 
-        public CFC(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public CFC(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

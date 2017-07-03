@@ -22,7 +22,7 @@ namespace AFPParser.PTXControlSequences
         public int BDegrees { get; private set; }
         public int BMinutes { get; private set; }
 
-        public STO(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public STO(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

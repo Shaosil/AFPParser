@@ -102,7 +102,7 @@ namespace AFPParser.StructuredFields
         public ushort FNNRGLength { get; private set; }
         public uint FNNDataCount { get; private set; }
 
-        public FNC(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public FNC(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

@@ -104,7 +104,6 @@ namespace AFPParser
 
                 // Get introducer section
                 int length = (int)DataStructure.GetNumericValue(lengthBytes, false);
-                string hex = BitConverter.ToString(identifierBytes).Replace("-", "");
 
                 // Check the length isn't over what we can read
                 if (curIdx + 1 + length > byteList.Length)
@@ -116,8 +115,9 @@ namespace AFPParser
 
                 // Lookup what type of field we need by the structured fields hex dictionary
                 Type fieldType = typeof(UNKNOWN);
-                if (Lookups.StructuredFields.ContainsKey(hex)) fieldType = Lookups.StructuredFields[hex];
-                StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, hex, introducer, data);
+                string idStr = BitConverter.ToString(identifierBytes).Replace("-", "");
+                if (Lookups.StructuredFields.ContainsKey(idStr)) fieldType = Lookups.StructuredFields[idStr];
+                StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, identifierBytes, introducer, data);
 
                 // Append to AFP file
                 fields.Add(field);
@@ -139,10 +139,8 @@ namespace AFPParser
             List<Container> activeContainers = new List<Container>();
             foreach (StructuredField sf in fields)
             {
-                string typeCode = sf.HexID.Substring(2, 2);
-
                 // If this is a BEGIN tag, create a new container and add it to the list, and set it as active
-                if (typeCode == "A8")
+                if (sf.HexID[1] == 0xA8)
                     activeContainers.Add(sf.NewContainer);
 
                 // Add this field to each active container's list of fields
@@ -154,7 +152,7 @@ namespace AFPParser
                     sf.LowestLevelContainer = activeContainers.Last();
 
                 // If this is an END tag, remove the last container from our active container list
-                if (typeCode == "A9")
+                if (sf.HexID[1] == 0xA9)
                     activeContainers.Remove(activeContainers.Last());
             }
 
@@ -162,9 +160,9 @@ namespace AFPParser
             foreach (StructuredField sf in fields)
             {
                 sf.ParseData();
-                
+
                 // Parse container data after parsing all fields inside of it
-                if (sf.HexID.Substring(2, 2) == "A9") sf.LowestLevelContainer.ParseContainerData();
+                if (sf.HexID[1] == 0xA9) sf.LowestLevelContainer.ParseContainerData();
             }
         }
 
@@ -248,6 +246,21 @@ namespace AFPParser
             else if (c.Structures[0].GetType() == typeof(IPS)) rType = Resource.eResourceType.PageSegment;
 
             return rType;
+        }
+
+        public byte[] EncodeData()
+        {
+            List<byte> encoded = new List<byte>();
+
+            if (Fields != null)
+                foreach (StructuredField field in Fields)
+                {
+                    encoded.Add(0x5A);
+                    encoded.AddRange(field.Introducer);
+                    encoded.AddRange(field.Data);
+                }
+
+            return encoded.ToArray();
         }
 
         public class Resource

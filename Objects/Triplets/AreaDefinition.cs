@@ -2,14 +2,14 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class AreaDefinition : Triplet
-	{
-		private static string _desc = "";
+    public class AreaDefinition : Triplet
+    {
+        private static string _desc = "";
         private static List<Offset> _oSets = new List<Offset>();
 
-		public override string Description => _desc;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public AreaDefinition(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
-	}
+        public AreaDefinition(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+    }
 }

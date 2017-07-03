@@ -39,7 +39,7 @@ namespace AFPParser.StructuredFields
         public int YUnitsPerBase { get; private set; }
         public Color ImageColor { get; private set; }
 
-        public IID(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public IID(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {

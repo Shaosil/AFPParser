@@ -11,7 +11,7 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public PresentationSpaceMixingRule(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public PresentationSpaceMixingRule(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         protected override string GetOffsetDescriptions()
         {

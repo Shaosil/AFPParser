@@ -25,7 +25,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public string ObjectName { get; private set; }
 
-		public BIM(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public BIM(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

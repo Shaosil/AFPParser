@@ -16,6 +16,6 @@ namespace AFPParser.StructuredFields
 		protected override int RepeatingGroupStart => 0;
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public PPO(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public PPO(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }

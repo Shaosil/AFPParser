@@ -16,7 +16,7 @@ namespace AFPParser.Triplets
         // Parsed Data
         public int OBPID { get; private set; }
 
-        public DescriptorPosition(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public DescriptorPosition(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

@@ -1,16 +1,37 @@
 ﻿using System;
 using System.Text;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace AFPParser
 {
     public abstract class ImageSelfDefiningField : DataStructure
     {
+        // SDFs do not include the introducer length in the lengh property
+        public override ushort Length => (ushort)Data.Length;
+
         // Properties which must be implemented by individual SDFs
         protected override string StructureName => "Image Self Defining Field";
 
-        public ImageSelfDefiningField(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public ImageSelfDefiningField(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+
+        protected override void SyncIntroducer()
+        {
+            // Either single or double byte fields in the introducer
+            if (Introducer.Length == 2)
+            {
+                Introducer[0] = HexID[0];
+                Introducer[1] = (byte)Length;
+            }
+            else
+            {
+                byte[] len = BitConverter.GetBytes(Length);
+                if (BitConverter.IsLittleEndian) len = len.Reverse().ToArray();
+
+                Array.ConstrainedCopy(HexID, 0, Introducer, 0, 2);
+                Array.ConstrainedCopy(len, 0, Introducer, 2, 2);
+            }
+        }
 
         public static List<ImageSelfDefiningField> GetAllSDFs(byte[] sdfData)
         {
@@ -27,8 +48,8 @@ namespace AFPParser
                 bool isExtended = sdfData[i] == 0xFE;
 
                 // Get the ID, length, introducer, and data bytes
-                string sId = isExtended ? BitConverter.ToString(new[] { sdfData[i], sdfData[i + 1] }).Replace("-", "") : sdfData[i].ToString("X2");
-                byte id = byte.Parse(sId.Substring(sId.Length - 2, 2), System.Globalization.NumberStyles.HexNumber);
+                byte[] idArray = isExtended ? new byte[2] { 0xFE, sdfData[i + 1] } : new byte[1] { sdfData[i] };
+                byte id = idArray.Last();
                 int length = (int)GetNumericValue(isExtended ? new[] { sdfData[i + 2], sdfData[i + 3] } : new[] { sdfData[i + 1] }, false);
                 byte[] introducer = new byte[isExtended ? 4 : 2];
                 byte[] data = new byte[length];
@@ -38,7 +59,7 @@ namespace AFPParser
                 // Create an instance of the lookup type
                 Type iSDFType = typeof(ImageSelfDefiningFields.UNKNOWN);
                 if (Lookups.ImageSelfDefiningFields.ContainsKey(id)) iSDFType = Lookups.ImageSelfDefiningFields[id];
-                ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, sId, introducer, data);
+                ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, idArray, introducer, data);
 
                 // If this is a begin tag, add a new container to our active list
                 if (beginCodes.Contains(id))

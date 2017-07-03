@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class FontResolutionAndMetricTechnology : Triplet
-	{
-		private static string _desc = "Specifies certain metric characteristics of a FOCA raster tech font character set which may have affected the document.";
+    public class FontResolutionAndMetricTechnology : Triplet
+    {
+        private static string _desc = "Specifies certain metric characteristics of a FOCA raster tech font character set which may have affected the document.";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CODE, "Metric Technology")
@@ -22,6 +22,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public FontResolutionAndMetricTechnology(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
-	}
+        public FontResolutionAndMetricTechnology(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+    }
 }

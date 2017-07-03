@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -8,9 +9,28 @@ namespace AFPParser
     [DebuggerDisplay("{string.IsNullOrWhiteSpace(Abbreviation) ? ID : Abbreviation}")]
     public abstract class StructuredField : DataStructure
     {
+        private byte _flag;
+        private ushort _sequence;
+
         // Properties directly converted from raw hex data
-        public byte Flag { get; private set; }
-        public int Sequence { get; private set; }
+        public byte Flag
+        {
+            get { return _flag; }
+            set
+            {
+                _flag = value;
+                SyncIntroducer();
+            }
+        }
+        public ushort Sequence
+        {
+            get { return _sequence; }
+            set
+            {
+                _sequence = value;
+                SyncIntroducer();
+            }
+        }
 
         // Abstract properties derived from hard coded individual structured field information
         public abstract string Abbreviation { get; }
@@ -22,10 +42,10 @@ namespace AFPParser
         // Parsed Data
         public IReadOnlyList<Triplet> Triplets { get; private set; }
 
-        public StructuredField(string id, byte[] introducer, byte[] data) : base(id, introducer, data)
+        public StructuredField(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data)
         {
             Flag = introducer[5];
-            Sequence = (int)GetNumericValue(new byte[2] { introducer[6], introducer[7] }, false);
+            Sequence = (ushort)GetNumericValue(new byte[2] { introducer[6], introducer[7] }, false);
             Triplets = new List<Triplet>();
         }
 
@@ -43,6 +63,22 @@ namespace AFPParser
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();
+        }
+
+        protected override void SyncIntroducer()
+        {
+            byte[] len = BitConverter.GetBytes(Length);
+            byte[] seq = BitConverter.GetBytes(Sequence);
+            if (BitConverter.IsLittleEndian)
+            {
+                len = len.Reverse().ToArray();
+                seq = seq.Reverse().ToArray();
+            }
+
+            Array.ConstrainedCopy(len, 0, Introducer, 0, 2);
+            Array.ConstrainedCopy(HexID, 0, Introducer, 2, 3);
+            Introducer[5] = Flag;
+            Array.ConstrainedCopy(seq, 0, Introducer, 6, 2);
         }
 
         // This method can be overridden if it is complicated to parse

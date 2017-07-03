@@ -19,7 +19,7 @@ namespace AFPParser.StructuredFields
 
         public IReadOnlyList<PTXControlSequence> CSIs { get; private set; }
 
-        public PTX(string id, byte[] introducer, byte[] data) : base(id, introducer, data)
+        public PTX(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data)
         {
             CSIs = new List<PTXControlSequence>();
         }

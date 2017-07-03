@@ -28,7 +28,7 @@ namespace AFPParser.StructuredFields
 		protected override int RepeatingGroupStart => 0;
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public MDD(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public MDD(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {

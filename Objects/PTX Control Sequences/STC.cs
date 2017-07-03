@@ -20,7 +20,7 @@ namespace AFPParser.PTXControlSequences
         // Parsed Data
         public Color TextColor { get; private set; }
 
-		public STC(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public STC(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

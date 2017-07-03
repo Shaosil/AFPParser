@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class FullyQualifiedName : Triplet
-	{
-		private static string _desc = "Enables referencing of objects using Global Identifiers (GIDs).";
+    public class FullyQualifiedName : Triplet
+    {
+        private static string _desc = "Enables referencing of objects using Global Identifiers (GIDs).";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CODE, "Type")
@@ -54,6 +54,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public FullyQualifiedName(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
-	}
+        public FullyQualifiedName(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+    }
 }

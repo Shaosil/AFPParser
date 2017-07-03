@@ -20,6 +20,6 @@ namespace AFPParser.StructuredFields
 		protected override int RepeatingGroupStart => 0;
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public PGP1(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public PGP1(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }

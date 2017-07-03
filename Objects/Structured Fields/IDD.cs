@@ -33,7 +33,7 @@ namespace AFPParser.StructuredFields
         public int YSize { get; set; }
         public IReadOnlyList<ImageSelfDefiningField> SDFs { get; private set; }
 
-		public IDD(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public IDD(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

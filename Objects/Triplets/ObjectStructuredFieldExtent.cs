@@ -10,6 +10,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public ObjectStructuredFieldExtent(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public ObjectStructuredFieldExtent(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }

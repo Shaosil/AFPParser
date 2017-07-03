@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class ColorSpecification : Triplet
-	{
-		private static string _desc = "Specifies a color value and defines the color space and encoding for that value.";
+    public class ColorSpecification : Triplet
+    {
+        private static string _desc = "Specifies a color value and defines the color space and encoding for that value.";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.EMPTY, ""),
@@ -30,6 +30,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public ColorSpecification(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
-	}
+        public ColorSpecification(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+    }
 }

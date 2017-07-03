@@ -16,6 +16,6 @@ namespace AFPParser.StructuredFields
 
         protected override int RepeatingGroupStart { get { return 0; } }
 
-        public UNKNOWN(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public UNKNOWN(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
     }
 }

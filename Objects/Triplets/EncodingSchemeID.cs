@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class EncodingSchemeID : Triplet
-	{
-		private static string _desc = "Specifies the encoding scheme associated with a code page.";
+    public class EncodingSchemeID : Triplet
+    {
+        private static string _desc = "Specifies the encoding scheme associated with a code page.";
         private static List<Offset> _oSets = new List<Offset>();
 
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public EncodingSchemeID(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public EncodingSchemeID(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         protected override string GetOffsetDescriptions()
         {
@@ -37,7 +37,7 @@ namespace AFPParser.Triplets
             bool[] bytesPerCodePoint = new bool[4] { false, false, false, false }.Concat(fullEncSchemeArray.Skip(4).Take(4)).ToArray();
 
             // Plop each one into an array of ints
-            int[]  resultInts = new int[2];
+            int[] resultInts = new int[2];
             new BitArray(encodingStructure).CopyTo(resultInts, 0);
             new BitArray(bytesPerCodePoint).CopyTo(resultInts, 1);
 

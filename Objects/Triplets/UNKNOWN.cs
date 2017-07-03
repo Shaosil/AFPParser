@@ -8,6 +8,6 @@ namespace AFPParser.Triplets
 
         public override IReadOnlyList<Offset> Offsets { get { return new List<Offset>(); } }
 
-        public UNKNOWN(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public UNKNOWN(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
     }
 }

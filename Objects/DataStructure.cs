@@ -9,13 +9,33 @@ namespace AFPParser
 {
     public abstract class DataStructure
     {
+        private byte[] _hexID = new byte[0];
+        private byte[] _data = new byte[0];
+
         public const string EBCDIC = "IBM037";
 
         // Properties directly converted from raw hex data
-        public string HexID { get; private set; }
+        public byte[] HexID
+        {
+            get { return _hexID; }
+            set
+            {
+                _hexID = value;
+                if (Introducer != null) SyncIntroducer();
+            }
+        }
+        public string HexIDStr => BitConverter.ToString(HexID).Replace("-", " ");
         public byte[] Introducer { get; private set; }
-        public byte[] Data { get; set; }
-        public int Length => Introducer.Length + Data.Length;
+        public byte[] Data
+        {
+            get { return _data; }
+            set
+            {
+                _data = value;
+                SyncIntroducer();
+            }
+        }
+        public virtual ushort Length => (ushort)(Introducer.Length + Data.Length);
 
         // Readable information, usually looked up or hard coded by referencing documentation
         public virtual string Title { get; }
@@ -54,14 +74,14 @@ namespace AFPParser
                 ContainerTypeAttribute containerAttribyte = GetType().GetCustomAttribute<ContainerTypeAttribute>();
                 if (containerAttribyte != null)
                     c = (Container)Activator.CreateInstance(containerAttribyte.AssignedType);
-                
+
                 return c;
             }
         }
 
-        public DataStructure(string id, byte[] introducer, byte[] data)
+        public DataStructure(byte[] hexID, byte[] introducer, byte[] data)
         {
-            HexID = id;
+            HexID = hexID;
             Introducer = introducer;
             Data = data;
         }
@@ -77,6 +97,9 @@ namespace AFPParser
 
             return sb.ToString();
         }
+
+        // This should be called any time an introducer property is changed, and should update the raw introducer data
+        protected abstract void SyncIntroducer();
 
         // Override this to custom handle all offsets at once
         protected virtual string GetOffsetDescriptions()
@@ -144,7 +167,7 @@ namespace AFPParser
 
             return allBits;
         }
-        
+
         // Returns the correct numeric value for an array of bytes
         public static long GetNumericValue(byte[] bytes, bool isSigned)
         {

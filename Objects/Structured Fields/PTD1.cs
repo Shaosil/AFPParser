@@ -34,7 +34,7 @@ namespace AFPParser.StructuredFields
         public int XSize { get; private set; }
         public int YSize { get; private set; }
 
-        public PTD1(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public PTD1(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

@@ -25,7 +25,7 @@ namespace AFPParser.Triplets
         public int XExtent { get; private set; }
         public int YExtent { get; private set; }
 
-        public ObjectAreaSize(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public ObjectAreaSize(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

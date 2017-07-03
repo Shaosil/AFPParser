@@ -12,6 +12,6 @@ namespace AFPParser.PTXControlSequences
 		public override string Description => _desc;
 		public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public USC(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public USC(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }

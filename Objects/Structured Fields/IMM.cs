@@ -23,7 +23,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public string Name { get; private set; }
 
-		public IMM(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public IMM(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

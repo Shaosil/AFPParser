@@ -10,7 +10,7 @@ namespace AFPParser
         // Properties which must be implemented by individual triplets
         protected override string StructureName => "Triplet";
 
-        public Triplet(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+        public Triplet(byte id, byte[] introcuder, byte[] data) : base(new byte[1] { id }, introcuder, data) { }
 
         public static List<Triplet> GetAllTriplets(byte[] tripletData)
         {
@@ -35,7 +35,7 @@ namespace AFPParser
                 if (Lookups.Triplets.ContainsKey(triplet[1])) tripletType = Lookups.Triplets[triplet[1]];
 
                 // Get data for constructor
-                string id = triplet[1].ToString("X2");
+                byte id = triplet[1];
                 byte[] introducer = new byte[2];
                 byte[] data = new byte[triplet.Length - 2];
                 Array.ConstrainedCopy(triplet, 0, introducer, 0, 2);
@@ -63,6 +63,12 @@ namespace AFPParser
         public override void ParseData()
         {
             // TODO: Remove this if and when each triplet parses the data in their own way
+        }
+
+        protected override void SyncIntroducer()
+        {
+            Introducer[0] = (byte)Length;
+            Introducer[1] = HexID[0];
         }
     }
 }

@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class FontDescriptorSpecification : Triplet
-	{
-		private static string _desc = "Specifies the attributes of the desired font in a coded font reference.";
+    public class FontDescriptorSpecification : Triplet
+    {
+        private static string _desc = "Specifies the attributes of the desired font in a coded font reference.";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CODE, "Char Stroke Thickness") { Mappings = CommonMappings.WeightClass },
@@ -26,6 +26,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public FontDescriptorSpecification(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
-	}
+        public FontDescriptorSpecification(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+    }
 }

@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class AttributeValue : Triplet
-	{
-		private static string _desc = "Specifies a value for a document attribute";
+    public class AttributeValue : Triplet
+    {
+        private static string _desc = "Specifies a value for a document attribute";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.EMPTY, ""),
@@ -14,6 +14,6 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public AttributeValue(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
-	}
+        public AttributeValue(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+    }
 }

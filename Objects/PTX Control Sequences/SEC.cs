@@ -45,7 +45,7 @@ namespace AFPParser.PTXControlSequences
         public int C4BitCount { get; private set; }
         public Color TextColor { get; private set; }
 
-        public SEC(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public SEC(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

@@ -18,7 +18,7 @@ namespace AFPParser.PTXControlSequences
         // Parsed Data
         public int FontId { get; private set; }
 
-        public SCFL(string id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public SCFL(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 
         public override void ParseData()
         {

@@ -31,6 +31,6 @@ namespace AFPParser.Triplets
 		public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public ObjectFunctionSetSpecification(string id, byte[] introcuder, byte[] data) : base(id, introcuder, data) { }
+		public ObjectFunctionSetSpecification(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
 	}
 }
