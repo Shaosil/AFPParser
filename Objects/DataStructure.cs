@@ -24,7 +24,7 @@ namespace AFPParser
                 if (Introducer != null) SyncIntroducer();
             }
         }
-        public string HexIDStr => BitConverter.ToString(HexID).Replace("-", " ");
+        public string HexIDStr => BitConverter.ToString(HexID).Replace("-", "");
         public byte[] Introducer { get; private set; }
         public byte[] Data
         {

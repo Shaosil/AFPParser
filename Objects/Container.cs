@@ -5,7 +5,7 @@ using System.Linq;
 namespace AFPParser
 {
     // A basic container simply holds a group of fields.
-    [DebuggerDisplay("{Structures[0].ID}, ({Structures.Count})")]
+    [DebuggerDisplay("{Structures[0].HexIDStr}, ({Structures.Count})")]
     public class Container
     {
         // A list of data structures in this container

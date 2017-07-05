@@ -256,6 +256,8 @@ namespace AFPParser.UI
 
             float dpi = (float)Math.Round(bmp.Height / heightInches);
             bmp.SetResolution(dpi, dpi);
+            
+            // IM Images can be tiled. Make sure we draw as much as requested in the ICP field
             e.Graphics.DrawImage(bmp, xInchPos, yInchPos);
         }
 

@@ -10,14 +10,16 @@ namespace AFPParser
 {
     public class AFPFile
     {
+        private List<StructuredField> _fields;
+
         public event Action<string> ErrorEvent;
-        public List<StructuredField> Fields { get; private set; }
+        public IReadOnlyList<StructuredField> Fields => _fields;
         public List<string> ResourceDirectories { get; set; }
         public IReadOnlyList<Resource> Resources { get; private set; }
 
         public AFPFile()
         {
-            Fields = new List<StructuredField>();
+            _fields = new List<StructuredField>();
             ResourceDirectories = new List<string>() { Environment.CurrentDirectory };
             Resources = new List<Resource>();
         }
@@ -27,7 +29,7 @@ namespace AFPParser
             try
             {
                 // Load all data into main fields property
-                Fields = LoadFields(path, parseData);
+                _fields = LoadFields(path, parseData);
 
                 // Only load resources if we have parsed the data
                 if (parseData)
@@ -83,7 +85,6 @@ namespace AFPParser
 
             // Next, loop through each 5A block and store a StructuredField object
             int curIdx = 0;
-            List<StructuredField> fieldList = new List<StructuredField>();
             while (curIdx < byteList.Length - 1)
             {
                 byte[] lengthBytes = new byte[2], identifierBytes = new byte[3], introducer = new byte[8];
@@ -126,14 +127,15 @@ namespace AFPParser
                 curIdx += length + 1;
             }
 
+            SetupContainers(fields);
+
             // Now that all fields have been set, parse all data into their own storage methods
-            if (parseData)
-                ParseData(fields);
+            if (parseData) ParseData(fields);
 
             return fields;
         }
 
-        private void ParseData(List<StructuredField> fields)
+        private void SetupContainers(List<StructuredField> fields)
         {
             // Create containers for applicable groups of fields
             List<Container> activeContainers = new List<Container>();
@@ -155,8 +157,10 @@ namespace AFPParser
                 if (sf.HexID[1] == 0xA9)
                     activeContainers.Remove(activeContainers.Last());
             }
+        }
 
-            // Now that everything is structured, parse all data by individual handlers
+        private void ParseData(List<StructuredField> fields)
+        {
             foreach (StructuredField sf in fields)
             {
                 sf.ParseData();
@@ -246,6 +250,33 @@ namespace AFPParser
             else if (c.Structures[0].GetType() == typeof(IPS)) rType = Resource.eResourceType.PageSegment;
 
             return rType;
+        }
+
+        public void AddField(StructuredField field, int index = -1)
+        {
+            // Insert at specified index if needed. Else, append
+            if (index >= 0)
+                _fields.Insert(index, field);
+            else
+                _fields.Add(field);
+
+            // Sync containers
+            SetupContainers(_fields);
+        }
+
+        public void DeleteField(StructuredField field)
+        {
+            _fields.Remove(field);
+
+            // Remove this field from all containers that know about it
+            foreach (Container c in _fields
+            .Select(f => f.LowestLevelContainer)
+            .Distinct()
+            .Where(cn => cn.Structures.Contains(field)))
+                c.Structures.Remove(field);
+
+            // Sync containers
+            SetupContainers(_fields);
         }
 
         public byte[] EncodeData()

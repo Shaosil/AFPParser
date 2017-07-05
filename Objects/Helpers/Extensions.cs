@@ -19,5 +19,18 @@ namespace AFPParser
         {
             return self.FirstOrDefault(r => r.ResourceType == rType && r.ResourceName == rName);
         }
+
+        public static byte[] GetByteArrayFromHexString(string hex)
+        {
+            // Return a byte array from a structured field identifier hex string
+            List<byte> byteArray = new List<byte>();
+
+            // Convert every two characsters to a byte using HexNumber format provider
+            for (int i = 0; i < 6; i += 2)
+                if (i < hex.Length + 1)
+                    byteArray.Add(byte.Parse(hex.Substring(i, 2), System.Globalization.NumberStyles.HexNumber));
+
+            return byteArray.ToArray();
+        }
     }
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace AFPParser
 {
-    [DebuggerDisplay("{string.IsNullOrWhiteSpace(Abbreviation) ? ID : Abbreviation}")]
+    [DebuggerDisplay("{string.IsNullOrWhiteSpace(Abbreviation) ? HexIDStr : Abbreviation}")]
     public abstract class StructuredField : DataStructure
     {
         private byte _flag;
