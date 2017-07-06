@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Drawing;
-using AFPParser.Triplets;
-using AFPParser.StructuredFields;
-using System.Collections.Generic;
+﻿using AFPParser.ImageSelfDefiningFields;
 using AFPParser.PTXControlSequences;
-using AFPParser.ImageSelfDefiningFields;
+using AFPParser.StructuredFields;
+using AFPParser.Triplets;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace AFPParser
 {
@@ -353,6 +352,47 @@ namespace AFPParser
             { 0xF8, "Print quality control" },
             { 0xF9, "Constant forms control" },
             { 0xFC, "N-up format control" }
+        };
+        #endregion
+
+        #region OIDs
+        public static Dictionary<string, string> OIDs = new Dictionary<string, string>()
+        {
+            { "06072B120004010105", "IOCA FS10" },
+            { "06072B12000401010B", "IOCA FS11" },
+            { "06072B12000401010C", "IOCA FS45" },
+            { "06072B12000401010D", "EPS" },
+            { "06072B12000401010E", "TIFF" },
+            { "06072B12000401010F", "COM Set-up" },
+            { "06072B120004010110", "Tape Label Set-up" },
+            { "06072B120004010111", "DIB, Windows Version" },
+            { "06072B120004010112", "DIB, OS/2 PM Version" },
+            { "06072B120004010113", "PCX" },
+            { "06072B120004010114", "Color Mapping Table (CMT)" },
+            { "06072B120004010116", "GIF" },
+            { "06072B120004010117", "AFPC JPEG Subset" },
+            { "06072B120004010118", "AnaStak Control Record" },
+            { "06072B120004010119", "PDF Single-page Object" },
+            { "06072B12000401011A", "PDF Resource Object" },
+            { "06072B120004010122", "PCL Page Object" },
+            { "06072B12000401012D", "IOCA FS42" },
+            { "06072B12000401012E", "Resident Color Profile" },
+            { "06072B12000401012F", "IOCA FS45 Tile Resource" },
+            { "06072B120004010130", "EPS with Transparency" },
+            { "06072B120004010131", "PDF with Transparency" },
+            { "06072B120004010133", "TrueType/OpenType Font" },
+            { "06072B120004010135", "TrueType/OpenType Font Collection" },
+            { "06072B120004010136", "Resource Access Table" },
+            { "06072B120004010137", "IOCA FS40" },
+            { "06072B120004010138", "UP3i Print Data" },
+            { "06072B120004010139", "Color Management Resource (CMR)" },
+            { "06072B12000401013A", "JPEG2000 (JP2) File Format" },
+            { "06072B12000401013C", "TIFF without Transparency" },
+            { "06072B12000401013D", "TIFF Multiple Image File" },
+            { "06072B12000401013E", "TIFF Multiple Image - without Transparency - File" },
+            { "06072B12000401013F", "PDF Multiple Page File" },
+            { "06072B120004010140", "PDF Multiple Page - with Transparency - File" },
+            { "06072B120004010142", "AFPC TIFF Subset" }
         };
         #endregion
     }

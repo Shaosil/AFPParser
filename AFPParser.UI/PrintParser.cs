@@ -332,41 +332,66 @@ namespace AFPParser.UI
             // Inline (horizontal) or Baseline (vertical)?
             bool isInline = sequence.GetType() == typeof(DIR);
 
-            // Get the width of the line first (1/1440 of an inch)
-            int width = (int)sequence.GetType().GetProperty("RuleWidth").GetValue(sequence);
-
-            // One dot will be visible if the width is greater than....?
-            float widthInches = (width / 1440f) * 100;
-            float dotInches = (1 / (float)(isInline ? e.PageSettings.PrinterResolution.X : e.PageSettings.PrinterResolution.Y)) * 100;
-
             // Prepare X,Y origin/destination
-            int length = (int)sequence.GetType().GetProperty("RuleLength").GetValue(sequence);
-            float xOrig = curInlinePos, yOrig = curBaselinePos, xDest = curInlinePos, yDest = curBaselinePos;
+            float xOrig, yOrig, xDest, yDest;
 
-            // If the width > 1 dot, shift the line points by half the width to un-center it
-            if (widthInches > dotInches)
+            Func<float, bool, float> getInches = (float val, bool positive) => 
+                { return (float)(Converters.GetInches((int)val, unitsPerBase, measurement) * 100) * (positive ? 1 : -1); };
+
+            // Get the length width of the line (1/1440 of an inch)
+            float length = (int)sequence.GetType().GetProperty("RuleLength").GetValue(sequence);
+            float width = getInches((int)sequence.GetType().GetProperty("RuleWidth").GetValue(sequence), true);
+            float shifted = width / 2f;
+
+            // Set origin/destination based on text orientation
+            if (isInline)
             {
-                if (isInline)
+                if (curIOrient == 0 || curIOrient == 180)
                 {
-                    // Shift Y
-                    yOrig -= widthInches / 2f;
-                    yDest -= widthInches / 2f;
+                    xOrig = curInlinePos;
+                    if (curIOrient == 180) xOrig = e.PageBounds.Right - xOrig;
+                    xDest = xOrig + getInches(length, curIOrient == 0);
+
+                    yOrig = curBaselinePos + shifted;
+                    if (curBOrient == 270) yOrig = e.PageBounds.Bottom - yOrig;
+                    yDest = yOrig;
                 }
                 else
                 {
-                    // Shift X
-                    xOrig -= widthInches / 2f;
-                    xDest -= widthInches / 2f;
+                    yOrig = curInlinePos;
+                    if (curIOrient == 270) yOrig = e.PageBounds.Bottom - yOrig;
+                    yDest = yOrig + getInches(length, curIOrient == 90);
+
+                    xOrig = curBaselinePos - shifted;
+                    if (curBOrient == 180) xOrig = e.PageBounds.Right - xOrig;
+                    xDest = xOrig;
+                }
+            }
+            else
+            {
+                if (curBOrient == 0 || curBOrient == 180)
+                {
+                    xOrig = curBaselinePos;
+                    if (curBOrient == 180) xOrig = e.PageBounds.Right - xOrig;
+                    xDest = xOrig + getInches(length, curBOrient == 0);
+
+                    yOrig = curInlinePos + shifted;
+                    if (curIOrient == 270) yOrig = e.PageBounds.Bottom - yOrig;
+                    yDest = yOrig;
+                }
+                else
+                {
+                    yOrig = curBaselinePos;
+                    if (curBOrient == 270) yOrig = e.PageBounds.Bottom - yOrig;
+                    yDest = yOrig + getInches(length, curBOrient == 90);
+
+                    xOrig = curInlinePos - shifted;
+                    if (curIOrient == 180) xOrig = e.PageBounds.Right - xOrig;
+                    xDest = xOrig;
                 }
             }
 
-            // Set destination
-            if (isInline)
-                xDest += (length / 1440f) * 100;
-            else
-                yDest += (length / 1440f) * 100;
-
-            e.Graphics.DrawLine(new Pen(curColor), xOrig, yOrig, xDest, yDest);
+            e.Graphics.DrawLine(new Pen(curColor, width), (int)Math.Round(xOrig), (int)Math.Round(yOrig), (int)Math.Round(xDest), (int)Math.Round(yDest));
         }
 
         private void GetDescriptorInfo()
