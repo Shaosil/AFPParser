@@ -309,7 +309,7 @@
     <Compile Include="Objects\Triplets\TonerSaver.cs" />
     <Compile Include="Objects\Triplets\UNKNOWN.cs" />
     <Compile Include="Objects\Triplets\LocalDateandTimeStamp.cs" />
-    <Compile Include="Objects\Triplets\UniversalDateandTimeStamp.cs" />
+    <Compile Include="Objects\Triplets\UniversalDateAndTimeStamp.cs" />
     <Compile Include="Objects\Triplets\PresentationSpaceMixingRule.cs" />
     <Compile Include="Objects\Helpers\Lookups.cs" />
     <Compile Include="Objects\Triplets\UP3iFinishingOperation.cs" />

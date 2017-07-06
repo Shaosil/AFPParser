@@ -5,7 +5,7 @@ namespace AFPParser.PTXControlSequences
     public class UNKNOWN : PTXControlSequence
     {
         public override string Abbreviation { get { return "UNK"; } }
-        public override string Description { get { return $"UNKNOWN CONTROL SEQUENCE: {HexID}"; } }
+        public override string Description { get { return $"UNKNOWN CONTROL SEQUENCE: {HexIDStr}"; } }
 
         public override IReadOnlyList<Offset> Offsets { get { return new List<Offset>(); } }
 

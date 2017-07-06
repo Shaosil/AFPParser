@@ -8,7 +8,7 @@ namespace AFPParser.StructuredFields
 
         public override string Title { get { return "UNKNOWN"; } }
 
-        public override string Description { get { return $"UNKNOWN HEX CODE: {HexID}"; } }
+        public override string Description { get { return $"UNKNOWN HEX CODE: {HexIDStr}"; } }
 
         protected override bool IsRepeatingGroup { get { return false; } }
 

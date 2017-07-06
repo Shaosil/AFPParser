@@ -191,7 +191,7 @@ namespace AFPParser
             { 0x6C, typeof(ResourceObjectInclude) },
             { 0x70, typeof(PresentationSpaceResetMixing) },
             { 0x71, typeof(PresentationSpaceMixingRule) },
-            { 0x72, typeof(UniversalDateandTimeStamp) },
+            { 0x72, typeof(UniversalDateAndTimeStamp) },
             { 0x74, typeof(TonerSaver) },
             { 0x75, typeof(ColorFidelity) },
             { 0x78, typeof(FontFidelity) },

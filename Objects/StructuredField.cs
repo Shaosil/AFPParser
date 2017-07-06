@@ -161,7 +161,28 @@ namespace AFPParser
             // Parse triplets automatically if they exist
             Offset tripsOffset = Offsets.FirstOrDefault(o => o.DataType == Lookups.DataTypes.TRIPS);
             if (tripsOffset != null)
-                Triplets = Triplet.GetAllTriplets(Data.Skip(tripsOffset.StartingIndex).ToArray());
+            {
+                // If the triplets are in repeating groups, parse group by group
+                if (IsRepeatingGroup)
+                {
+                    int numLengthBytes = Offsets[1].StartingIndex;
+                    int curIndex = 0;
+                    while (curIndex < Data.Length)
+                    {
+                        int rgLength = (int)GetNumericValue(GetSectionedData(curIndex, numLengthBytes), false);
+                        int tripletLength = rgLength - numLengthBytes;
+                        byte[] curTripletData = new byte[tripletLength];
+                        Array.ConstrainedCopy(Data, curIndex + numLengthBytes, curTripletData, 0, tripletLength);
+
+                        // Append this group of triplets
+                        Triplets = Triplets.Concat(Triplet.GetAllTriplets(curTripletData)).ToList();
+
+                        curIndex += rgLength;
+                    }
+                }
+                else
+                    Triplets = Triplet.GetAllTriplets(Data.Skip(tripsOffset.StartingIndex).ToArray());
+            }
         }
 
         public T GetTriplet<T>() where T : Triplet

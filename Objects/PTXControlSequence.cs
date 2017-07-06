@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 
 namespace AFPParser
 {
@@ -34,7 +34,7 @@ namespace AFPParser
             StringBuilder sb = new StringBuilder();
 
             // Use description instead of title
-            sb.AppendLine($"{Description} ({StructureName} 0x{HexID})");
+            sb.AppendLine($"{Description} ({StructureName} 0x{HexIDStr})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();

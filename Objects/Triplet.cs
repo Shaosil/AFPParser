@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 
 namespace AFPParser
 {
@@ -52,7 +52,7 @@ namespace AFPParser
             StringBuilder sb = new StringBuilder();
 
             // Use spaced class name instead of title
-            sb.AppendLine($"{SpacedClassName} ({StructureName} 0x{HexID})");
+            sb.AppendLine($"{SpacedClassName} ({StructureName} 0x{HexIDStr})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();

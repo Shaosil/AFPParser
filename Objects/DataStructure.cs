@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace AFPParser
 {
@@ -91,7 +91,7 @@ namespace AFPParser
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"{Title} ({StructureName} 0x{HexID})");
+            sb.AppendLine($"{Title} ({StructureName} 0x{HexIDStr})");
             sb.Append(GetOffsetDescriptions());
 
             return sb.ToString();

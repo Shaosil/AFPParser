@@ -68,7 +68,7 @@ namespace AFPParser.UI
                         if (cs.GetType() == typeof(SCFL))
                         {
                             // Lookup info from MCF1 data on this page
-                            MCF1.MCF1Data mcfData = pc.GetStructure<MCF1>().MappedData.First(m => m.ID == ((SCFL)cs).FontId);
+                            MCF1.MCF1Data mcfData = pc.GetStructure<MCF1>()?.MappedData.First(m => m.ID == ((SCFL)cs).FontId);
 
                             // If we have a coded font, we need to load that resource. Otherwise, get the values from here
                             if (mcfData != null)

@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-    public class UniversalDateandTimeStamp : Triplet
+    public class UniversalDateAndTimeStamp : Triplet
     {
         private static string _desc = "Specifies a date and time in accordance with the format defined in ISO 8601: 1988 (E).";
         private static List<Offset> _oSets = new List<Offset>();
@@ -13,7 +13,7 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public UniversalDateandTimeStamp(byte id, byte[] data) : base(id, data) { }
+        public UniversalDateAndTimeStamp(byte id, byte[] data) : base(id, data) { }
 
         protected override string GetOffsetDescriptions()
         {
