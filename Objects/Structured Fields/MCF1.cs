@@ -32,7 +32,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public IReadOnlyList<MCF1Data> MappedData { get; private set; }
 
-        public MCF1(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public MCF1(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         public override void ParseData()
         {

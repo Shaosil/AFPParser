@@ -87,7 +87,8 @@ namespace AFPParser
             int curIdx = 0;
             while (curIdx < byteList.Length - 1)
             {
-                byte[] lengthBytes = new byte[2], identifierBytes = new byte[3], introducer = new byte[8];
+                byte[] lengthBytes = new byte[2], identifierBytes = new byte[3], introducer = new byte[8], sequenceBytes = new byte[2];
+                byte flag;
                 string curOffsetHex = $"0x{curIdx.ToString("X8")}";
 
                 // Check for 0x5A prefix on each field
@@ -102,9 +103,12 @@ namespace AFPParser
                 Array.ConstrainedCopy(byteList, curIdx + 1, introducer, 0, 8);
                 Array.ConstrainedCopy(introducer, 0, lengthBytes, 0, 2);
                 Array.ConstrainedCopy(introducer, 2, identifierBytes, 0, 3);
+                flag = introducer[5];
+                Array.ConstrainedCopy(introducer, 6, sequenceBytes, 0, 2);
 
-                // Get introducer section
+                // Get a couple pieces of data from introducer
                 int length = (int)DataStructure.GetNumericValue(lengthBytes, false);
+                ushort sequence = (ushort)DataStructure.GetNumericValue(sequenceBytes, false);
 
                 // Check the length isn't over what we can read
                 if (curIdx + 1 + length > byteList.Length)
@@ -118,7 +122,7 @@ namespace AFPParser
                 Type fieldType = typeof(UNKNOWN);
                 string idStr = BitConverter.ToString(identifierBytes).Replace("-", "");
                 if (Lookups.StructuredFields.ContainsKey(idStr)) fieldType = Lookups.StructuredFields[idStr];
-                StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, identifierBytes, introducer, data);
+                StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, identifierBytes, flag, sequence, data);
 
                 // Append to AFP file
                 fields.Add(field);

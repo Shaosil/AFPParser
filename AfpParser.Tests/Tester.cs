@@ -6,6 +6,7 @@ using System.Collections;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
+using AFPParser.StructuredFields;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AFPParser.Tests

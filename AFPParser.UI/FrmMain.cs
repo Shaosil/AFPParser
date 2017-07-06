@@ -1,12 +1,12 @@
-﻿using System;
+﻿using AFPParser.Containers;
+using AFPParser.StructuredFields;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
-using System.Drawing;
-using AFPParser.Containers;
 using System.Windows.Forms;
-using System.Drawing.Printing;
-using AFPParser.StructuredFields;
-using System.Collections.Generic;
 
 namespace AFPParser.UI
 {
@@ -64,7 +64,7 @@ namespace AFPParser.UI
                         DocType = GetFileType();
                         btnPreview.Enabled = DocType == eFileType.Document || DocType == eFileType.IOCAImage || DocType == eFileType.IMImage;
                         btnManageResources.Enabled = true;
-                        
+
                         // Change form title
                         Text = $"AFP Parser - {fInfo.Name}";
 
@@ -214,29 +214,13 @@ namespace AFPParser.UI
                                     png.SetResolution(png.Width / xScale, png.Height / yScale);
 
                                     // Generate image
-                                    png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
+                                    png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter++}.png", System.Drawing.Imaging.ImageFormat.Png);
                                 }
                             }
                         }
                         else
-                        {
                             foreach (IMImageContainer imc in imcs)
-                            {
-                                Bitmap png = new Bitmap(imc.ImageData.GetUpperBound(0) + 1, imc.ImageData.GetUpperBound(1) + 1);
-                                IID descriptor = imc.DirectGetStructure<IID>();
-
-                                for (int y = 0; y < png.Height; y++)
-                                    for (int x = 0; x < png.Width; x++)
-                                        png.SetPixel(x, y, imc.ImageData[x, y] ? descriptor.ImageColor : Color.White);
-
-                                // Get resolution from descriptor
-                                float xScale = (float)Converters.GetInches(png.Width, descriptor.XUnitsPerBase, descriptor.BaseUnit);
-                                float yScale = (float)Converters.GetInches(png.Height, descriptor.YUnitsPerBase, descriptor.BaseUnit);
-                                png.SetResolution(png.Width / xScale, png.Height / yScale);
-
-                                png.Save($"{Environment.CurrentDirectory}\\Image {fileCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-                            }
-                        }
+                                imc.GenerateBitmap().Save($"{Environment.CurrentDirectory}\\Image {fileCounter++}.png", System.Drawing.Imaging.ImageFormat.Png);
 
                         btnPreview.Enabled = false;
                         Cursor = Cursors.Default;

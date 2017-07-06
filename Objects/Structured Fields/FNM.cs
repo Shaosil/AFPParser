@@ -51,7 +51,7 @@ namespace AFPParser.StructuredFields
             }
         }
 
-        public FNM(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public FNM(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         public override void ParseData()
         {

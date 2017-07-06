@@ -42,10 +42,10 @@ namespace AFPParser
         // Parsed Data
         public IReadOnlyList<Triplet> Triplets { get; private set; }
 
-        public StructuredField(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data)
+        public StructuredField(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, data)
         {
-            Flag = introducer[5];
-            Sequence = (ushort)GetNumericValue(new byte[2] { introducer[6], introducer[7] }, false);
+            Flag = flag;
+            Sequence = sequence;
             Triplets = new List<Triplet>();
         }
 
@@ -67,6 +67,8 @@ namespace AFPParser
 
         protected override void SyncIntroducer()
         {
+            if (Introducer == null) Introducer = new byte[8];
+
             byte[] len = BitConverter.GetBytes(Length);
             byte[] seq = BitConverter.GetBytes(Sequence);
             if (BitConverter.IsLittleEndian)

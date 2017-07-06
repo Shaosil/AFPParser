@@ -89,8 +89,7 @@ namespace AFPParser.Tests
             for (int i = 0; i < 10; i++)
             {
                 byte[] nopId = Extensions.GetByteArrayFromHexString("D3EEEE");
-                byte[] nopIntro = new byte[8] { 0x00, 0x08, nopId[0], nopId[1], nopId[2], 0x00, 0x00, 0x00 };
-                NOP newNOP = new NOP(nopId, nopIntro, new byte[0]);
+                NOP newNOP = new NOP(nopId, 0, 0, new byte[0]);
                 file.AddField(newNOP, 0);
                 newFields.Add(newNOP);
                 numNew++;
@@ -120,8 +119,7 @@ namespace AFPParser.Tests
 
             // Create a new NOP field and insert it after the first detected field with a container
             byte[] nopID = Extensions.GetByteArrayFromHexString("D3EEEE");
-            byte[] nopIntro = new byte[8] { 0x00, 0x08, nopID[0], nopID[1], nopID[2], 0x00, 0x00, 0x00 };
-            NOP newNOP = new NOP(nopID, nopIntro, new byte[0]);
+            NOP newNOP = new NOP(nopID, 0, 0, new byte[0]);
 
             // Store the insert index
             int insertIndex = 0;

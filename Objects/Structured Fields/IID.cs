@@ -33,13 +33,13 @@ namespace AFPParser.StructuredFields
 
         // Parsed Data
         public Converters.eMeasurement BaseUnit { get; private set; }
-        public int XSize { get; private set; }
-        public int YSize { get; private set; }
+        public ushort XSize { get; private set; }
+        public ushort YSize { get; private set; }
         public int XUnitsPerBase { get; private set; }
         public int YUnitsPerBase { get; private set; }
         public Color ImageColor { get; private set; }
 
-        public IID(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public IID(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
         {
@@ -54,8 +54,8 @@ namespace AFPParser.StructuredFields
         public override void ParseData()
         {
             BaseUnit = Converters.GetBaseUnit(Data[12]);
-            XSize = (int)GetNumericValue(GetSectionedData(18, 2), false);
-            YSize = (int)GetNumericValue(GetSectionedData(20, 2), false);
+            XSize = (ushort)GetNumericValue(GetSectionedData(18, 2), false);
+            YSize = (ushort)GetNumericValue(GetSectionedData(20, 2), false);
             XUnitsPerBase = (int)GetNumericValue(GetSectionedData(14, 2), false);
             YUnitsPerBase = (int)GetNumericValue(GetSectionedData(16, 2), false);
             ImageColor = Color.Black;

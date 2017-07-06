@@ -18,7 +18,7 @@ namespace AFPParser.PTXControlSequences
         // Parsed Data
         public int Increment { get; private set; }
 
-        public RMB(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public RMB(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
 
         public override void ParseData()
         {

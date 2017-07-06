@@ -25,7 +25,7 @@ namespace AFPParser
             }
         }
         public string HexIDStr => BitConverter.ToString(HexID).Replace("-", "");
-        public byte[] Introducer { get; private set; }
+        public byte[] Introducer { get; protected set; }
         public byte[] Data
         {
             get { return _data; }
@@ -79,10 +79,9 @@ namespace AFPParser
             }
         }
 
-        public DataStructure(byte[] hexID, byte[] introducer, byte[] data)
+        public DataStructure(byte[] hexID, byte[] data)
         {
             HexID = hexID;
-            Introducer = introducer;
             Data = data;
         }
 

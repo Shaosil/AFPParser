@@ -27,7 +27,7 @@ namespace AFPParser.StructuredFields
         public int XOrigin { get; private set; }
         public int YOrigin { get; private set; }
 
-		public IPS(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+		public IPS(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         public override void ParseData()
         {

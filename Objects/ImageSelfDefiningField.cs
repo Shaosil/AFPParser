@@ -13,10 +13,13 @@ namespace AFPParser
         // Properties which must be implemented by individual SDFs
         protected override string StructureName => "Image Self Defining Field";
 
-        public ImageSelfDefiningField(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public ImageSelfDefiningField(byte[] id, byte[] data) : base(id, data) { }
 
         protected override void SyncIntroducer()
         {
+            int extraBytes = HexID.Length > 1 ? 2 : 0;
+            if (Introducer == null) Introducer = new byte[2 + extraBytes];
+
             // Either single or double byte fields in the introducer
             if (Introducer.Length == 2)
             {
@@ -51,15 +54,13 @@ namespace AFPParser
                 byte[] idArray = isExtended ? new byte[2] { 0xFE, sdfData[i + 1] } : new byte[1] { sdfData[i] };
                 byte id = idArray.Last();
                 int length = (int)GetNumericValue(isExtended ? new[] { sdfData[i + 2], sdfData[i + 3] } : new[] { sdfData[i + 1] }, false);
-                byte[] introducer = new byte[isExtended ? 4 : 2];
                 byte[] data = new byte[length];
-                Array.ConstrainedCopy(sdfData, i, introducer, 0, introducer.Length);
                 Array.ConstrainedCopy(sdfData, i + (isExtended ? 4 : 2), data, 0, length);
 
                 // Create an instance of the lookup type
                 Type iSDFType = typeof(ImageSelfDefiningFields.UNKNOWN);
                 if (Lookups.ImageSelfDefiningFields.ContainsKey(id)) iSDFType = Lookups.ImageSelfDefiningFields[id];
-                ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, idArray, introducer, data);
+                ImageSelfDefiningField sdf = (ImageSelfDefiningField)Activator.CreateInstance(iSDFType, idArray, data);
 
                 // If this is a begin tag, add a new container to our active list
                 if (beginCodes.Contains(id))

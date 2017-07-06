@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
@@ -29,8 +31,31 @@ namespace AFPParser.StructuredFields
         public int YOffset { get; private set; }
         public int XSize { get; private set; }
         public int YSize { get; private set; }
+        public int XFillSize { get; private set; }
+        public int YFillSize { get; private set; }
 
-        public ICP(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public ICP(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+
+        // Realtime use
+        public ICP(ushort xSize, ushort ySize) : base(new byte[3] { 0xD3, 0xAC, 0x7B }, 0, 0, new byte[0])
+        {
+            Data = new byte[12];
+            byte[] xSizeBytes = BitConverter.GetBytes(xSize);
+            byte[] ySizeBytes = BitConverter.GetBytes(ySize);
+            if (BitConverter.IsLittleEndian)
+            {
+                xSizeBytes = xSizeBytes.Reverse().ToArray();
+                ySizeBytes = ySizeBytes.Reverse().ToArray();
+            }
+
+            // Fill data with X and Y sizing information
+            Array.ConstrainedCopy(xSizeBytes, 0, Data, 4, 2);
+            Array.ConstrainedCopy(ySizeBytes, 0, Data, 6, 2);
+            Array.ConstrainedCopy(xSizeBytes, 0, Data, 8, 2);
+            Array.ConstrainedCopy(ySizeBytes, 0, Data, 10, 2);
+
+            ParseData();
+        }
 
         public override void ParseData()
         {
@@ -38,6 +63,8 @@ namespace AFPParser.StructuredFields
             YOffset = (int)GetNumericValue(GetSectionedData(2, 2), false);
             XSize = (int)GetNumericValue(GetSectionedData(4, 2), false);
             YSize = (int)GetNumericValue(GetSectionedData(6, 2), false);
+            XFillSize = (int)GetNumericValue(GetSectionedData(8, 2), false);
+            YFillSize = (int)GetNumericValue(GetSectionedData(10, 2), false);
         }
     }
 }

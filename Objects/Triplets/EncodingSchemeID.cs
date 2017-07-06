@@ -13,7 +13,7 @@ namespace AFPParser.Triplets
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public EncodingSchemeID(byte id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public EncodingSchemeID(byte id, byte[] data) : base(id, data) { }
 
         protected override string GetOffsetDescriptions()
         {

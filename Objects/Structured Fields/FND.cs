@@ -42,7 +42,7 @@ namespace AFPParser.StructuredFields
         public float EmInches => (NominalVerticalSize / 10f) / 72;
         public float EmXInches => (NominalHorizontalSize / 20f) / 72;
 
-        public FND(byte[] id, byte[] introducer, byte[] data) : base(id, introducer, data) { }
+        public FND(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         public override void ParseData()
         {

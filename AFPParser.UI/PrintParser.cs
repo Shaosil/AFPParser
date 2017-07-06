@@ -1,16 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Drawing;
-using System.Reflection;
+﻿using AFPParser.Containers;
+using AFPParser.PTXControlSequences;
+using AFPParser.StructuredFields;
 using AFPParser.Triplets;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using AFPParser.Containers;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Printing;
-using System.Collections.Generic;
-using AFPParser.StructuredFields;
-using AFPParser.PTXControlSequences;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace AFPParser.UI
 {
@@ -239,26 +239,15 @@ namespace AFPParser.UI
 
         private void DrawIMImage(IMImageContainer imc, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
         {
-            // Build a bitmap out of the 2 dimensional array of booleans
-            Bitmap bmp = new Bitmap(imc.ImageData.GetUpperBound(0) + 1, imc.ImageData.GetUpperBound(1) + 1);
-            for (int y = 0; y < bmp.Height; y++)
-                for (int x = 0; x < bmp.Width; x++)
-                    if (imc.ImageData[x, y])
-                        bmp.SetPixel(x, y, Color.Black);
+            Bitmap png = imc.GenerateBitmap();
+            IID descriptor = imc.GetStructure<IID>();
 
-            // Get positional/scaling information from min offsets and IID field
-            IID imDescriptor = imc.GetStructure<IID>();
             int xPos = imc.Cells.Min(c => c.CellPosition.XOffset);
             int yPos = imc.Cells.Min(c => c.CellPosition.YOffset);
-            float xInchPos = xStartingInch + (float)(Converters.GetInches(xPos, imDescriptor.XUnitsPerBase, imDescriptor.BaseUnit) * 100);
-            float yInchPos = yStartingInch + (float)(Converters.GetInches(yPos, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit) * 100);
-            double heightInches = Converters.GetInches(bmp.Height, imDescriptor.YUnitsPerBase, imDescriptor.BaseUnit);
+            float xInchPos = xStartingInch + (float)(Converters.GetInches(xPos, descriptor.XUnitsPerBase, descriptor.BaseUnit) * 100);
+            float yInchPos = yStartingInch + (float)(Converters.GetInches(yPos, descriptor.YUnitsPerBase, descriptor.BaseUnit) * 100);
 
-            float dpi = (float)Math.Round(bmp.Height / heightInches);
-            bmp.SetResolution(dpi, dpi);
-            
-            // IM Images can be tiled. Make sure we draw as much as requested in the ICP field
-            e.Graphics.DrawImage(bmp, xInchPos, yInchPos);
+            e.Graphics.DrawImage(png, xInchPos, yInchPos);
         }
 
         private void DrawIOCAImage(IOCAImageContainer imc, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
@@ -421,7 +410,7 @@ namespace AFPParser.UI
             foreach (byte b in data)
             {
                 FontCache fc = fontCaches.First(f => f.CodePoint == b && f.CodePage == curCodePage && f.FontCharSet == curFontCharSet);
-                
+
                 // If this byte is a space character, just increment our x position
                 if (fc.IsVariableSpaceChar || fc.Pattern == null)
                     curInlinePos += GetVariableSpaceIncrementInch();
