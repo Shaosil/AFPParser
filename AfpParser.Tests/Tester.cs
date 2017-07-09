@@ -113,7 +113,7 @@ namespace AFPParser.Tests
 
                     string fileName = c.ToString();
                     if (fileName == "*") fileName = "Asterisk";
-                    croppedCharBmp.Save(Path.Combine(Environment.CurrentDirectory, $"..\\..\\..\\Sample Files\\{filename}.png"));
+                    croppedCharBmp.Save(Path.Combine(Environment.CurrentDirectory, $"..\\..\\..\\Sample Files\\{fileName}.png"));
                 }
             }
         }
