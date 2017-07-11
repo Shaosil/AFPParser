@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace AFPParser
 {
@@ -47,6 +47,14 @@ namespace AFPParser
             Flag = flag;
             Sequence = sequence;
             Triplets = new List<Triplet>();
+        }
+
+        public static T New<T>() where T : StructuredField
+        {
+            // Pass the byte array ID, no flag, no sequence, and no data
+            T newField = (T)Activator.CreateInstance(typeof(T), Lookups.StructuredFieldID<T>(), (byte)0, (ushort)0, new byte[0]);
+
+            return newField;
         }
 
         public override string GetFullDescription()

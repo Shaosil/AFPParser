@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AFPParser
 {
@@ -26,6 +27,7 @@ namespace AFPParser
                 { 0x01, "10 Centimeters" }
             };
 
+        public enum eWidthClass { NotSpecified, Ultralight, Extralight, Light, Semilight, Medium, Semibold, Bold, Extrabold, Ultrabold }
         public static Dictionary<byte, string> WidthClass = new Dictionary<byte, string>()
             {
                 { 0x00, "Not Specified" },
@@ -40,6 +42,7 @@ namespace AFPParser
                 { 0x09, "Ultrabold" }
             };
 
+        public enum eWeightClass { NotSpecified, Ultracondensed, Extracondensed, Condensed, Semicondensed, Medium, Semiexpanded, Expanded, Extraexpanded, Ultraexpanded }
         public static Dictionary<byte, string> WeightClass = new Dictionary<byte, string>()
             {
                 { 0x00, "Not Specified" },
@@ -54,6 +57,8 @@ namespace AFPParser
                 { 0x09, "Ultraexpanded" }
             };
 
+        [Flags]
+        public enum eFontDesignFlags { Italic = 1, Underscored = 2, Hollow = 4, Overstruck = 8, Proportioned = 16, PairwiseKerned = 32 }
         public static Dictionary<byte, string> FontDesignFlags = new Dictionary<byte, string>()
             {
                 { 0x00, "Not Italic|Italic" },

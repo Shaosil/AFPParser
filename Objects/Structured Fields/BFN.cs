@@ -23,15 +23,35 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public string ObjectName { get; private set; }
+        private string _objectName;
+
+        public string ObjectName
+        {
+            get { return _objectName; }
+            set
+            {
+                _objectName = value.Trim();
+                PutStringInData(_objectName, 0, 8);
+            }
+        }
 
         public BFN(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+
+        public BFN(string name = "") : base(Lookups.StructuredFieldID<BFN>(), 0, 0, null)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                Data = new byte[8];
+                ObjectName = name;
+            }
+
+        }
 
         public override void ParseData()
         {
             base.ParseData();
 
-            ObjectName = GetReadableDataPiece(0, 8);
+            _objectName = GetReadableDataPiece(0, 8);
         }
     }
 }

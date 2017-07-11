@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace AFPParser.Tests
 {
@@ -34,38 +33,9 @@ namespace AFPParser.Tests
             }
 
             // Create an AFP font file (BFN, FND, FNC, FNM, FNO, FNP, FNIs, FNGs, EFN) using bool arrays as FNGs
-            Func<Type, byte[]> getId = (Type t) => { return Extensions.GetByteArrayFromHexString(Lookups.StructuredFields.First(s => s.Value == t).Key); };
-            BFN newBFN = new BFN(getId(typeof(BFN)), 0, 0, new byte[0]);
-
-            List<byte> fndData = new List<byte>();
-            fndData.AddRange(Encoding.GetEncoding(DataStructure.EBCDIC).GetBytes("Code 39 Barcode".PadRight(32)));
-            fndData.Add(0x05);
-            fndData.Add(0x05);
-            fndData.AddRange(BitConverter.GetBytes((ushort)36).Reverse());
-            fndData.AddRange(BitConverter.GetBytes((ushort)36).Reverse());
-            fndData.AddRange(BitConverter.GetBytes((ushort)36).Reverse());
-            fndData.AddRange(new byte[2] { 0, 0 });
-            fndData.AddRange(new byte[2] { 0, 0 });
-            fndData.AddRange(new byte[2] { 0, 0 });
-            fndData.Add(0);
-            fndData.Add(0);
-            fndData.Add(0);
-            for (int i = 1; i <= 15; i++) fndData.Add(0);
-            fndData.AddRange(BitConverter.GetBytes((ushort)4096).Reverse());
-            for (int i = 1; i <= 10; i++) fndData.Add(0);
-            fndData.AddRange(new byte[2] { 0, 0 });
-            fndData.AddRange(new byte[2] { 0, 0 });
-            FND newFND = new FND(getId(typeof(FND)), 0, 0, fndData.ToArray());
-
-            List<byte> fncData = new List<byte>();
-            fncData.Add(0);
-            fncData.Add(0x05);
-            fncData.Add(0);
-            fncData.Add(0);
-            fncData.Add(0x02);
-            fncData.Add(0x02);
-            fncData.AddRange(BitConverter.GetBytes((ushort)1000).Reverse());
-            fncData.AddRange(BitConverter.GetBytes((ushort)1000).Reverse());
+            BFN newBFN = new BFN("BARCOD39");
+            FND newFND = new FND("Code 39 Barcode", 36);
+            FNC newFNC = new FNC();
         }
 
         private void SaveFontAsBitmaps()

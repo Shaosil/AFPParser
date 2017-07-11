@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Text;
 
 namespace AFPParser
 {
     public static class Converters
     {
+        public static Encoding EBCDIC => Encoding.GetEncoding("IBM037");
+
         public enum eMeasurement { Inches, Centimeters }
         public static eMeasurement GetBaseUnit(byte b)
         {

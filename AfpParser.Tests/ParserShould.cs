@@ -1,9 +1,9 @@
-﻿using System;
+﻿using AFPParser.StructuredFields;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using AFPParser.StructuredFields;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AFPParser.Tests
 {
@@ -88,8 +88,7 @@ namespace AFPParser.Tests
             // Add a bunch of NOPs to the beginning
             for (int i = 0; i < 10; i++)
             {
-                byte[] nopId = Extensions.GetByteArrayFromHexString("D3EEEE");
-                NOP newNOP = new NOP(nopId, 0, 0, new byte[0]);
+                NOP newNOP = StructuredField.New<NOP>();
                 file.AddField(newNOP, 0);
                 newFields.Add(newNOP);
                 numNew++;
@@ -118,8 +117,7 @@ namespace AFPParser.Tests
                 Assert.IsFalse(c.Structures.Contains(foundNOP));
 
             // Create a new NOP field and insert it after the first detected field with a container
-            byte[] nopID = Extensions.GetByteArrayFromHexString("D3EEEE");
-            NOP newNOP = new NOP(nopID, 0, 0, new byte[0]);
+            NOP newNOP = StructuredField.New<NOP>();
 
             // Store the insert index
             int insertIndex = 0;

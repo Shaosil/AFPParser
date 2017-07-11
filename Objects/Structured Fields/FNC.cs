@@ -1,5 +1,6 @@
-using System.Text;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace AFPParser.StructuredFields
 {
@@ -83,43 +84,195 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        // Custom data
-        public enum ePatternTech { LaserMatrixNBitWide, CIDKeyedFont, PFBType1 }
-        private Dictionary<byte, ePatternTech> dPatternTechs = new Dictionary<byte, ePatternTech>()
+        // Parsed Data
+        public enum ePatternTech { LaserMatrixNBitWide = 5, CIDKeyedFont = 30, PFBType1 = 31 }
+        [Flags]
+        public enum eFontUseFlags { MICRPrinting = 1, ExtendedFont = 2, FixedRasterSize = 4 }
+        public enum eUnitBase { FixedMetrics10Inches = 0, RelativeMetrics = 2 }
+        public enum eUnits { TwoFortyPPI = 2400, ThreeHundredPPI = 3000, OneThousandUnitsPerEm = 1000 }
+        public enum ePatternAlignment { OneByte = 0, FourByte = 2, EightByte = 3 }
+
+        private ePatternTech _patTech;
+        private eFontUseFlags _fontUseFlags;
+        private eUnitBase _xUnitBase;
+        private eUnitBase _yUnitBase;
+        private eUnits _xUnits;
+        private eUnits _yUnits;
+        private ushort _maxCharBoxWidth;
+        private ushort _maxCharBoxHeight;
+        private byte _FNORGLength;
+        private byte _FNIRGLength;
+        private ePatternAlignment _patternAlightment;
+        private int _rasterPatternDataCount;
+        private byte _FNPRGLength;
+        private byte _FNMRGLength;
+        private eUnits _xShapeResolution;
+        private eUnits _yShapeResolution;
+
+        public ePatternTech PatternTech
         {
-            { 0x05, ePatternTech.LaserMatrixNBitWide },
-            { 0x1E, ePatternTech.CIDKeyedFont },
-            { 0x1F, ePatternTech.PFBType1 }
-        };
-        public ePatternTech PatternTech { get; private set; }
-        public ushort MaxBoxWidth { get; private set; }
-        public ushort MaxBoxHeight { get; private set; }
-        public ushort FNORGLength { get; private set; }
-        public ushort FNIRGLength { get; private set; }
-        public ushort RasterDataCount { get; private set; }
-        public ushort FNPRGLength { get; private set; }
-        public ushort FNMRGLength { get; private set; }
-        public ushort FNNRGLength { get; private set; }
-        public uint FNNDataCount { get; private set; }
+            get { return _patTech; }
+            set
+            {
+                _patTech = value;
+                Data[1] = (byte)value;
+            }
+        }
+        public eFontUseFlags FontUseFlags
+        {
+            get { return _fontUseFlags; }
+            set
+            {
+                _fontUseFlags = value;
+                PutFlagsInData(value, Offsets[3].Mappings, 3, 1);
+            }
+        }
+        public eUnitBase XUnitBase
+        {
+            get { return _xUnitBase; }
+            set
+            {
+                _xUnitBase = value;
+                Data[4] = (byte)value;
+            }
+        }
+        public eUnitBase YUnitBase
+        {
+            get { return _yUnitBase; }
+            set
+            {
+                _yUnitBase = value;
+                Data[5] = (byte)value;
+            }
+        }
+        public eUnits XUnits
+        {
+            get { return _xUnits; }
+            set
+            {
+                _xUnits = value;
+                PutNumberInData((ushort)value, 6);
+            }
+        }
+        public eUnits YUnits
+        {
+            get { return _yUnits; }
+            set
+            {
+                _yUnits = value;
+                PutNumberInData((ushort)value, 8);
+            }
+        }
+        public ushort MaxBoxWidth
+        {
+            get { return _maxCharBoxWidth; }
+            set
+            {
+                _maxCharBoxWidth = value;
+                PutNumberInData(value, 10);
+            }
+        }
+        public ushort MaxBoxHeight
+        {
+            get { return _maxCharBoxHeight; }
+            set
+            {
+                _maxCharBoxHeight = value;
+                PutNumberInData(value, 12);
+            }
+        }
+        public byte FNORGLength
+        {
+            get { return _FNORGLength; }
+            set
+            {
+                _FNORGLength = value;
+                Data[14] = value;
+            }
+        }
+        public byte FNIRGLength
+        {
+            get { return _FNIRGLength; }
+            set
+            {
+                _FNIRGLength = value;
+                Data[15] = value;
+            }
+        }
+        public ePatternAlignment PatternAlignment
+        {
+            get { return _patternAlightment; }
+            set
+            {
+                _patternAlightment = value;
+                Data[16] = (byte)value;
+            }
+        }
+        public int RasterDataCount
+        {
+            get { return _rasterPatternDataCount; }
+            set
+            {
+                _rasterPatternDataCount = value;
+                PutNumberInData(value, 17, 3);
+            }
+        }
+        public byte FNPRGLength
+        {
+            get { return _FNPRGLength; }
+            set
+            {
+                _FNPRGLength = value;
+                Data[20] = value;
+            }
+        }
+        public byte FNMRGLength
+        {
+            get { return _FNMRGLength; }
+            set
+            {
+                _FNMRGLength = value;
+                Data[21] = value;
+            }
+        }
+        public eUnits XShapeResolution
+        {
+            get { return _xShapeResolution; }
+            set
+            {
+                _xShapeResolution = value;
+                PutNumberInData((ushort)value, 24);
+            }
+        }
+        public eUnits YShapeResolution
+        {
+            get { return _yShapeResolution; }
+            set
+            {
+                _yShapeResolution = value;
+                PutNumberInData((ushort)value, 26);
+            }
+        }
 
         public FNC(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+
+        public FNC() : base(Lookups.StructuredFieldID<FNC>(), 0, 0, null)
+        {
+            Data = new byte[28];
+        }
 
         public override void ParseData()
         {
             base.ParseData();
 
-            PatternTech = dPatternTechs[Data[1]];
-            MaxBoxWidth = (ushort)GetNumericValue(GetSectionedData(10, 2), false);
-            MaxBoxHeight = (ushort)GetNumericValue(GetSectionedData(12, 2), false);
-            FNORGLength = (ushort)GetNumericValue(new[] { Data[14] }, false);
-            FNIRGLength = (ushort)GetNumericValue(new[] { Data[15] }, false);
-            RasterDataCount = (ushort)GetNumericValue(GetSectionedData(17, 2), false);
-            FNPRGLength = (ushort)GetNumericValue(new[] { Data[20] }, false);
-            FNMRGLength = (ushort)GetNumericValue(new[] { Data[21] }, false);
-            if (Data.Length > 35)
-                FNNRGLength = (ushort)GetNumericValue(new[] { Data[35] }, false);
-            if (Data.Length > 39)
-                FNNDataCount = (uint)GetNumericValue(GetSectionedData(36, 4), false);
+            _patTech = (ePatternTech)Data[1];
+            _maxCharBoxWidth = (ushort)GetNumericValue(GetSectionedData(10, 2), false);
+            _maxCharBoxHeight = (ushort)GetNumericValue(GetSectionedData(12, 2), false);
+            _FNORGLength = (byte)GetNumericValue(new[] { Data[14] }, false);
+            _FNIRGLength = (byte)GetNumericValue(new[] { Data[15] }, false);
+            _rasterPatternDataCount = (ushort)GetNumericValue(GetSectionedData(17, 2), false);
+            _FNPRGLength = (byte)GetNumericValue(new[] { Data[20] }, false);
+            _FNMRGLength = (byte)GetNumericValue(new[] { Data[21] }, false);
         }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)

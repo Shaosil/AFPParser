@@ -12,8 +12,6 @@ namespace AFPParser
         private byte[] _hexID = new byte[0];
         private byte[] _data = new byte[0];
 
-        public const string EBCDIC = "IBM037";
-
         // Properties directly converted from raw hex data
         public byte[] HexID
         {
@@ -81,8 +79,8 @@ namespace AFPParser
 
         public DataStructure(byte[] hexID, byte[] data)
         {
-            HexID = hexID;
-            Data = data;
+            HexID = hexID ?? new byte[0];
+            Data = data ?? new byte[0];
         }
 
         public abstract void ParseData();
@@ -148,7 +146,7 @@ namespace AFPParser
         protected string GetReadableDataPiece(int startIndex, int length)
         {
             // Convert to EBCDIC, only grabbing valid characters
-            return Extensions.RegexReadableText.Match(Encoding.GetEncoding(EBCDIC).GetString(GetSectionedData(startIndex, length))).Value;
+            return Extensions.RegexReadableText.Match(Converters.EBCDIC.GetString(GetSectionedData(startIndex, length))).Value;
         }
 
         // Returns a proper Endian array of booleans. 8 bits per byte
@@ -192,6 +190,61 @@ namespace AFPParser
                 : bytes.Length == 4 && isSigned ? BitConverter.ToInt32(bytes, 0)
                 : bytes.Length == 4 && !isSigned ? (long)BitConverter.ToUInt32(bytes, 0)
                 : 0;
+        }
+
+        protected void PutStringInData(string _typefaceDesc, int startIndex, int sectionLength)
+        {
+            if (!string.IsNullOrWhiteSpace(_typefaceDesc) && Data.Length > startIndex + sectionLength)
+            {
+                string trimmed = _typefaceDesc.Trim();
+                if (trimmed.Length > sectionLength) trimmed = trimmed.Substring(0, sectionLength);
+
+                // Plop trimmed string into the specified place in Data
+                Array.ConstrainedCopy(Converters.EBCDIC.GetBytes(trimmed), 0, Data, startIndex, sectionLength);
+            }
+        }
+
+        protected void PutNumberInData(object num, int startIndex, int specificLength = 0)
+        {
+            // Convert to whatever numeric type it is
+            byte[] numBytes = null;
+            if (num is byte || num is sbyte) numBytes = BitConverter.GetBytes((byte)num);
+            else if (num is ushort || num is short) numBytes = BitConverter.GetBytes((ushort)num);
+            else if (num is uint || num is int) numBytes = BitConverter.GetBytes((uint)num);
+            else if (num is ulong || num is long) numBytes = BitConverter.GetBytes((ulong)num);
+
+            if (numBytes != null && Data.Length > startIndex + numBytes.Length)
+            {
+                if (BitConverter.IsLittleEndian) numBytes = numBytes.Reverse().ToArray();
+                if (specificLength > 0) numBytes = numBytes.Take(specificLength).ToArray();
+                Array.ConstrainedCopy(numBytes, 0, Data, startIndex, numBytes.Length);
+            }
+        }
+
+        protected void PutFlagsInData(Enum flags, Dictionary<byte, string> mappings, int startIndex, int length)
+        {
+            if (Data.Length > startIndex + length)
+            {
+                byte[] flagBytes = new byte[length];
+
+                string[] eValues = Enum.GetValues(flags.GetType()).Cast<Enum>().Select(e => e.ToString()).ToArray();
+
+                for (int i = 0; i < mappings.Keys.Count; i++)
+                {
+                    // // Store the bit index, and index of the flagBytes array we should modify
+                    byte bitIndex = mappings.Keys.ElementAt(i);
+                    byte byteIndex = (byte)(bitIndex / 8);
+
+                    // Get the element in our flags enum that has the same index as the current mapping key
+                    Enum curEnum = (Enum)Enum.Parse(flags.GetType(), eValues[i]);
+
+                    // If the flags contain this particular enum, set the bit at position 'bitIndex' (left-right)
+                    if (flags.HasFlag(curEnum))
+                        flagBytes[byteIndex] |= (byte)(1 << (7 - bitIndex));
+                }
+
+                Array.ConstrainedCopy(flagBytes, 0, Data, startIndex, length);
+            }
         }
     }
 }

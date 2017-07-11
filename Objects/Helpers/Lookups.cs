@@ -5,6 +5,7 @@ using AFPParser.Triplets;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace AFPParser
 {
@@ -146,6 +147,15 @@ namespace AFPParser
             { "D3AE89", typeof(FNO) }, // Font Orientation
             { "D3AC89", typeof(FNP) }  // Font Position
         };
+        public static byte[] StructuredFieldID<T>()
+        {
+            // Return the byte array ID of the structured field type (or NOP if not found)
+            string hexCode = StructuredFields.FirstOrDefault(f => f.Value == typeof(T)).Key;
+            if (string.IsNullOrEmpty(hexCode))
+                hexCode = StructuredFields.First(f => f.Value == typeof(StructuredFields.NOP)).Key;
+
+            return Extensions.GetByteArrayFromHexString(hexCode);
+        }
         #endregion
 
         #region Triplets
