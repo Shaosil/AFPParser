@@ -173,8 +173,8 @@ namespace AFPParser.UI
 
                         // Set page size by checking the first PGD. Width and height are in 1/100 inch
                         PGD pgd = afpFile.Fields.OfType<PGD>().First();
-                        int xWidth = (int)(Converters.GetInches(pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
-                        int yWidth = (int)(Converters.GetInches(pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
+                        int xWidth = (int)(Converters.GetInches((int)pgd.XSize, pgd.UnitsPerXBase, pgd.BaseUnit) * 100);
+                        int yWidth = (int)(Converters.GetInches((int)pgd.YSize, pgd.UnitsPerYBase, pgd.BaseUnit) * 100);
                         ppd.Document.DefaultPageSettings.PaperSize = new PaperSize("Custom", xWidth, yWidth);
 
                         ppd.ShowDialog();

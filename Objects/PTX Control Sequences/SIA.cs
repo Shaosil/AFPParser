@@ -20,14 +20,14 @@ namespace AFPParser.PTXControlSequences
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int Adjustment { get; private set; }
+        public short Adjustment { get; private set; }
         public bool Forward { get; private set; }
 
         public SIA(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
 
         public override void ParseData()
         {
-            Adjustment = (int)GetNumericValue(GetSectionedData(0, 2), true);
+            Adjustment = GetNumericValueFromData<short>(0, 2);
             Forward = Data[2] == 0x00;
         }
     }

@@ -22,8 +22,8 @@ namespace AFPParser.ImageSelfDefiningFields
 
         public override void ParseData()
         {
-            XOffset = (uint)GetNumericValue(GetSectionedData(0, 4), false);
-            YOffset = (uint)GetNumericValue(GetSectionedData(4, 4), false);
+            XOffset = GetNumericValueFromData<uint>(0, 4);
+            YOffset = GetNumericValueFromData<uint>(4, 4);
         }
     }
 }

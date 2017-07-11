@@ -1,6 +1,5 @@
-using System.Text;
 using System.Collections.Generic;
-using System;
+using System.Text;
 
 namespace AFPParser.StructuredFields
 {
@@ -30,10 +29,10 @@ namespace AFPParser.StructuredFields
 
         // Parsed Data
         public Converters.eMeasurement BaseUnit { get; private set; }
-        public int UnitsPerXBase { get; private set; }
-        public int UnitsPerYBase { get; private set; }
-        public int XSize { get; private set; }
-        public int YSize { get; private set; }
+        public ushort UnitsPerXBase { get; private set; }
+        public ushort UnitsPerYBase { get; private set; }
+        public uint XSize { get; private set; }
+        public uint YSize { get; private set; }
 
         public PGD(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
@@ -42,10 +41,10 @@ namespace AFPParser.StructuredFields
             base.ParseData();
 
             BaseUnit = Converters.GetBaseUnit(Data[0]);
-            UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
-            UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
-            XSize = (int)GetNumericValue(GetSectionedData(6, 3), false);
-            YSize = (int)GetNumericValue(GetSectionedData(9, 3), false);
+            UnitsPerXBase = GetNumericValueFromData<ushort>(2, 2);
+            UnitsPerYBase = GetNumericValueFromData<ushort>(4, 2);
+            XSize = GetNumericValueFromData<uint>(6, 3);
+            YSize = GetNumericValueFromData<uint>(9, 3);
         }
 
         public override string GetFullDescription()
@@ -56,7 +55,7 @@ namespace AFPParser.StructuredFields
             sb.AppendLine();
             sb.AppendLine();
             sb.Append("Page size: ");
-            sb.Append($"{Converters.GetMeasurement(XSize, UnitsPerXBase)} x {Converters.GetMeasurement(YSize, UnitsPerYBase)}");
+            sb.Append($"{Converters.GetMeasurement((int)XSize, UnitsPerXBase)} x {Converters.GetMeasurement((int)YSize, UnitsPerYBase)}");
             sb.AppendLine($" {BaseUnit.ToString()}");
 
             return sb.ToString();

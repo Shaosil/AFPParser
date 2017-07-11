@@ -18,16 +18,16 @@ namespace AFPParser.Triplets
 
         // Parsed Data
         public Converters.eMeasurement BaseUnit { get; private set; }
-        public int XUnitsPerBase { get; private set; }
-        public int YUnitsPerBase { get; private set; }
+        public ushort XUnitsPerBase { get; private set; }
+        public ushort YUnitsPerBase { get; private set; }
 
         public MeasurementUnits(byte id, byte[] data) : base(id, data) { }
 
         public override void ParseData()
         {
             BaseUnit = Converters.GetBaseUnit(Data[0]);
-            XUnitsPerBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
-            YUnitsPerBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
+            XUnitsPerBase = GetNumericValueFromData<ushort>(2, 2);
+            YUnitsPerBase = GetNumericValueFromData<ushort>(4, 2);
         }
     }
 }

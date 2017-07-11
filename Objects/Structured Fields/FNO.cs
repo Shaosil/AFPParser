@@ -1,8 +1,8 @@
-using System.Text;
-using System.Linq;
-using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace AFPParser.StructuredFields
 {
@@ -49,9 +49,29 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public IReadOnlyList<Info> FNOInfo { get; private set; }
+        private List<Info> _FNOInfo = new List<Info>();
+        public IReadOnlyList<Info> FNOInfo
+        {
+            get { return _FNOInfo; }
+            set
+            {
+                _FNOInfo = value.ToList();
+
+                // Update the data stream
+                Data = new byte[value.Count * 26];
+                for (int i = 0; i < value.Count; i++)
+                {
+
+                }
+            }
+        }
 
         public FNO(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+
+        public FNO(List<Info> allInfos) : base(Lookups.StructuredFieldID<FNO>(), 0, 0, null)
+        {
+            FNOInfo = allInfos;
+        }
 
         public override void ParseData()
         {
@@ -61,11 +81,24 @@ namespace AFPParser.StructuredFields
 
             while (curIndx < Data.Length)
             {
-                allInfo.Add(new Info((int)GetNumericValue(GetSectionedData(curIndx + 8, 2), false)));
+                CommonMappings.eRotations rot = (CommonMappings.eRotations)Data[curIndx + 3];
+                short maxBaseOSet = GetNumericValueFromData<short>(curIndx + 4, 2);
+                ushort maxCharInc = GetNumericValueFromData<ushort>(curIndx + 6, 2);
+                ushort spaceCharInc = GetNumericValueFromData<ushort>(curIndx + 8, 2);
+                ushort maxBaseExt = GetNumericValueFromData<ushort>(curIndx + 10, 2);
+                Info.eControlFlags cFlags = (Info.eControlFlags)Data[curIndx + 12];
+                ushort emSpaceInc = GetNumericValueFromData<ushort>(curIndx + 14, 2);
+                ushort figSpaceInc = GetNumericValueFromData<ushort>(curIndx + 18, 2);
+                ushort nomCharInc = GetNumericValueFromData<ushort>(curIndx + 20, 2);
+                ushort defaultBaseInc = GetNumericValueFromData<ushort>(curIndx + 22, 2);
+                short minASpace = GetNumericValueFromData<short>(curIndx + 24, 2);
+
+                allInfo.Add(new Info(rot, maxBaseOSet, maxCharInc, spaceCharInc, maxBaseExt, cFlags,
+                    emSpaceInc, figSpaceInc, nomCharInc, defaultBaseInc, minASpace));
                 curIndx += RepeatingGroupLength;
             }
 
-            FNOInfo = allInfo;
+            _FNOInfo = allInfo;
         }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
@@ -79,11 +112,11 @@ namespace AFPParser.StructuredFields
             {
                 sb.AppendLine($"Control Flags:");
 
-                // The first three bits represent a numeric value, so add 5 blank bytes
-                BitArray indexNumBits = new BitArray(new bool[5] { false, false, false, false, false }
-                    .Concat(GetBitArray(sectionedData).Take(3)).ToArray());
+                // The first three bits represent a numeric value, so add them after 5 blank bytes
+                IEnumerable<bool> indexNumBits = new bool[5] { false, false, false, false, false }.Concat(GetBitArray(sectionedData).Take(3));
+                if (BitConverter.IsLittleEndian) indexNumBits = indexNumBits.Reverse();
                 int[] FNINumInt = new int[1];
-                indexNumBits.CopyTo(FNINumInt, 0);
+                new BitArray(indexNumBits.ToArray()).CopyTo(FNINumInt, 0);
                 sb.AppendLine($"* Font Index Number: {FNINumInt[0]}");
 
                 sb.Append("* ");
@@ -111,11 +144,35 @@ namespace AFPParser.StructuredFields
 
         public class Info
         {
-            public int SpaceCharIncrement { get; private set; }
+            // Weird, but only specify one "FNI" flag at a time, if any. It specifies the matching index of the FNI group. See FOCA documentation for details
+            public enum eControlFlags { FNI1 = 32, FNI2 = 64, FNI3 = 96, Kerning = 8, UniformASpace = 4, UniformBaseline = 2, UniformCharIncrement = 1 }
 
-            public Info(int spaceCharInc)
+            public CommonMappings.eRotations Rotation { get; private set; }
+            public short MaxBaselineOffset { get; private set; }
+            public ushort MaxCharIncrement { get; private set; }
+            public ushort SpaceCharIncrement { get; private set; }
+            public ushort MaxBaselineExtent { get; private set; }
+            public eControlFlags ControlFlags { get; private set; }
+            public ushort EmSpaceIncrement { get; private set; }
+            public ushort FigureSpaceIncrement { get; private set; }
+            public ushort NominalCharIncrement { get; private set; }
+            public ushort DefaultBaselineIncrement { get; private set; }
+            public short MinASpace { get; private set; }
+
+            public Info(CommonMappings.eRotations rot, short maxBaseOSet, ushort maxCharInc, ushort spaceCharInc, ushort maxBaseExt,
+                eControlFlags cFlags, ushort emSpaceInc, ushort figSpaceInc, ushort nomCharInc, ushort defaultBaseInc, short minASpace)
             {
+                Rotation = rot;
+                MaxBaselineOffset = maxBaseOSet;
+                MaxCharIncrement = maxCharInc;
                 SpaceCharIncrement = spaceCharInc;
+                MaxBaselineExtent = maxBaseExt;
+                ControlFlags = cFlags;
+                EmSpaceIncrement = emSpaceInc;
+                FigureSpaceIncrement = figSpaceInc;
+                NominalCharIncrement = nomCharInc;
+                DefaultBaselineIncrement = defaultBaseInc;
+                MinASpace = minASpace;
             }
         }
     }

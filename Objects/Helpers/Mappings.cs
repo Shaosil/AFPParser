@@ -6,6 +6,7 @@ namespace AFPParser
     // Mappings which appear more than once should be stored here
     public static class CommonMappings
     {
+        public enum eRotations { Zero = 0, Ninety = 0x2D, OneEighty = 0x5A, TwoSeventy = 0x87 }
         public static Dictionary<byte, string> Rotations = new Dictionary<byte, string>()
             {
                 { 0x00, "0 Degrees" },
@@ -58,7 +59,7 @@ namespace AFPParser
             };
 
         [Flags]
-        public enum eFontDesignFlags { Italic = 1, Underscored = 2, Hollow = 4, Overstruck = 8, Proportioned = 16, PairwiseKerned = 32 }
+        public enum eFontDesignFlags { Italic = 128, Underscored = 64, Hollow = 16, Overstruck = 8, Proportioned = 4, PairwiseKerned = 2 }
         public static Dictionary<byte, string> FontDesignFlags = new Dictionary<byte, string>()
             {
                 { 0x00, "Not Italic|Italic" },

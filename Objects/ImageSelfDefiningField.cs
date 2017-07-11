@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Text;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace AFPParser
 {
@@ -53,7 +53,8 @@ namespace AFPParser
                 // Get the ID, length, introducer, and data bytes
                 byte[] idArray = isExtended ? new byte[2] { 0xFE, sdfData[i + 1] } : new byte[1] { sdfData[i] };
                 byte id = idArray.Last();
-                int length = (int)GetNumericValue(isExtended ? new[] { sdfData[i + 2], sdfData[i + 3] } : new[] { sdfData[i + 1] }, false);
+                int length = isExtended ? GetNumericValue<ushort>(new[] { sdfData[i + 2], sdfData[i + 3] })
+                    : GetNumericValue<byte>(new[] { sdfData[i + 1] });
                 byte[] data = new byte[length];
                 Array.ConstrainedCopy(sdfData, i + (isExtended ? 4 : 2), data, 0, length);
 

@@ -122,7 +122,7 @@ namespace AFPParser
                     if (IsRepeatingGroup && RepeatingGroupLength == 0 && i == 0)
                     {
                         int rgOffsetLength = Offsets[i + 1].StartingIndex;
-                        sectionLength = (int)GetNumericValue(GetSectionedData(skip, rgOffsetLength), false);
+                        sectionLength = GetNumericValueFromData<int>(skip, rgOffsetLength);
                     }
 
                     // Calculate section of bytes to take from data
@@ -177,7 +177,8 @@ namespace AFPParser
                     int curIndex = 0;
                     while (curIndex < Data.Length)
                     {
-                        int rgLength = (int)GetNumericValue(GetSectionedData(curIndex, numLengthBytes), false);
+                        int rgLength = numLengthBytes == 1 ? GetNumericValueFromData<byte>(curIndex, numLengthBytes)
+                            : GetNumericValueFromData<ushort>(curIndex, numLengthBytes);
                         int tripletLength = rgLength - numLengthBytes;
                         byte[] curTripletData = new byte[tripletLength];
                         Array.ConstrainedCopy(Data, curIndex + numLengthBytes, curTripletData, 0, tripletLength);

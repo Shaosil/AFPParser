@@ -35,7 +35,22 @@ namespace AFPParser.Tests
             // Create an AFP font file (BFN, FND, FNC, FNM, FNO, FNP, FNIs, FNGs, EFN) using bool arrays as FNGs
             BFN newBFN = new BFN("BARCOD39");
             FND newFND = new FND("Code 39 Barcode", 36);
-            FNC newFNC = new FNC();
+            ushort maxBitsWide = (ushort)charsAndBoolVals.Max(c => c.Value.GetUpperBound(0) + 1);
+            ushort maxBitsTall = (ushort)charsAndBoolVals.Max(c => c.Value.GetUpperBound(1) + 1);
+            int totalRasterBytes = charsAndBoolVals.Sum(c => c.Value.Length);
+            FNC newFNC = new FNC(maxBitsWide, maxBitsTall, totalRasterBytes);
+            uint curFNMIndex = 0;
+            List<FNM.PatternData> fnmPatData = new List<FNM.PatternData>();
+            foreach (KeyValuePair<char, bool[,]> kvp in charsAndBoolVals)
+            {
+                ushort bitWidth = (ushort)(kvp.Value.GetUpperBound(0) + 1);
+                ushort bitHeight = (ushort)(kvp.Value.GetUpperBound(1) + 1);
+                ushort roundedWidth = (ushort)(Math.Ceiling(bitWidth / 8f) * 8);
+                ushort roundedHeight = (ushort)(Math.Ceiling(bitHeight / 8f) * 8);
+                fnmPatData.Add(new FNM.PatternData(bitWidth, bitHeight, curFNMIndex));
+                curFNMIndex += (uint)((roundedWidth * roundedHeight) / 8);
+            }
+            FNM newFNM = new FNM(fnmPatData);
         }
 
         private void SaveFontAsBitmaps()

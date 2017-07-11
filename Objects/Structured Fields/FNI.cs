@@ -2,12 +2,12 @@ using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
 {
-	public class FNI : StructuredField
-	{
-		private static string _abbr = "FNI";
-		private static string _title = "Font Index";
-		private static string _desc = "Maps a descriptive font name to a font member name in a font library.";
-		private static List<Offset> _oSets = new List<Offset>()
+    public class FNI : StructuredField
+    {
+        private static string _abbr = "FNI";
+        private static string _title = "Font Index";
+        private static string _desc = "Maps a descriptive font name to a font member name in a font library.";
+        private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CHAR, "Graphic Character GID"),
             new Offset(8, Lookups.DataTypes.UBIN, "Character Increment"),
@@ -22,11 +22,11 @@ namespace AFPParser.StructuredFields
             new Offset(26, Lookups.DataTypes.SBIN, "Baseline Offset"),
         };
 
-		public override string Abbreviation => _abbr;
-		public override string Title => _title;
-		public override string Description => _desc;
-		protected override bool IsRepeatingGroup => true;
-		protected override int RepeatingGroupStart => 0;
+        public override string Abbreviation => _abbr;
+        public override string Title => _title;
+        public override string Description => _desc;
+        protected override bool IsRepeatingGroup => true;
+        protected override int RepeatingGroupStart => 0;
         protected override int RepeatingGroupLength
         {
             get
@@ -44,7 +44,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public IReadOnlyList<Info> InfoList { get; private set; }
 
-		public FNI(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+        public FNI(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         public override void ParseData()
         {
@@ -55,14 +55,14 @@ namespace AFPParser.StructuredFields
             while (curIndex < Data.Length)
             {
                 string gid = GetReadableDataPiece(curIndex + 0, 8);
-                int charInc = (int)GetNumericValue(GetSectionedData(curIndex + 8, 2), false);
-                int ascHeight = (int)GetNumericValue(GetSectionedData(curIndex + 10, 2), true);
-                int descDepth = (int)GetNumericValue(GetSectionedData(curIndex + 12, 2), true);
-                int fnmIdx = (int)GetNumericValue(GetSectionedData(curIndex + 16, 2), false);
-                int a = (int)GetNumericValue(GetSectionedData(curIndex + 18, 2), true);
-                int b = (int)GetNumericValue(GetSectionedData(curIndex + 20, 2), true);
-                int c = (int)GetNumericValue(GetSectionedData(curIndex + 22, 2), true);
-                int baseline = (int)GetNumericValue(GetSectionedData(curIndex + 26, 2), true);
+                ushort charInc = GetNumericValueFromData<ushort>(curIndex + 8, 2);
+                short ascHeight = GetNumericValueFromData<short>(curIndex + 10, 2);
+                short descDepth = GetNumericValueFromData<short>(curIndex + 12, 2);
+                ushort fnmIdx = GetNumericValueFromData<ushort>(curIndex + 16, 2);
+                short a = GetNumericValueFromData<short>(curIndex + 18, 2);
+                ushort b = GetNumericValueFromData<ushort>(curIndex + 20, 2);
+                short c = GetNumericValueFromData<short>(curIndex + 22, 2);
+                short baseline = GetNumericValueFromData<short>(curIndex + 26, 2);
 
                 allInfo.Add(new Info(gid, charInc, ascHeight, descDepth, fnmIdx, a, b, c, baseline));
 

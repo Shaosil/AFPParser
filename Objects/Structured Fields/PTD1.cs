@@ -1,6 +1,5 @@
-using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 
 namespace AFPParser.StructuredFields
 {
@@ -29,20 +28,20 @@ namespace AFPParser.StructuredFields
 
         // Parsed Data
         public Converters.eMeasurement BaseUnit { get; private set; }
-        public int UnitsPerXBase { get; private set; }
-        public int UnitsPerYBase { get; private set; }
-        public int XSize { get; private set; }
-        public int YSize { get; private set; }
+        public ushort UnitsPerXBase { get; private set; }
+        public ushort UnitsPerYBase { get; private set; }
+        public ushort XSize { get; private set; }
+        public ushort YSize { get; private set; }
 
         public PTD1(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
         public override void ParseData()
         {
             BaseUnit = Converters.GetBaseUnit(Data[0]);
-            UnitsPerXBase = (int)GetNumericValue(GetSectionedData(2, 2), false);
-            UnitsPerYBase = (int)GetNumericValue(GetSectionedData(4, 2), false);
-            XSize = (int)GetNumericValue(GetSectionedData(6, 2), false);
-            YSize = (int)GetNumericValue(GetSectionedData(8, 2), false);
+            UnitsPerXBase = GetNumericValueFromData<ushort>(2, 2);
+            UnitsPerYBase = GetNumericValueFromData<ushort>(4, 2);
+            XSize = GetNumericValueFromData<ushort>(6, 2);
+            YSize = GetNumericValueFromData<ushort>(8, 2);
         }
 
         public override string GetFullDescription()

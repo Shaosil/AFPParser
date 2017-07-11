@@ -87,7 +87,7 @@ namespace AFPParser.StructuredFields
         // Parsed Data
         public enum ePatternTech { LaserMatrixNBitWide = 5, CIDKeyedFont = 30, PFBType1 = 31 }
         [Flags]
-        public enum eFontUseFlags { MICRPrinting = 1, ExtendedFont = 2, FixedRasterSize = 4 }
+        public enum eFontUseFlags { MICRPrinting = 128, ExtendedFont = 64, FixedRasterSize = 2 }
         public enum eUnitBase { FixedMetrics10Inches = 0, RelativeMetrics = 2 }
         public enum eUnits { TwoFortyPPI = 2400, ThreeHundredPPI = 3000, OneThousandUnitsPerEm = 1000 }
         public enum ePatternAlignment { OneByte = 0, FourByte = 2, EightByte = 3 }
@@ -124,7 +124,7 @@ namespace AFPParser.StructuredFields
             set
             {
                 _fontUseFlags = value;
-                PutFlagsInData(value, Offsets[3].Mappings, 3, 1);
+                PutNumberInData((byte)value, 3);
             }
         }
         public eUnitBase XUnitBase
@@ -256,9 +256,23 @@ namespace AFPParser.StructuredFields
 
         public FNC(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
-        public FNC() : base(Lookups.StructuredFieldID<FNC>(), 0, 0, null)
+        public FNC(ushort maxBitWidth, ushort maxBitHeight, int rasterByteCount) : base(Lookups.StructuredFieldID<FNC>(), 0, 0, null)
         {
             Data = new byte[28];
+            XUnitBase = eUnitBase.RelativeMetrics;
+            YUnitBase = eUnitBase.RelativeMetrics;
+            XUnits = eUnits.OneThousandUnitsPerEm;
+            YUnits = eUnits.OneThousandUnitsPerEm;
+            MaxBoxWidth = (ushort)Math.Ceiling(maxBitWidth / 8f);       // Round up to be a multiple of 8 bits
+            MaxBoxHeight = (ushort)Math.Ceiling(maxBitHeight / 8f);
+            FNORGLength = 26; // Constant
+            FNIRGLength = 28; // Constant for raster
+            PatternAlignment = ePatternAlignment.OneByte;
+            RasterDataCount = rasterByteCount;
+            FNPRGLength = 22; // Constant
+            FNMRGLength = 8; // Constant for raster
+            XShapeResolution = eUnits.ThreeHundredPPI;
+            YShapeResolution = eUnits.ThreeHundredPPI;
         }
 
         public override void ParseData()
@@ -266,13 +280,13 @@ namespace AFPParser.StructuredFields
             base.ParseData();
 
             _patTech = (ePatternTech)Data[1];
-            _maxCharBoxWidth = (ushort)GetNumericValue(GetSectionedData(10, 2), false);
-            _maxCharBoxHeight = (ushort)GetNumericValue(GetSectionedData(12, 2), false);
-            _FNORGLength = (byte)GetNumericValue(new[] { Data[14] }, false);
-            _FNIRGLength = (byte)GetNumericValue(new[] { Data[15] }, false);
-            _rasterPatternDataCount = (ushort)GetNumericValue(GetSectionedData(17, 2), false);
-            _FNPRGLength = (byte)GetNumericValue(new[] { Data[20] }, false);
-            _FNMRGLength = (byte)GetNumericValue(new[] { Data[21] }, false);
+            _maxCharBoxWidth = GetNumericValueFromData<ushort>(10, 2);
+            _maxCharBoxHeight = GetNumericValueFromData<ushort>(12, 2);
+            _FNORGLength = GetNumericValue<byte>(new[] { Data[14] });
+            _FNIRGLength = GetNumericValue<byte>(new[] { Data[15] });
+            _rasterPatternDataCount = GetNumericValueFromData<ushort>(17, 2);
+            _FNPRGLength = GetNumericValue<byte>(new[] { Data[20] });
+            _FNMRGLength = GetNumericValue<byte>(new[] { Data[21] });
         }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)
@@ -284,7 +298,7 @@ namespace AFPParser.StructuredFields
                 case 24:
                 case 26:
                     StringBuilder sb = new StringBuilder();
-                    int units = (int)GetNumericValue(GetSectionedData(oSet.StartingIndex, 2), false);
+                    int units = GetNumericValueFromData<int>(oSet.StartingIndex, 2);
                     if (units != 1000) units /= 10;
 
                     if (oSet.StartingIndex == 24 || oSet.StartingIndex == 26) sb.Append("Shape ");

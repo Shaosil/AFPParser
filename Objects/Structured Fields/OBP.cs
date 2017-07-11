@@ -49,10 +49,10 @@ namespace AFPParser.StructuredFields
         public override void ParseData()
         {
             OBPID = Data[0];
-            XOrigin = (int)GetNumericValue(GetSectionedData(2, 3), true);
-            YOrigin = (int)GetNumericValue(GetSectionedData(5, 3), true);
-            XContentOrigin = (int)GetNumericValue(GetSectionedData(13, 3), true);
-            YContentOrigin = (int)GetNumericValue(GetSectionedData(16, 3), true);
+            XOrigin = GetNumericValueFromData<int>(2, 3);
+            YOrigin = GetNumericValueFromData<int>(5, 3);
+            XContentOrigin = GetNumericValueFromData<int>(13, 3);
+            YContentOrigin = GetNumericValueFromData<int>(16, 3);
         }
     }
 }

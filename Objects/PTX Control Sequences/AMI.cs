@@ -16,13 +16,13 @@ namespace AFPParser.PTXControlSequences
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int Displacement { get; private set; }
+        public short Displacement { get; private set; }
 
         public AMI(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
 
         public override void ParseData()
         {
-            Displacement = (int)GetNumericValue(GetSectionedData(0, 2), true);
+            Displacement = GetNumericValueFromData<short>(0, 2);
         }
     }
 }

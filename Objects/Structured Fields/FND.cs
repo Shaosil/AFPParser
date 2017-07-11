@@ -135,7 +135,7 @@ namespace AFPParser.StructuredFields
             set
             {
                 _fontDesignFlags = value;
-                PutFlagsInData(value, CommonMappings.FontDesignFlags, 64, 2);
+                PutNumberInData((short)value, 64);
             }
         }
         public float EmInches => (NominalVerticalSize / 10f) / 72;
@@ -156,8 +156,8 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            _nominalVerticalSize = (ushort)GetNumericValue(GetSectionedData(36, 2), false);
-            _nominalHorizontalSize = (ushort)GetNumericValue(GetSectionedData(42, 2), false);
+            _nominalVerticalSize = GetNumericValueFromData<ushort>(36, 2);
+            _nominalHorizontalSize = GetNumericValueFromData<ushort>(42, 2);
         }
     }
 }

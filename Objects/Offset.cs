@@ -46,7 +46,12 @@ namespace AFPParser
                         case Lookups.DataTypes.SBIN:
                             bool isSigned = DataType == Lookups.DataTypes.SBIN;
                             sb.Append(data.Length > 4 ? "(Unknown Numeric Value)"
-                                : DataStructure.GetNumericValue(data, isSigned).ToString());
+                                : data.Length >= 3 && isSigned ? DataStructure.GetNumericValue<int>(data).ToString()
+                                : data.Length >= 3 && !isSigned ? DataStructure.GetNumericValue<uint>(data).ToString()
+                                : data.Length == 2 && isSigned ? DataStructure.GetNumericValue<short>(data).ToString()
+                                : data.Length == 2 && !isSigned ? DataStructure.GetNumericValue<ushort>(data).ToString()
+                                : data.Length == 1 && isSigned ? DataStructure.GetNumericValue<sbyte>(data).ToString()
+                                : DataStructure.GetNumericValue<byte>(data).ToString());
                             break;
 
                         case Lookups.DataTypes.CHAR:

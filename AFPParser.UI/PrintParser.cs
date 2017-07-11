@@ -271,7 +271,7 @@ namespace AFPParser.UI
                     float yInchOrigin = yStartingInch + (float)(Converters.GetInches(yUnitOrigin, mu.YUnitsPerBase, mu.BaseUnit) * 100);
 
                     // Get inch scaling values
-                    double heightInches = Converters.GetInches(oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
+                    double heightInches = Converters.GetInches((int)oaSize.YExtent, mu.YUnitsPerBase, mu.BaseUnit);
 
                     // We have the inch value and number of pixels, so set DPI based on those values
                     Bitmap bmp = new Bitmap(new MemoryStream(image.Data));
@@ -339,8 +339,8 @@ namespace AFPParser.UI
                 { return (float)(Converters.GetInches((int)val, unitsPerBase, measurement) * 100) * (positive ? 1 : -1); };
 
             // Get the length width of the line (1/1440 of an inch)
-            float length = (int)sequence.GetType().GetProperty("RuleLength").GetValue(sequence);
-            float width = getInches((int)sequence.GetType().GetProperty("RuleWidth").GetValue(sequence), true);
+            float length = (short)sequence.GetType().GetProperty("RuleLength").GetValue(sequence);
+            float width = getInches((short)sequence.GetType().GetProperty("RuleWidth").GetValue(sequence), true);
             float shifted = width / 2f;
 
             // Set origin/destination based on text orientation

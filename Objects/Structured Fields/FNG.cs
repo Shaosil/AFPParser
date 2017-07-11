@@ -1,7 +1,7 @@
-using System;
-using System.Text;
 using AFPParser.Containers;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace AFPParser.StructuredFields
 {
@@ -60,17 +60,17 @@ namespace AFPParser.StructuredFields
             int curIndex = 0;
             do
             {
-                long groupLength = GetNumericValue(GetSectionedData(0, 4), false);
-                uint checksum = (uint)GetNumericValue(GetSectionedData(4, 4), false);
+                uint groupLength = GetNumericValueFromData<uint>(0, 4);
+                uint checksum = GetNumericValueFromData<uint>(4, 4);
                 sb.AppendLine($"Checksum: {checksum}");
 
-                int idLength = (int)GetNumericValue(GetSectionedData(8, 2), false);
+                int idLength = GetNumericValueFromData<int>(8, 2);
                 string id = idLength > 2 ? GetReadableDataPiece(10, idLength - 2) : string.Empty;
                 sb.AppendLine($"ID: {id}");
 
                 // If FNC's pattern tech identifier isn't PFB Type 1, we should have a description
                 int descriptorLength = !string.IsNullOrEmpty(id) && refFNC.PatternTech != FNC.ePatternTech.PFBType1
-                    ? (int)GetNumericValue(GetSectionedData(8 + idLength, 2), false) : 0;
+                    ? GetNumericValueFromData<ushort>(8 + idLength, 2) : 0;
                 byte[] descriptor = descriptorLength > 2 ? GetSectionedData(8 + idLength + 2, descriptorLength - 2) : new byte[0];
 
                 // Object descriptor
@@ -94,8 +94,8 @@ namespace AFPParser.StructuredFields
 
                         case 5: // CID file
                             precedenceCode = descriptor[1] == 0 ? "Primary" : "Auxiliary";
-                            ushort maxV = (ushort)GetNumericValue(GetSectionedData(8 + idLength + 2, 2), false);
-                            ushort maxW = (ushort)GetNumericValue(GetSectionedData(8 + idLength + 4, 2), false);
+                            ushort maxV = GetNumericValueFromData<ushort>(8 + idLength + 2, 2);
+                            ushort maxW = GetNumericValueFromData<ushort>(8 + idLength + 4, 2);
 
                             sb.AppendLine($"Precedence Code: {precedenceCode}");
                             sb.AppendLine($"Max V(y) value: {maxV}");
@@ -145,7 +145,7 @@ namespace AFPParser.StructuredFields
                 if (curArrayIndex == 4) curArrayIndex = 0;
             }
 
-            return (uint)GetNumericValue(checksumArray, false);
+            return GetNumericValue<uint>(checksumArray);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AFPParser.StructuredFields
@@ -34,9 +35,28 @@ namespace AFPParser.StructuredFields
         }
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public IReadOnlyList<PatternData> AllPatternData { get; private set; }
+        // Parsed Data
+        private List<PatternData> _allPatternData = new List<PatternData>();
+        public IReadOnlyList<PatternData> AllPatternData
+        {
+            get { return _allPatternData; }
+            private set
+            {
+                _allPatternData = value.ToList();
+
+                // Update data stream
+                Data = new byte[_allPatternData.Count * 8];
+                for (int i = 0; i < value.Count; i++)
+                {
+                    PutNumberInData(value[i].BoxWidth, (i * 8));
+                    PutNumberInData(value[i].BoxHeight, (i * 8) + 2);
+                    PutNumberInData(value[i].DataOffset, (i * 8) + 4);
+                }
+            }
+        }
 
         // Repeating groups get parsed into this class
+        [DebuggerDisplay("{BoxWidth}/{BoxHeight}/{DataOffset}")]
         public class PatternData
         {
             public ushort BoxWidth { get; set; }
@@ -53,6 +73,11 @@ namespace AFPParser.StructuredFields
 
         public FNM(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
+        public FNM(List<PatternData> patData) : base(Lookups.StructuredFieldID<FNM>(), 0, 0, null)
+        {
+            AllPatternData = patData;
+        }
+
         public override void ParseData()
         {
             List<PatternData> allData = new List<PatternData>();
@@ -64,15 +89,15 @@ namespace AFPParser.StructuredFields
                 byte[] heightBytes = GetSectionedData(i + 2, 2);
                 byte[] offsetBytes = GetSectionedData(i + 4, 4);
 
-                ushort width = (ushort)GetNumericValue(widthBytes, false);
-                ushort height = (ushort)GetNumericValue(heightBytes, false);
-                uint offset = (uint)GetNumericValue(offsetBytes, false);
+                ushort width = GetNumericValue<ushort>(widthBytes);
+                ushort height = GetNumericValue<ushort>(heightBytes);
+                uint offset = GetNumericValue<uint>(offsetBytes);
 
                 allData.Add(new PatternData(width, height, offset));
             }
 
             // Set our readonly list
-            AllPatternData = allData;
+            _allPatternData = allData;
         }
     }
 }

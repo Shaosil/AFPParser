@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace AFPParser.Triplets
 {
-	public class ObjectAreaSize : Triplet
-	{
-		private static string _desc = "Specifies the extent of an object area in the X and Y directions.";
+    public class ObjectAreaSize : Triplet
+    {
+        private static string _desc = "Specifies the extent of an object area in the X and Y directions.";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.CODE, "Size Type")
@@ -22,15 +22,15 @@ namespace AFPParser.Triplets
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int XExtent { get; private set; }
-        public int YExtent { get; private set; }
+        public uint XExtent { get; private set; }
+        public uint YExtent { get; private set; }
 
         public ObjectAreaSize(byte id, byte[] data) : base(id, data) { }
 
         public override void ParseData()
         {
-            XExtent = (int)GetNumericValue(GetSectionedData(1, 3), false);
-            YExtent = (int)GetNumericValue(GetSectionedData(4, 3), false);
+            XExtent = GetNumericValueFromData<uint>(1, 3);
+            YExtent = GetNumericValueFromData<uint>(4, 3);
         }
     }
 }

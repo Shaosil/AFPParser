@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AFPParser.Containers;
+using AFPParser.StructuredFields;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AFPParser.Containers;
-using System.Collections.Generic;
-using AFPParser.StructuredFields;
 
 namespace AFPParser
 {
@@ -107,8 +107,8 @@ namespace AFPParser
                 Array.ConstrainedCopy(introducer, 6, sequenceBytes, 0, 2);
 
                 // Get a couple pieces of data from introducer
-                int length = (int)DataStructure.GetNumericValue(lengthBytes, false);
-                ushort sequence = (ushort)DataStructure.GetNumericValue(sequenceBytes, false);
+                ushort length = DataStructure.GetNumericValue<ushort>(lengthBytes);
+                ushort sequence = DataStructure.GetNumericValue<ushort>(sequenceBytes);
 
                 // Check the length isn't over what we can read
                 if (curIdx + 1 + length > byteList.Length)

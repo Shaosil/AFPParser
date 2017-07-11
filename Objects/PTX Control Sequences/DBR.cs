@@ -2,10 +2,10 @@ using System.Collections.Generic;
 
 namespace AFPParser.PTXControlSequences
 {
-	public class DBR : PTXControlSequence
-	{
-		private static string _abbr = "DBR";
-		private static string _desc = "Draw B-axis Rule";
+    public class DBR : PTXControlSequence
+    {
+        private static string _abbr = "DBR";
+        private static string _desc = "Draw B-axis Rule";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.SBIN, "Length"),
@@ -14,19 +14,19 @@ namespace AFPParser.PTXControlSequences
         };
 
         public override string Abbreviation => _abbr;
-		public override string Description => _desc;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int RuleLength { get; private set; }
-        public int RuleWidth { get; private set; }
+        public short RuleLength { get; private set; }
+        public short RuleWidth { get; private set; }
 
         public DBR(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
 
         public override void ParseData()
         {
-            RuleLength = (int)GetNumericValue(GetSectionedData(0, 2), true);
-            RuleWidth = (int)GetNumericValue(GetSectionedData(2, 2), true);
+            RuleLength = GetNumericValueFromData<short>(0, 2);
+            RuleWidth = GetNumericValueFromData<short>(2, 2);
         }
     }
 }

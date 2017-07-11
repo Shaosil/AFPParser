@@ -1,15 +1,15 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AFPParser.StructuredFields
 {
-	public class ICP : StructuredField
-	{
-		private static string _abbr = "ICP";
-		private static string _title = "Image Cell Position";
-		private static string _desc = "The IM Image Cell Position structured field specifies the placement, size, and replication of IM image cells.";
-		private static List<Offset> _oSets = new List<Offset>()
+    public class ICP : StructuredField
+    {
+        private static string _abbr = "ICP";
+        private static string _title = "Image Cell Position";
+        private static string _desc = "The IM Image Cell Position structured field specifies the placement, size, and replication of IM image cells.";
+        private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.UBIN, "X Offset"),
             new Offset(2, Lookups.DataTypes.UBIN, "Y Offset"),
@@ -19,20 +19,20 @@ namespace AFPParser.StructuredFields
             new Offset(10, Lookups.DataTypes.UBIN, "Size of Y Fill Rectangle")
         };
 
-		public override string Abbreviation => _abbr;
-		public override string Title => _title;
-		public override string Description => _desc;
-		protected override bool IsRepeatingGroup => false;
-		protected override int RepeatingGroupStart => 0;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Abbreviation => _abbr;
+        public override string Title => _title;
+        public override string Description => _desc;
+        protected override bool IsRepeatingGroup => false;
+        protected override int RepeatingGroupStart => 0;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int XOffset { get; private set; }
-        public int YOffset { get; private set; }
-        public int XSize { get; private set; }
-        public int YSize { get; private set; }
-        public int XFillSize { get; private set; }
-        public int YFillSize { get; private set; }
+        public ushort XOffset { get; private set; }
+        public ushort YOffset { get; private set; }
+        public ushort XSize { get; private set; }
+        public ushort YSize { get; private set; }
+        public ushort XFillSize { get; private set; }
+        public ushort YFillSize { get; private set; }
 
         public ICP(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
@@ -59,12 +59,12 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            XOffset = (int)GetNumericValue(GetSectionedData(0, 2), false);
-            YOffset = (int)GetNumericValue(GetSectionedData(2, 2), false);
-            XSize = (int)GetNumericValue(GetSectionedData(4, 2), false);
-            YSize = (int)GetNumericValue(GetSectionedData(6, 2), false);
-            XFillSize = (int)GetNumericValue(GetSectionedData(8, 2), false);
-            YFillSize = (int)GetNumericValue(GetSectionedData(10, 2), false);
+            XOffset = GetNumericValueFromData<ushort>(0, 2);
+            YOffset = GetNumericValueFromData<ushort>(2, 2);
+            XSize = GetNumericValueFromData<ushort>(4, 2);
+            YSize = GetNumericValueFromData<ushort>(6, 2);
+            XFillSize = GetNumericValueFromData<ushort>(8, 2);
+            YFillSize = GetNumericValueFromData<ushort>(10, 2);
         }
     }
 }

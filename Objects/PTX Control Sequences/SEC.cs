@@ -1,8 +1,8 @@
 using System;
-using System.Text;
-using System.Drawing;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Text;
 
 namespace AFPParser.PTXControlSequences
 {
@@ -71,7 +71,7 @@ namespace AFPParser.PTXControlSequences
                     {
                         // Get each value
                         int startAt = 10 + byteCounts.Take(i + 1).Sum();
-                        values[i] = (int)GetNumericValue(GetSectionedData(startAt, byteCounts[i]), false);
+                        values[i] = GetNumericValueFromData<int>(startAt, byteCounts[i]);
                     }
 
                     /*

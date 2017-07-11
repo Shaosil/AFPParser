@@ -165,15 +165,17 @@ namespace AFPParser
             return allBits;
         }
 
-        // Returns the correct numeric value for an array of bytes
-        public static long GetNumericValue(byte[] bytes, bool isSigned)
+        public static T GetNumericValue<T>(byte[] bytes)
         {
-            // Currently only support up to 4 byte integers
-            if (bytes.Length > 4) return 0;
+            Type t = typeof(T);
+
+            // Currently only support up to 4 byte numeric types
+            if (bytes.Length > 4) return default(T);
 
             // If there are three bytes, add a byte to the beginning and manually add the signed bit if needed
             if (bytes.Length == 3)
             {
+                bool isSigned = t == typeof(sbyte) || t == typeof(short) || t == typeof(int);
                 byte extraByte = (byte)(isSigned && (bytes[0] & (1 << 7)) > 0 ? 0x80 : 0x00);
                 bytes = new byte[1] { extraByte }.Concat(bytes).ToArray();
             }
@@ -182,25 +184,31 @@ namespace AFPParser
             if (BitConverter.IsLittleEndian)
                 bytes = bytes.Reverse().ToArray();
 
-            // Return signed/unsigned int16/int32 based on array length and parameter
-            return bytes.Length == 1 && isSigned ? Convert.ToInt16(bytes[0])
-                : bytes.Length == 1 && !isSigned ? Convert.ToUInt16(bytes[0])
-                : bytes.Length == 2 && isSigned ? BitConverter.ToInt16(bytes, 0)
-                : bytes.Length == 2 && !isSigned ? BitConverter.ToUInt16(bytes, 0)
-                : bytes.Length == 4 && isSigned ? BitConverter.ToInt32(bytes, 0)
-                : bytes.Length == 4 && !isSigned ? (long)BitConverter.ToUInt32(bytes, 0)
-                : 0;
+            // Return signed/unsigned int16/int32 based on type
+            return (T)(t == typeof(byte) ? Convert.ChangeType(Convert.ToByte(bytes[0]), t)
+                : t == typeof(sbyte) ? Convert.ChangeType(Convert.ToSByte(bytes[0]), t)
+                : t == typeof(ushort) ? Convert.ChangeType(BitConverter.ToUInt16(bytes, 0), t)
+                : t == typeof(short) ? Convert.ChangeType(BitConverter.ToInt16(bytes, 0), t)
+                : t == typeof(uint) ? Convert.ChangeType(BitConverter.ToUInt32(bytes, 0), t)
+                : t == typeof(int) ? Convert.ChangeType(BitConverter.ToInt32(bytes, 0), t)
+                : default(T));
         }
 
-        protected void PutStringInData(string _typefaceDesc, int startIndex, int sectionLength)
+        public T GetNumericValueFromData<T>(int startIndex, int len)
         {
-            if (!string.IsNullOrWhiteSpace(_typefaceDesc) && Data.Length > startIndex + sectionLength)
+            return GetNumericValue<T>(GetSectionedData(startIndex, len));
+        }
+
+        protected void PutStringInData(string text, int startIndex, int maxLength)
+        {
+            if (!string.IsNullOrWhiteSpace(text) && Data.Length >= startIndex + maxLength)
             {
-                string trimmed = _typefaceDesc.Trim();
-                if (trimmed.Length > sectionLength) trimmed = trimmed.Substring(0, sectionLength);
+                string trimmed = text.Trim();
+                if (trimmed.Length > maxLength) trimmed = trimmed.Substring(0, maxLength);
+                byte[] stringBytes = Converters.EBCDIC.GetBytes(trimmed);
 
                 // Plop trimmed string into the specified place in Data
-                Array.ConstrainedCopy(Converters.EBCDIC.GetBytes(trimmed), 0, Data, startIndex, sectionLength);
+                Array.ConstrainedCopy(stringBytes, 0, Data, startIndex, stringBytes.Length);
             }
         }
 
@@ -208,42 +216,15 @@ namespace AFPParser
         {
             // Convert to whatever numeric type it is
             byte[] numBytes = null;
-            if (num is byte || num is sbyte) numBytes = BitConverter.GetBytes((byte)num);
-            else if (num is ushort || num is short) numBytes = BitConverter.GetBytes((ushort)num);
-            else if (num is uint || num is int) numBytes = BitConverter.GetBytes((uint)num);
-            else if (num is ulong || num is long) numBytes = BitConverter.GetBytes((ulong)num);
+            if (num is byte || num is sbyte) numBytes = BitConverter.GetBytes(Convert.ToByte(num));
+            else if (num is ushort || num is short) numBytes = BitConverter.GetBytes(Convert.ToInt16(num));
+            else if (num is uint || num is int) numBytes = BitConverter.GetBytes(Convert.ToInt32(num));
 
-            if (numBytes != null && Data.Length > startIndex + numBytes.Length)
+            if (numBytes != null && Data.Length >= startIndex + numBytes.Length)
             {
                 if (BitConverter.IsLittleEndian) numBytes = numBytes.Reverse().ToArray();
                 if (specificLength > 0) numBytes = numBytes.Take(specificLength).ToArray();
                 Array.ConstrainedCopy(numBytes, 0, Data, startIndex, numBytes.Length);
-            }
-        }
-
-        protected void PutFlagsInData(Enum flags, Dictionary<byte, string> mappings, int startIndex, int length)
-        {
-            if (Data.Length > startIndex + length)
-            {
-                byte[] flagBytes = new byte[length];
-
-                string[] eValues = Enum.GetValues(flags.GetType()).Cast<Enum>().Select(e => e.ToString()).ToArray();
-
-                for (int i = 0; i < mappings.Keys.Count; i++)
-                {
-                    // // Store the bit index, and index of the flagBytes array we should modify
-                    byte bitIndex = mappings.Keys.ElementAt(i);
-                    byte byteIndex = (byte)(bitIndex / 8);
-
-                    // Get the element in our flags enum that has the same index as the current mapping key
-                    Enum curEnum = (Enum)Enum.Parse(flags.GetType(), eValues[i]);
-
-                    // If the flags contain this particular enum, set the bit at position 'bitIndex' (left-right)
-                    if (flags.HasFlag(curEnum))
-                        flagBytes[byteIndex] |= (byte)(1 << (7 - bitIndex));
-                }
-
-                Array.ConstrainedCopy(flagBytes, 0, Data, startIndex, length);
             }
         }
     }
