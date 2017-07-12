@@ -24,7 +24,6 @@ namespace AFPParser.StructuredFields
 
         // Parsed Data
         private string _objectName;
-
         public string ObjectName
         {
             get { return _objectName; }

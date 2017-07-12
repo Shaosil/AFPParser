@@ -1,6 +1,7 @@
 ﻿using AFPParser.StructuredFields;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
@@ -12,13 +13,29 @@ namespace AFPParser.Tests
     [TestClass]
     public class Tester
     {
+        public class CharInfo
+        {
+            public char Character { get; set; }
+            public bool[,] RawBits { get; set; }
+            public ushort BitWidth => (ushort)(RawBits.GetUpperBound(0) + 1);
+            public ushort BitHeight => (ushort)(RawBits.GetUpperBound(1) + 1);
+            public ushort RoundedBitWidth => (ushort)(Math.Ceiling(BitWidth / 8f) * 8);
+            public ushort CharIncrement => (ushort)(1000 * ((float)BitWidth / BitHeight));
+
+            public CharInfo(char character, bool[,] rawBits)
+            {
+                Character = character;
+                RawBits = rawBits;
+            }
+        }
+
         [TestMethod]
         public void Misc()
         {
             //SaveFontAsBitmaps();
 
             // Open each bitmap, and convert pure black pixels to an array of bools
-            Dictionary<char, bool[,]> charsAndBoolVals = new Dictionary<char, bool[,]>();
+            List<CharInfo> charInfos = new List<CharInfo>();
             foreach (FileInfo f in new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\Barcode Chars")).GetFiles())
             {
                 Bitmap png = new Bitmap(f.FullName);
@@ -29,41 +46,100 @@ namespace AFPParser.Tests
                     for (int x = 0; x < png.Width; x++)
                         boolVals[x, y] = png.GetPixel(x, y).GetBrightness() < 0.5;
 
-                charsAndBoolVals.Add(thisChar, boolVals);
+                charInfos.Add(new CharInfo(thisChar, boolVals));
             }
 
             // Create an AFP font file (BFN, FND, FNC, FNM, FNO, FNP, FNIs, FNGs, EFN) using bool arrays as FNGs
             BFN newBFN = new BFN("BARCOD39");
+
             FND newFND = new FND("Code 39 Barcode", 36);
-            ushort maxBitsWide = (ushort)charsAndBoolVals.Max(c => c.Value.GetUpperBound(0) + 1);
-            ushort maxBitsTall = (ushort)charsAndBoolVals.Max(c => c.Value.GetUpperBound(1) + 1);
-            int totalRasterBytes = charsAndBoolVals.Sum(c => c.Value.Length);
+
+            ushort maxBitsWide = charInfos.Max(c => c.BitWidth);
+            ushort maxBitsTall = charInfos.Max(c => c.BitHeight);
+            int totalRasterBytes = charInfos.Sum(c => c.RoundedBitWidth * c.BitHeight);
             FNC newFNC = new FNC(maxBitsWide, maxBitsTall, totalRasterBytes);
+
             uint curFNMIndex = 0;
             List<FNM.PatternData> fnmPatData = new List<FNM.PatternData>();
-            foreach (KeyValuePair<char, bool[,]> kvp in charsAndBoolVals)
+            foreach (CharInfo c in charInfos)
             {
-                ushort bitWidth = (ushort)(kvp.Value.GetUpperBound(0) + 1);
-                ushort bitHeight = (ushort)(kvp.Value.GetUpperBound(1) + 1);
-                ushort roundedWidth = (ushort)(Math.Ceiling(bitWidth / 8f) * 8);
-                ushort roundedHeight = (ushort)(Math.Ceiling(bitHeight / 8f) * 8);
-                fnmPatData.Add(new FNM.PatternData(bitWidth, bitHeight, curFNMIndex));
-                curFNMIndex += (uint)((roundedWidth * roundedHeight) / 8);
+                fnmPatData.Add(new FNM.PatternData(c.BitWidth, c.BitHeight, curFNMIndex));
+                curFNMIndex += (uint)((c.RoundedBitWidth * c.BitHeight) / 8);
             }
             FNM newFNM = new FNM(fnmPatData);
+
             List<FNO.Info> fnoInfos = new List<FNO.Info>();
-            ushort baseLine = charsAndBoolVals.Values.Max(v => (ushort)(Math.Ceiling((v.GetUpperBound(1) + 1) / 8f) * 8));
-            ushort charInc = charsAndBoolVals.Values.Max(v => (ushort)(Math.Ceiling((v.GetUpperBound(0) + 1) / 8f) * 8));
+            ushort maxCharInc = charInfos.Max(c => c.CharIncrement);
             for (int i = 0; i < 4; i++)
             {
                 Type eType = typeof(CommonMappings.eRotations);
                 CommonMappings.eRotations curRot = (CommonMappings.eRotations)Enum.Parse(eType, Enum.GetNames(eType)[i]);
-                ushort curBaseline = (i == 0 || i == 2) ? baseLine : charInc;
-                ushort curCharInc = (i == 0 || i == 2) ? charInc : baseLine;
+                ushort curBaseline = (i == 0 || i == 2) ? (ushort)1000 : maxCharInc;
+                ushort curCharInc = (i == 0 || i == 2) ? maxCharInc : (ushort)1000;
                 FNO.Info.eControlFlags flags = i == 0 ? 0 : i == 1 ? FNO.Info.eControlFlags.FNI1 : i == 2 ? FNO.Info.eControlFlags.FNI2 : FNO.Info.eControlFlags.FNI3;
                 fnoInfos.Add(new FNO.Info(curRot, (short)curBaseline, curCharInc, 0, curBaseline, flags, 1000, curCharInc, curCharInc, curBaseline, 0));
             }
             FNO newFNO = new FNO(fnoInfos);
+
+            List<FNP.Info> fnpInfos = new List<FNP.Info>();
+            for (int i = 0; i < 4; i++)
+            {
+                short curAsc = (short)((i == 0 || i == 2) ? maxCharInc : 1000);
+                fnpInfos.Add(new FNP.Info(1000, 1000, curAsc, 0, 1000, 100));
+            }
+            FNP newFNP = new FNP(fnpInfos);
+
+            List<FNI> newFNIs = new List<FNI>();
+            for (int i = 0; i < 4; i++)
+            {
+                ushort fnmIndex = 0;
+
+                List<FNI.Info> fniInfos = new List<FNI.Info>();
+                foreach (CharInfo c in charInfos)
+                {
+                    string gid = CodePages.C1140[Converters.EBCDIC.GetBytes(new[] { c.Character })[0]];
+                    ushort curCharInc = (ushort)((i == 0 || i == 2) ? c.CharIncrement : 1000);
+                    short curAscHeight = (short)((i == 0 || i == 2) ? 1000 : c.CharIncrement);
+                    fniInfos.Add(new FNI.Info(gid, c.CharIncrement, curAscHeight, 0, fnmIndex++, 0, curCharInc, 0, curAscHeight));
+                }
+                newFNIs.Add(new FNI(fniInfos));
+            }
+
+            List<byte> fngBytes = new List<byte>();
+            foreach (CharInfo c in charInfos)
+            {
+                for (int y = 0; y < c.BitHeight; y++)
+                {
+                    for (int x = 0; x < c.BitWidth; x += 8)
+                    {
+                        int[] curByte = new int[1];
+                        List<bool> bitRow = new List<bool>();
+                        for (int i = 0; i < 8; i++)
+                            if (c.RawBits.GetUpperBound(0) >= x + i)
+                                bitRow.Add(c.RawBits[x + i, y]);
+                            else
+                                bitRow.Add(false);
+                        new BitArray(bitRow.ToArray()).CopyTo(curByte, 0);
+                        fngBytes.Add((byte)curByte[0]);
+                    }
+                }
+            }
+            FNG newFNG = new FNG(fngBytes.ToArray());
+
+            EFN newEFN = new EFN(newBFN.ObjectName);
+            
+            string path = Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\FONTFILETEST.afp");
+            List<StructuredField> fields = new List<StructuredField>() { newBFN, newFND, newFNC, newFNM, newFNO, newFNP };
+            fields.AddRange(newFNIs);
+            fields.AddRange(new StructuredField[] { newFNG, newEFN });
+            List<byte> encoded = new List<byte>();
+            foreach (StructuredField field in fields)
+            {
+                encoded.Add(0x5A);
+                encoded.AddRange(field.Introducer);
+                encoded.AddRange(field.Data);
+            }
+            File.WriteAllBytes(path, encoded.ToArray());
         }
 
         private void SaveFontAsBitmaps()

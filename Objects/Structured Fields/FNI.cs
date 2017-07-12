@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AFPParser.StructuredFields
 {
@@ -42,9 +43,37 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public IReadOnlyList<Info> InfoList { get; private set; }
+        private List<Info> _infoList = new List<Info>();
+        public IReadOnlyList<Info> InfoList
+        {
+            get { return _infoList; }
+            private set
+            {
+                _infoList = value.ToList();
+
+                // Update the data stream
+                Data = new byte[value.Count * 28];
+                for (int i = 0; i < value.Count; i++)
+                {
+                    PutStringInData(value[i].GCGID, (i * 28) + 0, 8);
+                    PutNumberInData(value[i].CharIncrement, (i * 28) + 8);
+                    PutNumberInData(value[i].AscenderHeight, (i * 28) + 10);
+                    PutNumberInData(value[i].DescenderDepth, (i * 28) + 12);
+                    PutNumberInData(value[i].FNMIndex, (i * 28) + 16);
+                    PutNumberInData(value[i].ASpace, (i * 28) + 18);
+                    PutNumberInData(value[i].BSpace, (i * 28) + 20);
+                    PutNumberInData(value[i].CSpace, (i * 28) + 22);
+                    PutNumberInData(value[i].BaselineOffset, (i * 28) + 26);
+                }
+            }
+        }
 
         public FNI(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+
+        public FNI(List<Info> infoList) : base(Lookups.StructuredFieldID<FNI>(), 0, 0, null)
+        {
+            InfoList = infoList;
+        }
 
         public override void ParseData()
         {
@@ -69,21 +98,22 @@ namespace AFPParser.StructuredFields
                 curIndex += RepeatingGroupLength;
             }
 
-            InfoList = allInfo;
+            _infoList = allInfo;
         }
+
         public class Info
         {
             public string GCGID { get; private set; }
-            public int CharIncrement { get; private set; }
-            public int AscenderHeight { get; private set; }
-            public int DescenderDepth { get; private set; }
-            public int FNMIndex { get; private set; }
-            public int ASpace { get; private set; }
-            public int BSpace { get; private set; }
-            public int CSpace { get; private set; }
-            public int BaselineOffset { get; private set; }
+            public ushort CharIncrement { get; private set; }
+            public short AscenderHeight { get; private set; }
+            public short DescenderDepth { get; private set; }
+            public ushort FNMIndex { get; private set; }
+            public short ASpace { get; private set; }
+            public ushort BSpace { get; private set; }
+            public short CSpace { get; private set; }
+            public short BaselineOffset { get; private set; }
 
-            public Info(string gid, int charInc, int ascHeight, int descDepth, int fnmIdx, int a, int b, int c, int baseline)
+            public Info(string gid, ushort charInc, short ascHeight, short descDepth, ushort fnmIdx, short a, ushort b, short c, short baseline)
             {
                 GCGID = gid;
                 CharIncrement = charInc;

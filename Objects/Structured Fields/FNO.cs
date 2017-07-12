@@ -53,7 +53,7 @@ namespace AFPParser.StructuredFields
         public IReadOnlyList<Info> FNOInfo
         {
             get { return _FNOInfo; }
-            set
+            private set
             {
                 _FNOInfo = value.ToList();
 

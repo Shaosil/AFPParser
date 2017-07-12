@@ -21,6 +21,8 @@ namespace AFPParser.StructuredFields
 
         public FNG(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
+        public FNG(byte[] patternData) : base(Lookups.StructuredFieldID<FNG>(), 0, 0, patternData) { }
+
         protected override string GetOffsetDescriptions()
         {
             FontObjectContainer fontContainer = (FontObjectContainer)LowestLevelContainer;
