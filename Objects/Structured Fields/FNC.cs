@@ -298,7 +298,7 @@ namespace AFPParser.StructuredFields
                 case 24:
                 case 26:
                     StringBuilder sb = new StringBuilder();
-                    int units = GetNumericValueFromData<int>(oSet.StartingIndex, 2);
+                    ushort units = GetNumericValueFromData<ushort>(oSet.StartingIndex, 2);
                     if (units != 1000) units /= 10;
 
                     if (oSet.StartingIndex == 24 || oSet.StartingIndex == 26) sb.Append("Shape ");

@@ -51,6 +51,19 @@ namespace AFPParser.Tests
                 curFNMIndex += (uint)((roundedWidth * roundedHeight) / 8);
             }
             FNM newFNM = new FNM(fnmPatData);
+            List<FNO.Info> fnoInfos = new List<FNO.Info>();
+            ushort baseLine = charsAndBoolVals.Values.Max(v => (ushort)(Math.Ceiling((v.GetUpperBound(1) + 1) / 8f) * 8));
+            ushort charInc = charsAndBoolVals.Values.Max(v => (ushort)(Math.Ceiling((v.GetUpperBound(0) + 1) / 8f) * 8));
+            for (int i = 0; i < 4; i++)
+            {
+                Type eType = typeof(CommonMappings.eRotations);
+                CommonMappings.eRotations curRot = (CommonMappings.eRotations)Enum.Parse(eType, Enum.GetNames(eType)[i]);
+                ushort curBaseline = (i == 0 || i == 2) ? baseLine : charInc;
+                ushort curCharInc = (i == 0 || i == 2) ? charInc : baseLine;
+                FNO.Info.eControlFlags flags = i == 0 ? 0 : i == 1 ? FNO.Info.eControlFlags.FNI1 : i == 2 ? FNO.Info.eControlFlags.FNI2 : FNO.Info.eControlFlags.FNI3;
+                fnoInfos.Add(new FNO.Info(curRot, (short)curBaseline, curCharInc, 0, curBaseline, flags, 1000, curCharInc, curCharInc, curBaseline, 0));
+            }
+            FNO newFNO = new FNO(fnoInfos);
         }
 
         private void SaveFontAsBitmaps()

@@ -61,7 +61,17 @@ namespace AFPParser.StructuredFields
                 Data = new byte[value.Count * 26];
                 for (int i = 0; i < value.Count; i++)
                 {
-
+                    PutNumberInData((ushort)value[i].Rotation, (i * 26) + 2);
+                    PutNumberInData(value[i].MaxBaselineOffset, (i * 26) + 4);
+                    PutNumberInData(value[i].MaxCharIncrement, (i * 26) + 6);
+                    PutNumberInData(value[i].SpaceCharIncrement, (i * 26) + 8);
+                    PutNumberInData(value[i].MaxBaselineExtent, (i * 26) + 10);
+                    PutNumberInData((byte)value[i].ControlFlags, (i * 26) + 12);
+                    PutNumberInData(value[i].EmSpaceIncrement, (i * 26) + 14);
+                    PutNumberInData(value[i].FigureSpaceIncrement, (i * 26) + 18);
+                    PutNumberInData(value[i].NominalCharIncrement, (i * 26) + 20);
+                    PutNumberInData(value[i].DefaultBaselineIncrement, (i * 26) + 22);
+                    PutNumberInData(value[i].MinASpace, (i * 26) + 24);
                 }
             }
         }
