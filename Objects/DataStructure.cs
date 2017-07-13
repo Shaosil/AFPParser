@@ -199,12 +199,12 @@ namespace AFPParser
             return GetNumericValue<T>(GetSectionedData(startIndex, len));
         }
 
-        protected void PutStringInData(string text, int startIndex, int maxLength)
+        protected void PutStringInData(string text, int startIndex, int length)
         {
-            if (!string.IsNullOrWhiteSpace(text) && Data.Length >= startIndex + maxLength)
+            if (!string.IsNullOrWhiteSpace(text) && Data.Length >= startIndex + length)
             {
-                string trimmed = text.Trim();
-                if (trimmed.Length > maxLength) trimmed = trimmed.Substring(0, maxLength);
+                string trimmed = text.Trim().PadRight(length);
+                if (trimmed.Length > length) trimmed = trimmed.Substring(0, length);
                 byte[] stringBytes = Converters.EBCDIC.GetBytes(trimmed);
 
                 // Plop trimmed string into the specified place in Data

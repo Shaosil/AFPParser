@@ -259,12 +259,13 @@ namespace AFPParser.StructuredFields
         public FNC(ushort maxBitWidth, ushort maxBitHeight, int rasterByteCount) : base(Lookups.StructuredFieldID<FNC>(), 0, 0, null)
         {
             Data = new byte[28];
+            PatternTech = ePatternTech.LaserMatrixNBitWide;
             XUnitBase = eUnitBase.RelativeMetrics;
             YUnitBase = eUnitBase.RelativeMetrics;
             XUnits = eUnits.OneThousandUnitsPerEm;
             YUnits = eUnits.OneThousandUnitsPerEm;
-            MaxBoxWidth = (ushort)Math.Ceiling(maxBitWidth / 8f);       // Round up to be a multiple of 8 bits
-            MaxBoxHeight = (ushort)Math.Ceiling(maxBitHeight / 8f);
+            MaxBoxWidth = maxBitWidth;
+            MaxBoxHeight = maxBitHeight;
             FNORGLength = 26; // Constant
             FNIRGLength = 28; // Constant for raster
             PatternAlignment = ePatternAlignment.OneByte;
