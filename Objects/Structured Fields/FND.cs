@@ -38,8 +38,6 @@ namespace AFPParser.StructuredFields
 
         // Parsed Data
         private string _typefaceDesc;
-        private CommonMappings.eWeightClass _weightClass;
-        private CommonMappings.eWidthClass _widthClass;
         private ushort _maxVerticalSize;
         private ushort _nominalVerticalSize;
         private ushort _minVerticalSize;
@@ -51,7 +49,7 @@ namespace AFPParser.StructuredFields
         public string TypefaceDescription
         {
             get { return _typefaceDesc; }
-            set
+            private set
             {
                 _typefaceDesc = value;
                 PutStringInData(_typefaceDesc, 0, 32);
@@ -59,26 +57,18 @@ namespace AFPParser.StructuredFields
         }
         public CommonMappings.eWeightClass WeightClass
         {
-            get { return _weightClass; }
-            set
-            {
-                _weightClass = value;
-                Data[32] = (byte)_weightClass;
-            }
+            get { return (CommonMappings.eWeightClass)Data[32]; }
+            private set { Data[32] = (byte)value; }
         }
         public CommonMappings.eWidthClass WidthClass
         {
-            get { return _widthClass; }
-            set
-            {
-                _widthClass = value;
-                Data[33] = (byte)_widthClass;
-            }
+            get { return (CommonMappings.eWidthClass)Data[33]; }
+            private set { Data[33] = (byte)value; }
         }
         public ushort MaxVerticalSize
         {
             get { return _maxVerticalSize; }
-            set
+            private set
             {
                 _maxVerticalSize = value;
                 PutNumberInData(value, 34);
@@ -87,7 +77,7 @@ namespace AFPParser.StructuredFields
         public ushort NominalVerticalSize
         {
             get { return _nominalVerticalSize; }
-            set
+            private set
             {
                 _nominalVerticalSize = value;
                 PutNumberInData(value, 36);
@@ -96,7 +86,7 @@ namespace AFPParser.StructuredFields
         public ushort MinVerticalSize
         {
             get { return _minVerticalSize; }
-            set
+            private set
             {
                 _minVerticalSize = value;
                 PutNumberInData(value, 38);
@@ -105,7 +95,7 @@ namespace AFPParser.StructuredFields
         public ushort MaxHorizontalSize
         {
             get { return _maxHorizontalSize; }
-            set
+            private set
             {
                 _maxHorizontalSize = value;
                 PutNumberInData(value, 40);
@@ -114,7 +104,7 @@ namespace AFPParser.StructuredFields
         public ushort NominalHorizontalSize
         {
             get { return _nominalHorizontalSize; }
-            set
+            private set
             {
                 _nominalHorizontalSize = value;
                 PutNumberInData(value, 42);
@@ -123,7 +113,7 @@ namespace AFPParser.StructuredFields
         public ushort MinHorizontalSize
         {
             get { return _minHorizontalSize; }
-            set
+            private set
             {
                 _minHorizontalSize = value;
                 PutNumberInData(value, 44);
@@ -132,7 +122,7 @@ namespace AFPParser.StructuredFields
         public CommonMappings.eFontDesignFlags FontDesignFlags
         {
             get { return _fontDesignFlags; }
-            set
+            private set
             {
                 _fontDesignFlags = value;
                 PutNumberInData((short)value, 64);

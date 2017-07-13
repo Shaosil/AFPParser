@@ -7,17 +7,17 @@ namespace AFPParser
 {
     public abstract class PTXControlSequence : DataStructure
     {
+        public static readonly byte[] Prefix = new byte[2] { 0x2B, 0xD3 };
         public bool IsChained => Introducer.Length == 2;
 
         // Properties which must be implemented by individual control sequences
         public abstract string Abbreviation { get; }
         protected override string StructureName => "Control Sequence";
 
-        public PTXControlSequence(byte id, byte[] prefix, byte[] data) : base(new byte[1] { id }, data)
+        public PTXControlSequence(byte id, bool isChained, byte[] data) : base(new byte[1] { id }, data)
         {
             // Insert the prefix if necessary
-            if (prefix != null)
-                Introducer = prefix.Concat(Introducer).ToArray();
+            if (!isChained) Introducer = Prefix.Concat(Introducer).ToArray();
         }
 
         protected override void SyncIntroducer()
@@ -52,12 +52,11 @@ namespace AFPParser
 
             // // The introducer will have a 2B D3 prefix when unchained
             int curIndex = 0;
-            byte[] prefix = new byte[2] { 0x2B, 0xD3 };
-            byte[] nextPrefix = prefix;
+            bool isChained = false;
             while (curIndex < csData.Length)
             {
                 // If unchained, add 2 to every index since there is a prefix
-                int extraIndexes = nextPrefix == null ? 0 : 2;
+                int extraIndexes = isChained ? 0 : 2;
 
                 int length = csData[curIndex + extraIndexes];
                 byte csTypeByte = csData[curIndex + 1 + extraIndexes];
@@ -69,16 +68,13 @@ namespace AFPParser
                 // Build and add the sequence by data type
                 Type CSType = typeof(PTXControlSequences.UNKNOWN);
                 if (Lookups.PTXControlSequences.ContainsKey(csTypeByte)) CSType = Lookups.PTXControlSequences[csTypeByte];
-                PTXControlSequence sequence = (PTXControlSequence)Activator.CreateInstance(CSType, csTypeByte, nextPrefix, data);
+                PTXControlSequence sequence = (PTXControlSequence)Activator.CreateInstance(CSType, csTypeByte, isChained, data);
                 csiList.Add(sequence);
 
                 curIndex += length + extraIndexes;
 
                 // Set the prefix for the next sequence, dependant on chained status (chained if function type is odd)
-                if (csTypeByte % 2 == 1)
-                    nextPrefix = null;
-                else
-                    nextPrefix = prefix;
+                isChained = csTypeByte % 2 == 1;
             }
 
             // Parse all data

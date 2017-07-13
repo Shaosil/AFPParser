@@ -2,27 +2,28 @@ using System.Collections.Generic;
 
 namespace AFPParser.PTXControlSequences
 {
-	public class SCFL : PTXControlSequence
-	{
-		private static string _abbr = "SCFL";
-		private static string _desc = "Set Coded Font Local";
+    public class SCFL : PTXControlSequence
+    {
+        private static string _abbr = "SCFL";
+        private static string _desc = "Set Coded Font Local";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.UBIN, "Identifier")
         };
 
         public override string Abbreviation => _abbr;
-		public override string Description => _desc;
+        public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int FontId { get; private set; }
-
-        public SCFL(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
-
-        public override void ParseData()
+        public byte FontId
         {
-            FontId = Data[0];
+            get { return Data[0]; }
+            private set { Data[0] = value; }
         }
+
+        public SCFL(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+
+        public SCFL(byte fontId, bool isChained) : base(Lookups.PTXControlSequenceID<SCFL>(), isChained, new byte[1] { fontId }) { }
     }
 }

@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace AFPParser.StructuredFields
 {
@@ -17,11 +19,34 @@ namespace AFPParser.StructuredFields
         protected override int RepeatingGroupStart => 0;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public IReadOnlyList<PTXControlSequence> CSIs { get; private set; }
-
-        public PTX(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data)
+        // Parsed Data
+        private List<PTXControlSequence> _controlSequences = new List<PTXControlSequence>();
+        public IReadOnlyList<PTXControlSequence> ControlSequences
         {
-            CSIs = new List<PTXControlSequence>();
+            get { return _controlSequences; }
+            private set
+            {
+                _controlSequences = value.ToList();
+
+                // Update the data stream
+                Data = new byte[value.Sum(v => v.Length)];
+                int curIndex = 0;
+                for (int i = 0; i < value.Count; i++)
+                {
+                    // Only need to insert the introducer and data of each PTXControlSequence, since they are data structures as well
+                    Array.ConstrainedCopy(value[i].Introducer, 0, Data, curIndex, value[i].Introducer.Length);
+                    curIndex += value[i].Introducer.Length;
+                    Array.ConstrainedCopy(value[i].Data, 0, Data, curIndex, value[i].Data.Length);
+                    curIndex += value[i].Data.Length;
+                }
+            }
+        }
+
+        public PTX(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
+
+        public PTX(List<PTXControlSequence> controlSequences) : base(Lookups.StructuredFieldID<PTX>(), 0, 0, null)
+        {
+            ControlSequences = controlSequences;
         }
 
         protected override string GetOffsetDescriptions()
@@ -29,7 +54,7 @@ namespace AFPParser.StructuredFields
             StringBuilder sb = new StringBuilder();
 
             // Get the description of each offset in each sequence
-            foreach (PTXControlSequence sequence in CSIs)
+            foreach (PTXControlSequence sequence in ControlSequences)
                 sb.AppendLine(sequence.GetFullDescription());
 
             return sb.ToString();
@@ -37,7 +62,7 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            CSIs = PTXControlSequence.GetCSIs(Data);
+            _controlSequences = PTXControlSequence.GetCSIs(Data);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace AFPParser.PTXControlSequences
         public short RuleLength { get; private set; }
         public short RuleWidth { get; private set; }
 
-        public DBR(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
+        public DBR(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
 
         public override void ParseData()
         {

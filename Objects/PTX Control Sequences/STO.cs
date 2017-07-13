@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace AFPParser.PTXControlSequences
 {
@@ -17,61 +17,80 @@ namespace AFPParser.PTXControlSequences
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public int IDegrees { get; private set; }
-        public int IMinutes { get; private set; }
-        public int BDegrees { get; private set; }
-        public int BMinutes { get; private set; }
+        private ushort _iDegrees;
+        private ushort _bDegrees;
+        public ushort IDegrees
+        {
+            get { return _iDegrees; }
+            private set
+            {
+                _iDegrees = value;
 
-        public STO(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
+                // Update data stream - see ParseData() for info on bits
+                PutNumberInData(value << 7, 0);
+            }
+        }
+        public ushort BDegrees
+        {
+            get { return _bDegrees; }
+            private set
+            {
+                _bDegrees = value;
+
+                // Update data stream - see ParseData() for info on bits
+                PutNumberInData(value << 7, 2);
+            }
+        }
+
+        public STO(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+
+        public STO(CommonMappings.eRotations iOrient, CommonMappings.eRotations bOrient, bool isChained) : base(Lookups.PTXControlSequenceID<STO>(), isChained, null)
+        {
+            Data = new byte[4];
+
+            // The enum values need to be multiplied by 2 to reflect the actual degree values
+            IDegrees = (ushort)((ushort)iOrient * 2);
+            BDegrees = (ushort)((ushort)bOrient * 2);
+        }
 
         public override void ParseData()
         {
-
             // I/B Axis orientation stored in four total bytes.
             // Each two byte set has 3 parts. A (9 bits), B (6 bits), and C (1 bit)
             // A = 0 - 359 degrees
             // B = 0 - 59 minutes
             // C = Reserved, always 0
 
-            // Loop through both sets of bytes
+            // Loop through both sets of bytes, only grabbing degrees
             for (int i = 0; i <= 2; i += 2)
             {
                 // Get the bit values of the two bytes
                 bool[] formattedBA = GetBitArray(Data[i], Data[i + 1]);
 
                 // Prepare the degree and minute bits
-                IEnumerable<bool> degreeBits = formattedBA.Take(9), minuteBits = formattedBA.Skip(9).Take(6);
+                IEnumerable<bool> degreeBits = formattedBA.Take(9); ;
                 if (BitConverter.IsLittleEndian)
                 {
                     // Flip back to little endian so the new bit arrays below will convert to the correct integer
                     degreeBits = degreeBits.Reverse();
-                    minuteBits = minuteBits.Reverse();
                 }
 
                 // Parse the bits out to an int array (BitArray.CopyTo sums them up for us)
-                int[] values = new int[2];
-                new BitArray(degreeBits.ToArray()).CopyTo(values, 0);
-                new BitArray(minuteBits.ToArray()).CopyTo(values, 1);
+                int[] value = new int[1];
+                new BitArray(degreeBits.ToArray()).CopyTo(value, 0);
+                ushort result = (ushort)value[0];
 
                 // Store our values
-                if (i == 0)
-                {
-                    IDegrees = values[0];
-                    IMinutes = values[1];
-                }
-                else
-                {
-                    BDegrees = values[0];
-                    BMinutes = values[1];
-                }
+                if (i == 0) _iDegrees = result;
+                else _bDegrees = result;
             }
         }
 
         protected override string GetOffsetDescriptions()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"I Orientation: {IDegrees}:{IMinutes}");
-            sb.AppendLine($"B Orientation: {BDegrees}:{BMinutes}");
+            sb.AppendLine($"I Orientation: {IDegrees}");
+            sb.AppendLine($"B Orientation: {BDegrees}");
 
             return sb.ToString();
         }

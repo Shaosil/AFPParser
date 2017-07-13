@@ -16,13 +16,28 @@ namespace AFPParser.PTXControlSequences
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public short Displacement { get; private set; }
+        private short _displacement;
+        public short Displacement
+        {
+            get { return _displacement; }
+            private set
+            {
+                _displacement = value;
+                PutNumberInData(value, 0);
+            }
+        }
 
-        public AMB(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
+        public AMB(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+
+        public AMB(short displacement, bool isChained) : base(Lookups.PTXControlSequenceID<AMB>(), isChained, null)
+        {
+            Data = new byte[2];
+            Displacement = displacement;
+        }
 
         public override void ParseData()
         {
-            Displacement = GetNumericValueFromData<short>(0, 2);
+            _displacement = GetNumericValueFromData<short>(0, 2);
         }
     }
 }

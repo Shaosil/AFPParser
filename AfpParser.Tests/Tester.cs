@@ -1,4 +1,5 @@
-﻿using AFPParser.StructuredFields;
+﻿using AFPParser.PTXControlSequences;
+using AFPParser.StructuredFields;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
@@ -7,6 +8,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace AFPParser.Tests
 {
@@ -32,8 +34,107 @@ namespace AFPParser.Tests
         [TestMethod]
         public void Misc()
         {
-            //SaveFontAsBitmaps();
+            SaveBitmapsAsFont();
+        }
 
+        [TestMethod]
+        public void TestAddBarcode()
+        {
+            // Create AFP file
+            AFPFile newAFP = new AFPFile();
+            //newAFP.LoadData("", true);
+
+            // Edit the first MCF-1 field
+            MCF1 mcf = newAFP.Fields.OfType<MCF1>().First();
+            mcf.AddFontDefinition(string.Empty, "T1DM1252", "FONTTEST");
+
+            // Add to end of firt page
+            byte fontID = mcf.MappedData.Last().ID;
+            Container c = newAFP.Fields.OfType<BPG>().First().LowestLevelContainer;
+            TestAddText(newAFP, c, fontID, 200, 450, "*", Converters.EBCDIC);
+        }
+
+        private static void TestAddText(AFPFile file, Container pageContainer, byte fontId, short inline, short baseline, string text, Encoding encoding,
+        CommonMappings.eRotations inlineRotation = CommonMappings.eRotations.Zero,
+        CommonMappings.eRotations baselineRotation = CommonMappings.eRotations.Ninety)
+        {
+            // Make sure the inline/baseline rotations are parallel
+            bool inlineIsHorizontal = inlineRotation == CommonMappings.eRotations.Ninety || inlineRotation == CommonMappings.eRotations.TwoSeventy;
+            bool baselineIsHorizontal = baselineRotation == CommonMappings.eRotations.Ninety || baselineRotation == CommonMappings.eRotations.TwoSeventy;
+            if (inlineIsHorizontal == baselineIsHorizontal)
+                throw new Exception("Error: Inline and baseline rotations must be parallel to each other.");
+
+            // Add several sequences to the list based on passed parameters
+            List<PTXControlSequence> newSequences = new List<PTXControlSequence>();
+            newSequences.Add(new SCFL(fontId, false));
+            newSequences.Add(new AMI(inline, true));
+            newSequences.Add(new AMB(baseline, true));
+            newSequences.Add(new STO(inlineRotation, baselineRotation, true));
+            newSequences.Add(new TRN(encoding.GetBytes(text), false));
+
+            // Create a new BPT/PTX/EPT at the end of this page
+            int indexToInsert = 0;
+            for (int i = 0; i < file.Fields.Count; i++)
+                if (file.Fields[i] == pageContainer.Structures.Last())
+                {
+                    indexToInsert = i;
+                    break;
+                }
+            file.AddFields(new List<StructuredField>() { new BPT(), new PTX(newSequences), new EPT() }, indexToInsert);
+        }
+
+        private void SaveFontAsBitmaps()
+        {
+            // Get our custom font
+            PrivateFontCollection pfc = new PrivateFontCollection();
+            pfc.AddFontFile(Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\fre3of9x.ttf"));
+            Font ourFont = new Font(pfc.Families[0], 72 * 2);
+
+            // Using the code 39 barcode font, save each specified character as a bitmap
+            string chars = "*ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-$%.+";
+            List<Bitmap> charImages = new List<Bitmap>();
+            using (Graphics g = Graphics.FromImage(new Bitmap(1, 1)))
+            {
+                foreach (char c in chars)
+                {
+                    SizeF size = g.MeasureString(c.ToString(), ourFont);
+
+                    Bitmap charBmp = new Bitmap((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
+                    using (Graphics canvas = Graphics.FromImage(charBmp))
+                    {
+                        canvas.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                        canvas.DrawString(c.ToString(), ourFont, Brushes.Black, PointF.Empty);
+                    }
+
+                    // Trim edges - crop image to drawn area
+                    int minX = charBmp.Width, maxX = 0, minY = charBmp.Height, maxY = 0;
+                    for (int y = 0; y < charBmp.Height; y++)
+                        for (int x = 0; x < charBmp.Width; x++)
+                        {
+                            if (charBmp.GetPixel(x, y).A > 0)
+                            {
+                                if (x < minX) minX = x;
+                                if (y < minY) minY = y;
+                                if (x > maxX) maxX = x;
+                                if (y > maxY) maxY = y;
+                            }
+                        }
+                    Bitmap croppedCharBmp = new Bitmap(maxX - minX, maxY - minY);
+                    Point[] points = new Point[] { Point.Empty, new Point(croppedCharBmp.Width, 0), new Point(0, croppedCharBmp.Height) };
+                    using (Graphics canvas = Graphics.FromImage(croppedCharBmp))
+                        canvas.DrawImage(charBmp, points, new Rectangle(minX, minY, croppedCharBmp.Width, croppedCharBmp.Height), GraphicsUnit.Pixel);
+
+                    charImages.Add(croppedCharBmp);
+
+                    string fileName = c.ToString();
+                    if (fileName == "*") fileName = "Asterisk";
+                    croppedCharBmp.Save(Path.Combine(Environment.CurrentDirectory, $"..\\..\\..\\Sample Files\\{fileName}.png"));
+                }
+            }
+        }
+
+        private void SaveBitmapsAsFont()
+        {
             // Open each bitmap, and convert pure black pixels to an array of bools
             List<CharInfo> charInfos = new List<CharInfo>();
             foreach (FileInfo f in new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\Barcode Chars")).GetFiles())
@@ -52,7 +153,7 @@ namespace AFPParser.Tests
             // Create an AFP font file (BFN, FND, FNC, FNM, FNO, FNP, FNIs, FNGs, EFN) using bool arrays as FNGs
             BFN newBFN = new BFN("BARCOD39");
 
-            FND newFND = new FND("Code 39 Barcode", 36);
+            FND newFND = new FND("Code 39 Barcode", 300);
 
             ushort maxBitsWide = charInfos.Max(c => c.BitWidth);
             ushort maxBitsTall = charInfos.Max(c => c.BitHeight);
@@ -127,8 +228,8 @@ namespace AFPParser.Tests
             FNG newFNG = new FNG(fngBytes.ToArray());
 
             EFN newEFN = new EFN(newBFN.ObjectName);
-            
-            string path = Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\FONTFILETEST.afp");
+
+            string path = Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\FONTS\\FONTTEST");
             List<StructuredField> fields = new List<StructuredField>() { newBFN, newFND, newFNC, newFNM, newFNO, newFNP };
             fields.AddRange(newFNIs);
             fields.AddRange(new StructuredField[] { newFNG, newEFN });
@@ -140,56 +241,6 @@ namespace AFPParser.Tests
                 encoded.AddRange(field.Data);
             }
             File.WriteAllBytes(path, encoded.ToArray());
-        }
-
-        private void SaveFontAsBitmaps()
-        {
-            // Get our custom font
-            PrivateFontCollection pfc = new PrivateFontCollection();
-            pfc.AddFontFile(Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\Sample Files\\fre3of9x.ttf"));
-            Font ourFont = new Font(pfc.Families[0], 72 * 2);
-
-            // Using the code 39 barcode font, save each specified character as a bitmap
-            string chars = "*ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-$%.+";
-            List<Bitmap> charImages = new List<Bitmap>();
-            using (Graphics g = Graphics.FromImage(new Bitmap(1, 1)))
-            {
-                foreach (char c in chars)
-                {
-                    SizeF size = g.MeasureString(c.ToString(), ourFont);
-
-                    Bitmap charBmp = new Bitmap((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
-                    using (Graphics canvas = Graphics.FromImage(charBmp))
-                    {
-                        canvas.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                        canvas.DrawString(c.ToString(), ourFont, Brushes.Black, PointF.Empty);
-                    }
-
-                    // Trim edges - crop image to drawn area
-                    int minX = charBmp.Width, maxX = 0, minY = charBmp.Height, maxY = 0;
-                    for (int y = 0; y < charBmp.Height; y++)
-                        for (int x = 0; x < charBmp.Width; x++)
-                        {
-                            if (charBmp.GetPixel(x, y).A > 0)
-                            {
-                                if (x < minX) minX = x;
-                                if (y < minY) minY = y;
-                                if (x > maxX) maxX = x;
-                                if (y > maxY) maxY = y;
-                            }
-                        }
-                    Bitmap croppedCharBmp = new Bitmap(maxX - minX, maxY - minY);
-                    Point[] points = new Point[] { Point.Empty, new Point(croppedCharBmp.Width, 0), new Point(0, croppedCharBmp.Height) };
-                    using (Graphics canvas = Graphics.FromImage(croppedCharBmp))
-                        canvas.DrawImage(charBmp, points, new Rectangle(minX, minY, croppedCharBmp.Width, croppedCharBmp.Height), GraphicsUnit.Pixel);
-
-                    charImages.Add(croppedCharBmp);
-
-                    string fileName = c.ToString();
-                    if (fileName == "*") fileName = "Asterisk";
-                    croppedCharBmp.Save(Path.Combine(Environment.CurrentDirectory, $"..\\..\\..\\Sample Files\\{fileName}.png"));
-                }
-            }
         }
     }
 }

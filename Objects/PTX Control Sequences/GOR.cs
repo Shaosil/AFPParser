@@ -2,16 +2,16 @@ using System.Collections.Generic;
 
 namespace AFPParser.PTXControlSequences
 {
-	public class GOR : PTXControlSequence
-	{
-		private static string _abbr = "GOR";
-		private static string _desc = "Glyph Offset Run";
+    public class GOR : PTXControlSequence
+    {
+        private static string _abbr = "GOR";
+        private static string _desc = "Glyph Offset Run";
         private static List<Offset> _oSets = new List<Offset>();
 
         public override string Abbreviation => _abbr;
-		public override string Description => _desc;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
-		public GOR(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
-	}
+        public GOR(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+    }
 }

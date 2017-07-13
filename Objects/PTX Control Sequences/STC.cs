@@ -1,26 +1,26 @@
-using System.Text;
-using System.Drawing;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
 
 namespace AFPParser.PTXControlSequences
 {
-	public class STC : PTXControlSequence
-	{
-		private static string _abbr = "STC";
-		private static string _desc = "Set Text Color";
+    public class STC : PTXControlSequence
+    {
+        private static string _abbr = "STC";
+        private static string _desc = "Set Text Color";
         private static List<Offset> _oSets = new List<Offset>()
         {
             new Offset(0, Lookups.DataTypes.EMPTY, "Color - CUSTOM PARSED")
         };
 
         public override string Abbreviation => _abbr;
-		public override string Description => _desc;
-		public override IReadOnlyList<Offset> Offsets => _oSets;
+        public override string Description => _desc;
+        public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
         public Color TextColor { get; private set; }
 
-		public STC(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
+        public STC(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
 
         public override void ParseData()
         {

@@ -92,63 +92,38 @@ namespace AFPParser.StructuredFields
         public enum eUnits { TwoFortyPPI = 2400, ThreeHundredPPI = 3000, OneThousandUnitsPerEm = 1000 }
         public enum ePatternAlignment { OneByte = 0, FourByte = 2, EightByte = 3 }
 
-        private ePatternTech _patTech;
-        private eFontUseFlags _fontUseFlags;
-        private eUnitBase _xUnitBase;
-        private eUnitBase _yUnitBase;
         private eUnits _xUnits;
         private eUnits _yUnits;
         private ushort _maxCharBoxWidth;
         private ushort _maxCharBoxHeight;
-        private byte _FNORGLength;
-        private byte _FNIRGLength;
-        private ePatternAlignment _patternAlightment;
         private int _rasterPatternDataCount;
-        private byte _FNPRGLength;
-        private byte _FNMRGLength;
         private eUnits _xShapeResolution;
         private eUnits _yShapeResolution;
 
         public ePatternTech PatternTech
         {
-            get { return _patTech; }
-            set
-            {
-                _patTech = value;
-                Data[1] = (byte)value;
-            }
+            get { return (ePatternTech)Data[1]; }
+            private set { Data[1] = (byte)value; }
         }
         public eFontUseFlags FontUseFlags
         {
-            get { return _fontUseFlags; }
-            set
-            {
-                _fontUseFlags = value;
-                PutNumberInData((byte)value, 3);
-            }
+            get { return (eFontUseFlags)Data[3]; }
+            private set { Data[3] = (byte)value; }
         }
         public eUnitBase XUnitBase
         {
-            get { return _xUnitBase; }
-            set
-            {
-                _xUnitBase = value;
-                Data[4] = (byte)value;
-            }
+            get { return (eUnitBase)Data[4]; }
+            private set { Data[4] = (byte)value; }
         }
         public eUnitBase YUnitBase
         {
-            get { return _yUnitBase; }
-            set
-            {
-                _yUnitBase = value;
-                Data[5] = (byte)value;
-            }
+            get { return (eUnitBase)Data[5]; }
+            private set { Data[5] = (byte)value; }
         }
         public eUnits XUnits
         {
             get { return _xUnits; }
-            set
+            private set
             {
                 _xUnits = value;
                 PutNumberInData((ushort)value, 6);
@@ -157,7 +132,7 @@ namespace AFPParser.StructuredFields
         public eUnits YUnits
         {
             get { return _yUnits; }
-            set
+            private set
             {
                 _yUnits = value;
                 PutNumberInData((ushort)value, 8);
@@ -166,7 +141,7 @@ namespace AFPParser.StructuredFields
         public ushort MaxBoxWidth
         {
             get { return _maxCharBoxWidth; }
-            set
+            private set
             {
                 _maxCharBoxWidth = value;
                 PutNumberInData(value, 10);
@@ -175,7 +150,7 @@ namespace AFPParser.StructuredFields
         public ushort MaxBoxHeight
         {
             get { return _maxCharBoxHeight; }
-            set
+            private set
             {
                 _maxCharBoxHeight = value;
                 PutNumberInData(value, 12);
@@ -183,35 +158,23 @@ namespace AFPParser.StructuredFields
         }
         public byte FNORGLength
         {
-            get { return _FNORGLength; }
-            set
-            {
-                _FNORGLength = value;
-                Data[14] = value;
-            }
+            get { return Data[14]; }
+            private set { Data[14] = value; }
         }
         public byte FNIRGLength
         {
-            get { return _FNIRGLength; }
-            set
-            {
-                _FNIRGLength = value;
-                Data[15] = value;
-            }
+            get { return Data[15]; }
+            private set { Data[15] = value; }
         }
         public ePatternAlignment PatternAlignment
         {
-            get { return _patternAlightment; }
-            set
-            {
-                _patternAlightment = value;
-                Data[16] = (byte)value;
-            }
+            get { return (ePatternAlignment)Data[16]; }
+            private set { Data[16] = (byte)value; }
         }
         public int RasterDataCount
         {
             get { return _rasterPatternDataCount; }
-            set
+            private set
             {
                 _rasterPatternDataCount = value;
                 PutNumberInData(value, 17, 3);
@@ -219,26 +182,18 @@ namespace AFPParser.StructuredFields
         }
         public byte FNPRGLength
         {
-            get { return _FNPRGLength; }
-            set
-            {
-                _FNPRGLength = value;
-                Data[20] = value;
-            }
+            get { return Data[20]; }
+            private set { Data[20] = value; }
         }
         public byte FNMRGLength
         {
-            get { return _FNMRGLength; }
-            set
-            {
-                _FNMRGLength = value;
-                Data[21] = value;
-            }
+            get { return Data[21]; }
+            private set { Data[21] = value; }
         }
         public eUnits XShapeResolution
         {
             get { return _xShapeResolution; }
-            set
+            private set
             {
                 _xShapeResolution = value;
                 PutNumberInData((ushort)value, 24);
@@ -247,7 +202,7 @@ namespace AFPParser.StructuredFields
         public eUnits YShapeResolution
         {
             get { return _yShapeResolution; }
-            set
+            private set
             {
                 _yShapeResolution = value;
                 PutNumberInData((ushort)value, 26);
@@ -279,15 +234,10 @@ namespace AFPParser.StructuredFields
         public override void ParseData()
         {
             base.ParseData();
-
-            _patTech = (ePatternTech)Data[1];
+            
             _maxCharBoxWidth = GetNumericValueFromData<ushort>(10, 2);
             _maxCharBoxHeight = GetNumericValueFromData<ushort>(12, 2);
-            _FNORGLength = GetNumericValue<byte>(new[] { Data[14] });
-            _FNIRGLength = GetNumericValue<byte>(new[] { Data[15] });
             _rasterPatternDataCount = GetNumericValueFromData<ushort>(17, 2);
-            _FNPRGLength = GetNumericValue<byte>(new[] { Data[20] });
-            _FNMRGLength = GetNumericValue<byte>(new[] { Data[21] });
         }
 
         protected override string GetSingleOffsetDescription(Offset oSet, byte[] sectionedData)

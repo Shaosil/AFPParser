@@ -9,6 +9,6 @@ namespace AFPParser.PTXControlSequences
 
         public override IReadOnlyList<Offset> Offsets { get { return new List<Offset>(); } }
 
-        public UNKNOWN(byte id, byte[] sequence, byte[] data) : base(id, sequence, data) { }
+        public UNKNOWN(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
     }
 }

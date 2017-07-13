@@ -1,12 +1,12 @@
-﻿using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace AFPParser
 {
     public static class Extensions
     {
-        public static Regex RegexReadableText = new Regex("[\\w\\s]*");
+        public static Regex RegexReadableText = new Regex(@"[^\w\s\p{P}]");
 
         public static List<string> GetNamesOfType(this IEnumerable<AFPFile.Resource> self, AFPFile.Resource.eResourceType rType)
         {

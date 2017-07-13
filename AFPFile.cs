@@ -119,7 +119,7 @@ namespace AFPParser
                 Array.ConstrainedCopy(byteList, curIdx + 9, data, 0, length - 8);
 
                 // Lookup what type of field we need by the structured fields hex dictionary
-                Type fieldType = typeof(UNKNOWN);
+                Type fieldType = typeof(StructuredFields.UNKNOWN);
                 string idStr = BitConverter.ToString(identifierBytes).Replace("-", "");
                 if (Lookups.StructuredFields.ContainsKey(idStr)) fieldType = Lookups.StructuredFields[idStr];
                 StructuredField field = (StructuredField)Activator.CreateInstance(fieldType, identifierBytes, flag, sequence, data);
@@ -146,15 +146,16 @@ namespace AFPParser
             foreach (StructuredField sf in fields)
             {
                 // If this is a BEGIN tag, create a new container and add it to the list, and set it as active
+                // If this is a refresh, and a container exists already, use that instead
                 if (sf.HexID[1] == 0xA8)
-                    activeContainers.Add(sf.NewContainer);
+                    activeContainers.Add(sf.LowestLevelContainer ?? sf.NewContainer);
 
-                // Add this field to each active container's list of fields
-                foreach (Container c in activeContainers)
+                // Add this field (if new) to each active container's list of fields
+                foreach (Container c in activeContainers.Where(c => !c.Structures.Contains(sf)))
                     c.Structures.Add(sf);
 
-                // Set the lowest level container if there are any
-                if (activeContainers.Any())
+                // Set the lowest level container if there are any, and the field doesn't already have one
+                if (activeContainers.Any() && sf.LowestLevelContainer == null)
                     sf.LowestLevelContainer = activeContainers.Last();
 
                 // If this is an END tag, remove the last container from our active container list
@@ -256,13 +257,20 @@ namespace AFPParser
             return rType;
         }
 
-        public void AddField(StructuredField field, int index = -1)
+        public void AddField(StructuredField newField, int index)
         {
-            // Insert at specified index if needed. Else, append
-            if (index >= 0)
-                _fields.Insert(index, field);
-            else
-                _fields.Add(field);
+            // Insert at specified index
+            _fields.Insert(index, newField);
+
+            // Sync containers
+            SetupContainers(_fields);
+        }
+
+        public void AddFields(List<StructuredField> newFields, int index)
+        {
+            // Insert all, starting at specified index
+            for (int i = 0; i < newFields.Count; i++)
+                _fields.Insert(index + i, newFields[i]);
 
             // Sync containers
             SetupContainers(_fields);

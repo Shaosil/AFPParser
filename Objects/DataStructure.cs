@@ -146,7 +146,7 @@ namespace AFPParser
         protected string GetReadableDataPiece(int startIndex, int length)
         {
             // Convert to EBCDIC, only grabbing valid characters
-            return Extensions.RegexReadableText.Match(Converters.EBCDIC.GetString(GetSectionedData(startIndex, length))).Value;
+            return Extensions.RegexReadableText.Replace(Converters.EBCDIC.GetString(GetSectionedData(startIndex, length)), "");
         }
 
         // Returns a proper Endian array of booleans. 8 bits per byte

@@ -283,6 +283,14 @@ namespace AFPParser
             { 0xF8, typeof(PTXControlSequences.NOP) },
             { 0xF9, typeof(PTXControlSequences.NOP) }
         };
+        public static byte PTXControlSequenceID<T>()
+        {
+            // Return the byte array ID of the structured field type (or NOP if not found)
+            byte hexCode = PTXControlSequences.FirstOrDefault(f => f.Value == typeof(T)).Key;
+            if (hexCode == 0) hexCode = PTXControlSequences.First(f => f.Value == typeof(PTXControlSequences.NOP)).Key;
+
+            return hexCode;
+        }
         #endregion
 
         #region Image Self Defining Fields

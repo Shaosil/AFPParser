@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -56,9 +55,8 @@ namespace AFPParser
 
                         case Lookups.DataTypes.CHAR:
                         case Lookups.DataTypes.CODE:
-                            string decoded = Converters.EBCDIC.GetString(data);
-                            if (string.IsNullOrWhiteSpace(Extensions.RegexReadableText.Match(decoded).Value))
-                                decoded = "(BLANK)";
+                            string decoded = Extensions.RegexReadableText.Replace(Converters.EBCDIC.GetString(data), "");
+                            if (string.IsNullOrWhiteSpace(decoded)) decoded = "(BLANK)";
                             sb.Append(decoded);
                             break;
 

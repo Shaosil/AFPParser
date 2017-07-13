@@ -62,7 +62,7 @@ namespace AFPParser.UI
             {
                 foreach (PTX ptx in pc.GetStructures<PTX>())
                 {
-                    foreach (PTXControlSequence cs in ptx.CSIs)
+                    foreach (PTXControlSequence cs in ptx.ControlSequences)
                     {
                         // Store active code page and coded font
                         if (cs.GetType() == typeof(SCFL))
@@ -307,7 +307,7 @@ namespace AFPParser.UI
                 curIOrient = 0;
                 curBOrient = 0;
 
-                foreach (PTXControlSequence sequence in text.CSIs)
+                foreach (PTXControlSequence sequence in text.ControlSequences)
                 {
                     Type sequenceType = sequence.GetType();
 
@@ -335,7 +335,7 @@ namespace AFPParser.UI
             // Prepare X,Y origin/destination
             float xOrig, yOrig, xDest, yDest;
 
-            Func<float, bool, float> getInches = (float val, bool positive) => 
+            Func<float, bool, float> getInches = (float val, bool positive) =>
                 { return (float)(Converters.GetInches((int)val, unitsPerBase, measurement) * 100) * (positive ? 1 : -1); };
 
             // Get the length width of the line (1/1440 of an inch)
