@@ -283,10 +283,10 @@ namespace AFPParser
             { 0xF8, typeof(PTXControlSequences.NOP) },
             { 0xF9, typeof(PTXControlSequences.NOP) }
         };
-        public static byte PTXControlSequenceID<T>()
+        public static byte PTXControlSequenceID<T>(bool chained)
         {
-            // Return the byte array ID of the structured field type (or NOP if not found)
-            byte hexCode = PTXControlSequences.FirstOrDefault(f => f.Value == typeof(T)).Key;
+            // Return the byte ID of the PTX type (or NOP if not found). Returns the odd or even function depending on chained
+            byte hexCode = PTXControlSequences.FirstOrDefault(f => f.Value == typeof(T) && (f.Key % 2 == 1) == chained).Key;
             if (hexCode == 0) hexCode = PTXControlSequences.First(f => f.Value == typeof(PTXControlSequences.NOP)).Key;
 
             return hexCode;

@@ -15,8 +15,8 @@ namespace AFPParser.PTXControlSequences
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public TRN(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+        public TRN(byte id, bool hasPrefix, byte[] data) : base(id, hasPrefix, data) { }
 
-        public TRN(byte[] data, bool isChained) : base(Lookups.PTXControlSequenceID<TRN>(), isChained, data) { }
+        public TRN(byte[] data, bool hasPrefix, bool isChained) : base(Lookups.PTXControlSequenceID<TRN>(isChained), hasPrefix, data) { }
     }
 }

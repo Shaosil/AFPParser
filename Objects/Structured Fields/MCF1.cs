@@ -71,8 +71,8 @@ namespace AFPParser.StructuredFields
                 string cfName = GetReadableDataPiece(curIndex + 4, 8);
                 string cpName = GetReadableDataPiece(curIndex + 12, 8);
                 string fcsName = GetReadableDataPiece(curIndex + 20, 8);
-                CommonMappings.eRotations? rotation = RepeatingGroupLength == 30 && Data.Length >= curIndex + 29 
-                    ? (CommonMappings.eRotations?)Data[curIndex + 28] 
+                CommonMappings.eRotations? rotation = RepeatingGroupLength == 30 && Data.Length >= curIndex + 29
+                    ? (CommonMappings.eRotations?)Data[curIndex + 28]
                     : null;
                 allFontData.Add(new MCF1Data(id, fontSectionId, cfName, cpName, fcsName, rotation));
 
@@ -108,23 +108,27 @@ namespace AFPParser.StructuredFields
 
         }
 
-        public void AddFontDefinition(string codedFontName, string codePageName, string fontCharSetName)
+        public byte AddFontDefinition(string codedFontName, string codePageName, string fontCharSetName)
         {
             // Trim and uppercase everything for easier comparison/insertion
             codedFontName = codedFontName.Trim().ToUpper();
             codePageName = codePageName.Trim().ToUpper();
             fontCharSetName = fontCharSetName.Trim().ToUpper();
 
-            // If it exists already, do nothing
-            if (!_mappedData.Any(m => m.CodedFontName.Trim().ToUpper() == codedFontName
-                && m.CodePageName.Trim().ToUpper() == codePageName
-                && m.FontCharacterSetName.Trim().ToUpper() == fontCharSetName))
+            byte fontID = _mappedData.FirstOrDefault(m => m.CodedFontName.Trim().ToUpper() == codedFontName
+                                                    && m.CodePageName.Trim().ToUpper() == codePageName
+                                                    && m.FontCharacterSetName.Trim().ToUpper() == fontCharSetName)?.ID ?? 0;
+
+            // If a match was not found, create a new reference
+            if (fontID == 0)
             {
-                byte newID = (byte)(_mappedData.Count + 1);
-                MCF1Data newFontReference = new MCF1Data(newID, 0, codedFontName, codePageName, fontCharSetName);
+                fontID = (byte)(_mappedData.Count + 1);
+                MCF1Data newFontReference = new MCF1Data(fontID, 0, codedFontName, codePageName, fontCharSetName);
                 _mappedData.Add(newFontReference);
                 MappedData = _mappedData; // Updates the data stream in the property
             }
+
+            return fontID;
         }
 
         public class MCF1Data

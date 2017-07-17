@@ -318,7 +318,7 @@ namespace AFPParser.UI
                     else if (sequenceType == typeof(RMB)) curBaselinePos += (float)Converters.GetInches(((RMB)sequence).Increment, unitsPerBase, measurement) * 100;
                     else if (sequenceType == typeof(STC)) curColor = ((STC)sequence).TextColor;
                     else if (sequenceType == typeof(SEC)) curColor = ((SEC)sequence).TextColor;
-                    else if (sequenceType == typeof(SIA)) interCharAdjInch = ((((SIA)sequence).Adjustment * (((SIA)sequence).Forward ? 1 : -1)) / 1440f) * 100;
+                    else if (sequenceType == typeof(SIA)) interCharAdjInch = ((((SIA)sequence).Adjustment * (((SIA)sequence).Direction == SIA.eDirection.Increment ? 1 : -1)) / 1440f) * 100;
                     else if (sequenceType == typeof(SVI)) varSpaceCharInch = (((SVI)sequence).Increment / 1440f) * 100;
                     else if (sequenceType == typeof(DIR) || sequenceType == typeof(DBR)) DrawLine(sequence, e);
                     else if (sequenceType == typeof(STO)) { curIOrient = ((STO)sequence).IDegrees; curBOrient = ((STO)sequence).BDegrees; }
@@ -468,8 +468,8 @@ namespace AFPParser.UI
 
                     // Determine corner positions based on current rotation
                     float leftX = 0, rightX = 0, topY = 0, bottomY = 0;
-                    float widthInches = ((characterImage.Width / characterImage.HorizontalResolution) * 100);
-                    float heightInches = ((characterImage.Height / characterImage.VerticalResolution) * 100);
+                    float widthInches = (float)Math.Ceiling((characterImage.Width / characterImage.HorizontalResolution) * 100f);
+                    float heightInches = (float)Math.Ceiling((characterImage.Height / characterImage.VerticalResolution) * 100f);
                     if (curIOrient == 0)
                     {
                         // Left - Right

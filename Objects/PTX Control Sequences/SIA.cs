@@ -20,15 +20,43 @@ namespace AFPParser.PTXControlSequences
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public short Adjustment { get; private set; }
-        public bool Forward { get; private set; }
+        public enum eDirection { Increment = 0, Decrement = 1 };
+        private short _adjustment;
+        private eDirection _direction;
 
-        public SIA(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+        public short Adjustment
+        {
+            get { return _adjustment; }
+            private set
+            {
+                _adjustment = value;
+                PutNumberInData(value, 0);
+            }
+        }
+        public eDirection Direction
+        {
+            get { return _direction; }
+            private set
+            {
+                _direction = value;
+                Data[2] = (byte)value;
+            }
+        }
+
+        public SIA(byte id, bool hasPrefix, byte[] data) : base(id, hasPrefix, data) { }
+
+        public SIA(short adjustment, bool hasPrefix, bool isChained, eDirection direction = eDirection.Increment)
+            : base(Lookups.PTXControlSequenceID<SIA>(isChained), hasPrefix, null)
+        {
+            Data = new byte[3];
+            Adjustment = adjustment;
+            Direction = direction;
+        }
 
         public override void ParseData()
         {
-            Adjustment = GetNumericValueFromData<short>(0, 2);
-            Forward = Data[2] == 0x00;
+            _adjustment = GetNumericValueFromData<short>(0, 2);
+            _direction = (eDirection)Data[2];
         }
     }
 }

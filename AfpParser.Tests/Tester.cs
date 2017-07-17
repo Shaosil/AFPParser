@@ -1,5 +1,4 @@
-﻿using AFPParser.PTXControlSequences;
-using AFPParser.StructuredFields;
+﻿using AFPParser.StructuredFields;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
@@ -8,7 +7,6 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace AFPParser.Tests
 {
@@ -22,7 +20,7 @@ namespace AFPParser.Tests
             public ushort BitWidth => (ushort)(RawBits.GetUpperBound(0) + 1);
             public ushort BitHeight => (ushort)(RawBits.GetUpperBound(1) + 1);
             public ushort RoundedBitWidth => (ushort)(Math.Ceiling(BitWidth / 8f) * 8);
-            public ushort CharIncrement => (ushort)(1000 * ((float)BitWidth / BitHeight));
+            public ushort CharIncrement => (ushort)(1000 * ((float)RoundedBitWidth / BitHeight));
 
             public CharInfo(char character, bool[,] rawBits)
             {
@@ -34,53 +32,6 @@ namespace AFPParser.Tests
         [TestMethod]
         public void Misc()
         {
-            SaveBitmapsAsFont();
-        }
-
-        [TestMethod]
-        public void TestAddBarcode()
-        {
-            // Create AFP file
-            AFPFile newAFP = new AFPFile();
-            //newAFP.LoadData("", true);
-
-            // Edit the first MCF-1 field
-            MCF1 mcf = newAFP.Fields.OfType<MCF1>().First();
-            mcf.AddFontDefinition(string.Empty, "T1DM1252", "FONTTEST");
-
-            // Add to end of firt page
-            byte fontID = mcf.MappedData.Last().ID;
-            Container c = newAFP.Fields.OfType<BPG>().First().LowestLevelContainer;
-            TestAddText(newAFP, c, fontID, 200, 450, "*", Converters.EBCDIC);
-        }
-
-        private static void TestAddText(AFPFile file, Container pageContainer, byte fontId, short inline, short baseline, string text, Encoding encoding,
-        CommonMappings.eRotations inlineRotation = CommonMappings.eRotations.Zero,
-        CommonMappings.eRotations baselineRotation = CommonMappings.eRotations.Ninety)
-        {
-            // Make sure the inline/baseline rotations are parallel
-            bool inlineIsHorizontal = inlineRotation == CommonMappings.eRotations.Ninety || inlineRotation == CommonMappings.eRotations.TwoSeventy;
-            bool baselineIsHorizontal = baselineRotation == CommonMappings.eRotations.Ninety || baselineRotation == CommonMappings.eRotations.TwoSeventy;
-            if (inlineIsHorizontal == baselineIsHorizontal)
-                throw new Exception("Error: Inline and baseline rotations must be parallel to each other.");
-
-            // Add several sequences to the list based on passed parameters
-            List<PTXControlSequence> newSequences = new List<PTXControlSequence>();
-            newSequences.Add(new SCFL(fontId, false));
-            newSequences.Add(new AMI(inline, true));
-            newSequences.Add(new AMB(baseline, true));
-            newSequences.Add(new STO(inlineRotation, baselineRotation, true));
-            newSequences.Add(new TRN(encoding.GetBytes(text), false));
-
-            // Create a new BPT/PTX/EPT at the end of this page
-            int indexToInsert = 0;
-            for (int i = 0; i < file.Fields.Count; i++)
-                if (file.Fields[i] == pageContainer.Structures.Last())
-                {
-                    indexToInsert = i;
-                    break;
-                }
-            file.AddFields(new List<StructuredField>() { new BPT(), new PTX(newSequences), new EPT() }, indexToInsert);
         }
 
         private void SaveFontAsBitmaps()
@@ -141,11 +92,11 @@ namespace AFPParser.Tests
             {
                 Bitmap png = new Bitmap(f.FullName);
                 char thisChar = f.Name == "Asterisk.png" ? '*' : f.Name[0];
-                bool[,] boolVals = new bool[png.Width, png.Height];
+                bool[,] boolVals = new bool[png.Width + 1, png.Height];
 
                 for (int y = 0; y < png.Height; y++)
                     for (int x = 0; x < png.Width; x++)
-                        boolVals[x, y] = png.GetPixel(x, y).GetBrightness() < 0.5;
+                        boolVals[x + 1, y] = png.GetPixel(x, y).GetBrightness() < 0.5;
 
                 charInfos.Add(new CharInfo(thisChar, boolVals));
             }
@@ -153,18 +104,18 @@ namespace AFPParser.Tests
             // Create an AFP font file (BFN, FND, FNC, FNM, FNO, FNP, FNIs, FNGs, EFN) using bool arrays as FNGs
             BFN newBFN = new BFN("BARCOD39");
 
-            FND newFND = new FND("Code 39 Barcode", 300);
+            FND newFND = new FND("Code 39 Barcode", 172);
 
-            ushort maxBitsWide = charInfos.Max(c => c.BitWidth);
-            ushort maxBitsTall = charInfos.Max(c => c.BitHeight);
+            ushort maxBitsWideIdx = (ushort)(charInfos.Max(c => c.BitWidth) - 1);
+            ushort maxBitsTallIdx = (ushort)(charInfos.Max(c => c.BitHeight) - 1);
             int totalRasterBytes = charInfos.Sum(c => c.RoundedBitWidth * c.BitHeight);
-            FNC newFNC = new FNC(maxBitsWide, maxBitsTall, totalRasterBytes);
+            FNC newFNC = new FNC(maxBitsWideIdx, maxBitsTallIdx, totalRasterBytes);
 
             uint curFNMIndex = 0;
             List<FNM.PatternData> fnmPatData = new List<FNM.PatternData>();
             foreach (CharInfo c in charInfos)
             {
-                fnmPatData.Add(new FNM.PatternData(c.BitWidth, c.BitHeight, curFNMIndex));
+                fnmPatData.Add(new FNM.PatternData((ushort)(c.BitWidth - 1), (ushort)(c.BitHeight - 1), curFNMIndex));
                 curFNMIndex += (uint)((c.RoundedBitWidth * c.BitHeight) / 8);
             }
             FNM newFNM = new FNM(fnmPatData);
@@ -220,6 +171,7 @@ namespace AFPParser.Tests
                                 bitRow.Add(c.RawBits[x + i, y]);
                             else
                                 bitRow.Add(false);
+                        if (BitConverter.IsLittleEndian) bitRow.Reverse();
                         new BitArray(bitRow.ToArray()).CopyTo(curByte, 0);
                         fngBytes.Add((byte)curByte[0]);
                     }

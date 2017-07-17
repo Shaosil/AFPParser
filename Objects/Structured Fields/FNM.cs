@@ -48,8 +48,8 @@ namespace AFPParser.StructuredFields
                 Data = new byte[_allPatternData.Count * 8];
                 for (int i = 0; i < value.Count; i++)
                 {
-                    PutNumberInData(value[i].BoxWidth, (i * 8));
-                    PutNumberInData(value[i].BoxHeight, (i * 8) + 2);
+                    PutNumberInData(value[i].BoxMaxWidthIndex, (i * 8));
+                    PutNumberInData(value[i].BoxMaxHeightIndex, (i * 8) + 2);
                     PutNumberInData(value[i].DataOffset, (i * 8) + 4);
                 }
             }
@@ -59,14 +59,14 @@ namespace AFPParser.StructuredFields
         [DebuggerDisplay("{BoxWidth}/{BoxHeight}/{DataOffset}")]
         public class PatternData
         {
-            public ushort BoxWidth { get; set; }
-            public ushort BoxHeight { get; set; }
+            public ushort BoxMaxWidthIndex { get; set; }
+            public ushort BoxMaxHeightIndex { get; set; }
             public uint DataOffset { get; set; }
 
-            public PatternData(ushort width, ushort height, uint offset)
+            public PatternData(ushort widthIndex, ushort heightIndex, uint offset)
             {
-                BoxWidth = width;
-                BoxHeight = height;
+                BoxMaxWidthIndex = widthIndex;
+                BoxMaxHeightIndex = heightIndex;
                 DataOffset = offset;
             }
         }

@@ -132,7 +132,7 @@ namespace AFPParser.Tests
             file.AddField(newNOP, insertIndex);
 
             // Ensure the new field has the expected container
-            Assert.IsNotNull(newNOP.LowestLevelContainer);
+            Assert.AreEqual(NOPContainer, newNOP.LowestLevelContainer);
         }
     }
 }

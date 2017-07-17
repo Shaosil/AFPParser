@@ -14,10 +14,10 @@ namespace AFPParser
         public abstract string Abbreviation { get; }
         protected override string StructureName => "Control Sequence";
 
-        public PTXControlSequence(byte id, bool isChained, byte[] data) : base(new byte[1] { id }, data)
+        public PTXControlSequence(byte id, bool hasPrefix, byte[] data) : base(new byte[1] { id }, data)
         {
             // Insert the prefix if necessary
-            if (!isChained) Introducer = Prefix.Concat(Introducer).ToArray();
+            if (hasPrefix) Introducer = Prefix.Concat(Introducer).ToArray();
         }
 
         protected override void SyncIntroducer()
@@ -52,11 +52,11 @@ namespace AFPParser
 
             // // The introducer will have a 2B D3 prefix when unchained
             int curIndex = 0;
-            bool isChained = false;
+            bool hasPrefix = true;
             while (curIndex < csData.Length)
             {
                 // If unchained, add 2 to every index since there is a prefix
-                int extraIndexes = isChained ? 0 : 2;
+                int extraIndexes = hasPrefix ? 2 : 0;
 
                 int length = csData[curIndex + extraIndexes];
                 byte csTypeByte = csData[curIndex + 1 + extraIndexes];
@@ -68,13 +68,13 @@ namespace AFPParser
                 // Build and add the sequence by data type
                 Type CSType = typeof(PTXControlSequences.UNKNOWN);
                 if (Lookups.PTXControlSequences.ContainsKey(csTypeByte)) CSType = Lookups.PTXControlSequences[csTypeByte];
-                PTXControlSequence sequence = (PTXControlSequence)Activator.CreateInstance(CSType, csTypeByte, isChained, data);
+                PTXControlSequence sequence = (PTXControlSequence)Activator.CreateInstance(CSType, csTypeByte, hasPrefix, data);
                 csiList.Add(sequence);
 
                 curIndex += length + extraIndexes;
 
                 // Set the prefix for the next sequence, dependant on chained status (chained if function type is odd)
-                isChained = csTypeByte % 2 == 1;
+                hasPrefix = csTypeByte % 2 != 1;
             }
 
             // Parse all data

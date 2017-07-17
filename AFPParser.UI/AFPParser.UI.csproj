@@ -58,6 +58,7 @@
     <Compile Include="FrmManageResources.Designer.cs">
       <DependentUpon>FrmManageResources.cs</DependentUpon>
     </Compile>
+    <Compile Include="Options.cs" />
     <Compile Include="PrintParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

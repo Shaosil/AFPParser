@@ -314,7 +314,6 @@
     <Compile Include="Objects\Helpers\Lookups.cs" />
     <Compile Include="Objects\Triplets\UP3iFinishingOperation.cs" />
     <Compile Include="Objects\Offset.cs" />
-    <Compile Include="Options.cs" />
     <Compile Include="AFPFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Objects\StructuredField.cs" />

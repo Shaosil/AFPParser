@@ -22,8 +22,8 @@ namespace AFPParser.PTXControlSequences
             private set { Data[0] = value; }
         }
 
-        public SCFL(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+        public SCFL(byte id, bool hasPrefix, byte[] data) : base(id, hasPrefix, data) { }
 
-        public SCFL(byte fontId, bool isChained) : base(Lookups.PTXControlSequenceID<SCFL>(), isChained, new byte[1] { fontId }) { }
+        public SCFL(byte fontId, bool hasPrefix, bool isChained) : base(Lookups.PTXControlSequenceID<SCFL>(isChained), hasPrefix, new byte[1] { fontId }) { }
     }
 }

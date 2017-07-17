@@ -15,6 +15,6 @@ namespace AFPParser.PTXControlSequences
         public override string Description => _desc;
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
-        public NOP(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+        public NOP(byte id, bool hasPrefix, byte[] data) : base(id, hasPrefix, data) { }
     }
 }

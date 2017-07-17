@@ -29,7 +29,7 @@ namespace AFPParser.Containers
 
                     // Create an empty array of bools from our box width and height
                     // The array sizes are the number of bits in the minimum number of bytes required to support the bit size
-                    int numBitsWide = (int)Math.Ceiling((patternsMap.AllPatternData[i].BoxWidth + 1) / 8.0) * 8;
+                    int numBitsWide = (int)Math.Ceiling((patternsMap.AllPatternData[i].BoxMaxWidthIndex + 1) / 8.0) * 8;
                     int numRows = bytesToTake / (numBitsWide / 8);
                     bool[,] curPattern = new bool[numBitsWide, numRows];
                     for (int y = 0; y < numRows; y++)

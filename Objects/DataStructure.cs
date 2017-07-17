@@ -216,9 +216,12 @@ namespace AFPParser
         {
             // Convert to whatever numeric type it is
             byte[] numBytes = null;
-            if (num is byte || num is sbyte) numBytes = BitConverter.GetBytes(Convert.ToByte(num));
-            else if (num is ushort || num is short) numBytes = BitConverter.GetBytes(Convert.ToInt16(num));
-            else if (num is uint || num is int) numBytes = BitConverter.GetBytes(Convert.ToInt32(num));
+            if (num is byte) numBytes = BitConverter.GetBytes(Convert.ToByte(num));
+            else if (num is sbyte) numBytes = BitConverter.GetBytes(Convert.ToSByte(num));
+            else if (num is ushort) numBytes = BitConverter.GetBytes(Convert.ToUInt16(num));
+            else if (num is short) numBytes = BitConverter.GetBytes(Convert.ToInt16(num));
+            else if (num is uint) numBytes = BitConverter.GetBytes(Convert.ToUInt32(num));
+            else if (num is int) numBytes = BitConverter.GetBytes(Convert.ToInt32(num));
 
             if (numBytes != null && Data.Length >= startIndex + numBytes.Length)
             {

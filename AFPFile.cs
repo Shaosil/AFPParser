@@ -1,4 +1,5 @@
 ﻿using AFPParser.Containers;
+using AFPParser.PTXControlSequences;
 using AFPParser.StructuredFields;
 using System;
 using System.Collections.Generic;
@@ -304,6 +305,47 @@ namespace AFPParser
                 }
 
             return encoded.ToArray();
+        }
+
+        public void AddText(Container pageContainer, string fontCharacterSet, short inline, short baseline,
+        string text, Encoding encoding, short interCharSpacing = 0, string codePage = "T1DM1252",
+        CommonMappings.eRotations inlineRotation = CommonMappings.eRotations.Zero,
+        CommonMappings.eRotations baselineRotation = CommonMappings.eRotations.Ninety)
+        {
+            // Make sure the inline/baseline rotations are parallel
+            bool inlineIsHorizontal = inlineRotation == CommonMappings.eRotations.Zero || inlineRotation == CommonMappings.eRotations.OneEighty;
+            bool baselineIsHorizontal = baselineRotation == CommonMappings.eRotations.Zero || baselineRotation == CommonMappings.eRotations.OneEighty;
+            if (inlineIsHorizontal == baselineIsHorizontal)
+                throw new Exception("Error: Inline and baseline rotations must be parallel to each other.");
+
+            // Find the MCF-1 field on this page
+            MCF1 mcf = pageContainer.GetStructure<MCF1>();
+            IReadOnlyList<MCF1.MCF1Data> mcfData = mcf?.MappedData;
+            if (mcfData == null)
+                throw new Exception("Error: MCF-1 field could not be found in the specified page.");
+
+            // If the specified font character set does not exist, create it
+            byte fontId = mcfData.FirstOrDefault(m => m.FontCharacterSetName == fontCharacterSet)?.ID
+                ?? mcf.AddFontDefinition(string.Empty, codePage, fontCharacterSet);
+
+            // Add several sequences to the list based on passed parameters
+            List<PTXControlSequence> newSequences = new List<PTXControlSequence>();
+            newSequences.Add(new SCFL(fontId, true, true));
+            newSequences.Add(new AMI(inline, false, true));
+            newSequences.Add(new AMB(baseline, false, true));
+            newSequences.Add(new STO(inlineRotation, baselineRotation, false, true));
+            if (interCharSpacing != 0) newSequences.Add(new SIA(interCharSpacing, false, true));
+            newSequences.Add(new TRN(encoding.GetBytes(text), false, false));
+
+            // Create a new BPT/PTX/EPT at the end of this page
+            int indexToInsert = 0;
+            for (int i = 0; i < Fields.Count; i++)
+                if (Fields[i] == pageContainer.Structures.Last())
+                {
+                    indexToInsert = i;
+                    break;
+                }
+            AddFields(new List<StructuredField>() { new BPT(), new PTX(newSequences), new EPT() }, indexToInsert);
         }
 
         public class Resource

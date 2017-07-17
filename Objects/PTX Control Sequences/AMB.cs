@@ -27,9 +27,9 @@ namespace AFPParser.PTXControlSequences
             }
         }
 
-        public AMB(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+        public AMB(byte id, bool hasPrefix, byte[] data) : base(id, hasPrefix, data) { }
 
-        public AMB(short displacement, bool isChained) : base(Lookups.PTXControlSequenceID<AMB>(), isChained, null)
+        public AMB(short displacement, bool hasPrefix, bool isChained) : base(Lookups.PTXControlSequenceID<AMB>(isChained), hasPrefix, null)
         {
             Data = new byte[2];
             Displacement = displacement;

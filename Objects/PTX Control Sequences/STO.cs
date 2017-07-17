@@ -27,7 +27,7 @@ namespace AFPParser.PTXControlSequences
                 _iDegrees = value;
 
                 // Update data stream - see ParseData() for info on bits
-                PutNumberInData(value << 7, 0);
+                PutNumberInData((ushort)(value << 7), 0);
             }
         }
         public ushort BDegrees
@@ -38,13 +38,14 @@ namespace AFPParser.PTXControlSequences
                 _bDegrees = value;
 
                 // Update data stream - see ParseData() for info on bits
-                PutNumberInData(value << 7, 2);
+                PutNumberInData((ushort)(value << 7), 2);
             }
         }
 
-        public STO(byte id, bool isChained, byte[] data) : base(id, isChained, data) { }
+        public STO(byte id, bool hasPrefix, byte[] data) : base(id, hasPrefix, data) { }
 
-        public STO(CommonMappings.eRotations iOrient, CommonMappings.eRotations bOrient, bool isChained) : base(Lookups.PTXControlSequenceID<STO>(), isChained, null)
+        public STO(CommonMappings.eRotations iOrient, CommonMappings.eRotations bOrient, bool hasPrefix, bool isChained)
+            : base(Lookups.PTXControlSequenceID<STO>(isChained), hasPrefix, null)
         {
             Data = new byte[4];
 

@@ -138,7 +138,7 @@ namespace AFPParser.StructuredFields
                 PutNumberInData((ushort)value, 8);
             }
         }
-        public ushort MaxBoxWidth
+        public ushort MaxBoxWidthIndex
         {
             get { return _maxCharBoxWidth; }
             private set
@@ -147,7 +147,7 @@ namespace AFPParser.StructuredFields
                 PutNumberInData(value, 10);
             }
         }
-        public ushort MaxBoxHeight
+        public ushort MaxBoxHeightIndex
         {
             get { return _maxCharBoxHeight; }
             private set
@@ -219,8 +219,8 @@ namespace AFPParser.StructuredFields
             YUnitBase = eUnitBase.RelativeMetrics;
             XUnits = eUnits.OneThousandUnitsPerEm;
             YUnits = eUnits.OneThousandUnitsPerEm;
-            MaxBoxWidth = maxBitWidth;
-            MaxBoxHeight = maxBitHeight;
+            MaxBoxWidthIndex = maxBitWidth;
+            MaxBoxHeightIndex = maxBitHeight;
             FNORGLength = 26; // Constant
             FNIRGLength = 28; // Constant for raster
             PatternAlignment = ePatternAlignment.OneByte;
