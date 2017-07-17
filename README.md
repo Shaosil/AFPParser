@@ -3,8 +3,7 @@ Parses IBM AFP files line by line<br/>
 <br/>
 This project is my attempt to better understand the structure of AFP files.<br/>
 
-There are well over 1,500 pages of documentation on how to decode sections and bytes of AFP located on their official site<br/>
-<a href="http://afpcinc.org/publications/">here,</a> and I have included some of the most important ones in the project directory<br/> under ./Reference Manuals/.<br/>
+There are well over 1,500 pages of documentation on how to decode sections and bytes of AFP located on their official site <a href="http://afpcinc.org/publications/">here,</a> and I have included some of the most important ones in the project directory under ./Reference Manuals/.<br/>
 <br/>
 <b>Current Progress</b><br/>
 <ul>
