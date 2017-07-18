@@ -67,9 +67,8 @@ namespace AFPParser
                 if (beginCodes.Contains(id))
                     activeContainers.Add(sdf.NewContainer);
 
-                // Set lowest level container, if any
-                if (activeContainers.Any())
-                    sdf.LowestLevelContainer = activeContainers.Last();
+                // Sync active containers
+                sdf.Containers = new List<Container>(activeContainers);
 
                 // Add this field to all containers
                 foreach (Container c in activeContainers)

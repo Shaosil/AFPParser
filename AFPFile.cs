@@ -12,11 +12,13 @@ namespace AFPParser
     public class AFPFile
     {
         private List<StructuredField> _fields;
+        private List<string> _validationMessages;
 
         public event Action<string> ErrorEvent;
         public IReadOnlyList<StructuredField> Fields => _fields;
         public List<string> ResourceDirectories { get; set; }
         public IReadOnlyList<Resource> Resources { get; private set; }
+        public IReadOnlyList<string> ValidationMessages => _validationMessages;
 
         public AFPFile()
         {
@@ -25,7 +27,7 @@ namespace AFPParser
             Resources = new List<Resource>();
         }
 
-        public bool LoadData(string path, bool parseData)
+        public bool LoadData(string path, bool parseData = false)
         {
             try
             {
@@ -155,13 +157,15 @@ namespace AFPParser
                 foreach (Container c in activeContainers.Where(c => !c.Structures.Contains(sf)))
                     c.Structures.Add(sf);
 
-                // Set the lowest level container if there are any, and the field doesn't already have one
-                if (activeContainers.Any() && sf.LowestLevelContainer == null)
-                    sf.LowestLevelContainer = activeContainers.Last();
+                // Set the field's container list to the currently active ones
+                sf.Containers = new List<Container>(activeContainers);
 
-                // If this is an END tag, remove the last container from our active container list
+                // If this is an END tag, remove the last matching container from our active container list
                 if (sf.HexID[1] == 0xA9)
-                    activeContainers.Remove(activeContainers.Last());
+                {
+                    Container matchingBegin = activeContainers.LastOrDefault(c => c.Structures[0].HexID[2] == sf.HexID[2]);
+                    if (matchingBegin != null) activeContainers.Remove(matchingBegin);
+                }
             }
         }
 
@@ -301,7 +305,7 @@ namespace AFPParser
             foreach (Container c in _fields
             .Select(f => f.LowestLevelContainer)
             .Distinct()
-            .Where(cn => cn.Structures.Contains(field)))
+            .Where(cn => cn != null && cn.Structures.Contains(field)))
                 c.Structures.Remove(field);
 
             // Sync containers
@@ -316,7 +320,7 @@ namespace AFPParser
         {
             List<byte> encoded = new List<byte>();
 
-            if (Fields != null)
+            if (Fields != null && Validates())
                 foreach (StructuredField field in Fields)
                 {
                     encoded.Add(0x5A);
@@ -382,16 +386,66 @@ namespace AFPParser
         }
 
         /// <summary>
-        /// Will throw an exception if any Structured Field in the file is in a place (container) that it should not be, architecturally.
+        /// Will ensure all Structured Fields in the file are in a place (container) that they should not be, architecturally.
+        /// All error messages are added to the list of validation issues
         /// Object and container heirarchy can be found in the MO:DCA documentation
         /// </summary>
-        private void ValidateHeirarchy()
+        /// <returns>True if all validation passes</returns>
+        public bool Validates()
         {
-            // TODO
+            _validationMessages = new List<string>();
 
             // Ensure all containers have open/close tags
+            foreach (Container c in Fields.Select(f => f.LowestLevelContainer).Distinct())
+                if (c.Structures.Any() && (c.Structures[0].HexID[1] != 0xA8 || c.Structures.Last().HexID[1] != 0xA9))
+                {
+                    _validationMessages.Add("One or more containers are missing a proper begin and/or end tag.");
+                    break;
+                }
 
-            // Validate each field's positioning
+            // Make sure each begin tag has a container with a matching end tag, and vice versa
+            foreach (StructuredField beginOrEnd in Fields.Where(f => f.HexID[1] == 0xA8 || f.HexID[1] == 0xA9))
+                if (beginOrEnd.LowestLevelContainer == null || !beginOrEnd.LowestLevelContainer.Structures.Any()    // Container and its structures exist
+                || (beginOrEnd.HexID[1] == 0xA8 && beginOrEnd.LowestLevelContainer.Structures[0] != beginOrEnd)     // If begin, first structure is itself
+                || (beginOrEnd.HexID[1] == 0xA9 && beginOrEnd.LowestLevelContainer.Structures.Last() != beginOrEnd) // If end, last structure is itself
+                || beginOrEnd.LowestLevelContainer.Structures[0].HexID[2] != beginOrEnd.LowestLevelContainer.Structures.Last().HexID[2]) // Begin/end are same type
+                {
+                    _validationMessages.Add($"One or more begin/end tags are not enveloped in a proper container.");
+                    break;
+                }
+
+            // Validate each field's positioning in the defined architecture (skip end tags and NOPs
+            foreach (StructuredField field in Fields.Where(f => f.GetType() != typeof(StructuredFields.NOP) && f.HexID[1] != 0xA9))
+            {
+                Type fieldType = field.GetType();
+                StructuredField parentField = (StructuredField)(field.HexID[1] == 0xA8 ? field.ParentContainer?.Structures[0] : field.LowestLevelContainer?.Structures[0]);
+                Type parentType = parentField?.GetType();
+
+                if (parentType == null)
+                {
+                    // If this is a print file, or a type that is a child of print file, ignore. BPF/EPF tags are not necessary
+                    List<Type> subPFTypes = Lookups.FieldsParentOptions.Where(f => f.Value.Contains(typeof(BPF))).Select(f => f.Key).ToList();
+
+                    if (fieldType != typeof(BPF) && !subPFTypes.Contains(fieldType))
+                        _validationMessages.Add($"A {field.Abbreviation} field has no parent container.");
+                }
+                else
+                {
+                    // Verify the existing parent container type (if begin tag), or lowest container type is in the list of accepted parent objects
+                    if (Lookups.FieldsParentOptions.ContainsKey(fieldType))
+                    {
+                        if (!Lookups.FieldsParentOptions[fieldType].Contains(parentType))
+                            _validationMessages.Add($"A {field.Abbreviation} field has an incorrect parent container of type {parentField.Abbreviation}. " +
+                                $"Accepted types are: {string.Join(", ", Lookups.FieldsParentOptions[fieldType].Select(t => t.Name))}.");
+                    }
+
+                    // Disable the "missing lookup" validation - we might not be able to cover every scenario
+                    //else
+                    //    _validationMessages.Add($"Field type {field.Abbreviation} has no heirarchy information in the lookup table.");
+                }
+            }
+
+            return !_validationMessages.Any();
         }
 
         #endregion

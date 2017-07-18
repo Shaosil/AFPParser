@@ -65,14 +65,15 @@ namespace AFPParser.Tests
             // Load file
             file.LoadData(testFilePath, false);
 
-            // Delete ALL NOPs
-            List<NOP> NOPs = file.Fields.OfType<NOP>().ToList();
-            Assert.IsTrue(NOPs.Any());
-            foreach (NOP n in NOPs)
-                file.DeleteField(n);
+            // Delete all presentation text containers
+            List<StructuredField> textFields = file.Fields.Where(f => f.LowestLevelContainer != null 
+                && f.LowestLevelContainer.Structures[0].GetType() == typeof(BPT)).ToList();
+            Assert.IsTrue(textFields.Any());
+            foreach (StructuredField f in textFields)
+                file.DeleteField(f);
 
             // Make sure they are gone
-            Assert.IsFalse(file.Fields.OfType<NOP>().Any());
+            Assert.IsFalse(file.Fields.Any(f => f.LowestLevelContainer != null && f.LowestLevelContainer.Structures[0].GetType() == typeof(BPT)));
         }
 
         [TestMethod]

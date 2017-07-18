@@ -62,7 +62,16 @@ namespace AFPParser
         protected abstract string StructureName { get; }
 
         // Container info
-        public Container LowestLevelContainer { get; set; }
+        public List<Container> Containers { get; set; }
+        public Container LowestLevelContainer => Containers.Any() ? Containers.Last() : null;
+        public Container ParentContainer
+        {
+            get
+            {
+                int parentIndex = Containers.Count - 2;
+                return parentIndex >= 0 ? Containers[parentIndex] : null;
+            }
+        }
         public Container NewContainer
         {
             get
@@ -81,6 +90,7 @@ namespace AFPParser
         {
             HexID = hexID ?? new byte[0];
             Data = data ?? new byte[0];
+            Containers = new List<Container>();
         }
 
         public abstract void ParseData();

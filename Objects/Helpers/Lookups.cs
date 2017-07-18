@@ -13,6 +13,126 @@ namespace AFPParser
     {
         public enum DataTypes { EMPTY, BITS, CHAR, CODE, TRIPS, IMAGESDFS, UBIN, SBIN, COLOR };
 
+        #region Print File Heirarchy
+        // Associates a type (standalone or begin container tag) with one or more parent begin types that may contain it.
+        public static IReadOnlyDictionary<Type, Type[]> FieldsParentOptions = new Dictionary<Type, Type[]>()
+        {
+            // Print File
+            { typeof(BRG), new[] { typeof(BPF) } },
+            { typeof(BDI), new[] { typeof(BPF) } },
+
+            // Resource Group/Resource
+            { typeof(BRS), new[] { typeof(BRG) } },
+            { typeof(BMO), new[] { typeof(BRS) } },
+            { typeof(BPS), new[] { typeof(BRS) } },
+            { typeof(BFM), new[] { typeof(BRS) } },
+            { typeof(BCF), new[] { typeof(BRS) } },
+            { typeof(BCP), new[] { typeof(BRS) } },
+            { typeof(BFN), new[] { typeof(BRS) } },
+            { typeof(BII), new[] { typeof(BRS) } },
+            
+            // Document index
+            { typeof(IEL), new[] { typeof(BDI) } },
+
+            // Resource environment group
+            { typeof(PPO), new[] { typeof(BSG) } },
+
+            // Page
+            { typeof(IPO), new[] { typeof(BPG) } },
+
+            // Barcode, graphics, image, and presentation text objects
+            { typeof(BDA), new[] { typeof(BBC) } },
+            { typeof(GAD), new[] { typeof(BGR) } },
+            { typeof(IPD), new[] { typeof(BIM) } },
+            { typeof(PTX), new[] { typeof(BPT) } },
+            { typeof(OCD), new[] { typeof(BOC) } },
+            { typeof(IOC), new[] { typeof(BII) } },
+            { typeof(IID), new[] { typeof(BII) } },
+            { typeof(ICP), new[] { typeof(BII) } },
+            { typeof(IRD), new[] { typeof(BII) } },
+
+            // Font objects
+            { typeof(CFC), new[] { typeof(BCF) } },
+            { typeof(CFI), new[] { typeof(BCF) } },
+            { typeof(ECF), new[] { typeof(BCF) } },
+            { typeof(CPD), new[] { typeof(BCP) } },
+            { typeof(CPC), new[] { typeof(BCP) } },
+            { typeof(CPI), new[] { typeof(BCP) } },
+            { typeof(ECP), new[] { typeof(BCP) } },
+            { typeof(FND), new[] { typeof(BFN) } },
+            { typeof(FNC), new[] { typeof(BFN) } },
+            { typeof(FNM), new[] { typeof(BFN) } },
+            { typeof(FNO), new[] { typeof(BFN) } },
+            { typeof(FNP), new[] { typeof(BFN) } },
+            { typeof(FNI), new[] { typeof(BFN) } },
+            { typeof(FNN), new[] { typeof(BFN) } },
+            { typeof(FNG), new[] { typeof(BFN) } },
+            { typeof(EFN), new[] { typeof(BFN) } },
+
+            // Active environment group
+            { typeof(MPS), new[] { typeof(BAG) } },
+            { typeof(PGD), new[] { typeof(BAG) } },
+            { typeof(PTD1), new[] { typeof(BAG) } },
+            { typeof(PTD2), new[] { typeof(BAG) } },
+            { typeof(MCF1), new[] { typeof(BAG) } },
+            { typeof(MCF2), new[] { typeof(BAG) } },
+
+            // Object environment group
+            { typeof(MBC), new[] { typeof(BOG) } },
+            { typeof(BDD), new[] { typeof(BOG) } },
+            { typeof(MGO), new[] { typeof(BOG) } },
+            { typeof(GDD), new[] { typeof(BOG) } },
+            { typeof(MIO), new[] { typeof(BOG) } },
+            { typeof(IDD), new[] { typeof(BOG) } },
+            { typeof(MCD), new[] { typeof(BOG) } },
+            { typeof(CDD), new[] { typeof(BOG) } },
+
+            // Form map
+            { typeof(BDG), new[] { typeof(BFM) } },
+
+            // Document environment group
+            { typeof(PFC), new[] { typeof(BDG) } },
+            { typeof(MSU), new[] { typeof(BDG) } },
+
+            // Medium Map
+            { typeof(MMT), new[] { typeof(BMM) } },
+            { typeof(MCC), new[] { typeof(BMM) } },
+            { typeof(MMC), new[] { typeof(BMM) } },
+            { typeof(PMC), new[] { typeof(BMM) } },
+
+            // Multiple parent options for containers
+            { typeof(BDT), new[] { typeof(BPF), typeof(BRG) } }, // Document container
+            { typeof(BBC), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // Barcode container
+            { typeof(BGR), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // Graphics container
+            { typeof(BIM), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // Image container
+            { typeof(BOC), new[] { typeof(BRS), typeof(BPG), typeof(BMO) } }, // Object container
+            { typeof(BMM), new[] { typeof(BDT), typeof(BNG), typeof(BFM) } }, // Medium map container
+            { typeof(BSG), new[] { typeof(BDT), typeof(BNG) } }, // Resource Environment group container
+            { typeof(BPG), new[] { typeof(BDT), typeof(BNG) } }, // Page container
+            { typeof(BNG), new[] { typeof(BDT), typeof(BNG) } }, // Page group container
+            { typeof(BAG), new[] { typeof(BPG), typeof(BMO) } }, // Active environment container
+            { typeof(BPT), new[] { typeof(BPG), typeof(BMO) } }, // Presentation text container
+            { typeof(BOG), new[] { typeof(BBC), typeof(BGR), typeof(BIM), typeof(BOC) } }, // Object environment group container
+
+            // Multiple parent options for individual fields
+            { typeof(IMM), new[] { typeof(BDT), typeof(BNG) } }, // Invoke medium map
+            { typeof(LLE), new[] { typeof(BDT), typeof(BDI), typeof(BPG), typeof(BNG), typeof(BMO) } }, // Link logical element
+            { typeof(TLE), new[] { typeof(BDI), typeof(BPG), typeof(BNG), typeof(BMO) } }, // Tag logical element
+            { typeof(MDR), new[] { typeof(BSG), typeof(BAG), typeof(BOG), typeof(BDG), typeof(BMM) } }, // Map data resource
+            { typeof(MPO), new[] { typeof(BSG), typeof(BAG), typeof(BMM) } }, // Map page overlay
+            { typeof(IOB), new[] { typeof(BPG), typeof(BMO) } }, // Include object
+            { typeof(IPS), new[] { typeof(BPG), typeof(BMO) } }, // Include page segment
+            { typeof(PEC), new[] { typeof(BAG), typeof(BOG), typeof(BDG), typeof(BMM) } }, // Presentation environment control
+            { typeof(OBD), new[] { typeof(BAG), typeof(BOG) } }, // Object area descriptor
+            { typeof(OBP), new[] { typeof(BAG), typeof(BOG) } }, // Object area position
+            { typeof(MMO), new[] { typeof(BDG), typeof(BMM) } }, // Map medium overlay
+            { typeof(PGP1), new[] { typeof(BDG), typeof(BMM) } }, // Page position format 1
+            { typeof(PGP2), new[] { typeof(BDG), typeof(BMM) } }, // Page position format 2
+            { typeof(MDD), new[] { typeof(BDG), typeof(BMM) } }, // Medium descriptor
+            { typeof(MFC), new[] { typeof(BDG), typeof(BMM) } } // Medium finishing control
+        };
+        #endregion
+
         #region Structured Fields
         public static IReadOnlyDictionary<string, Type> StructuredFields = new Dictionary<string, Type>()
         {
@@ -374,7 +494,7 @@ namespace AFPParser
         #endregion
 
         #region OIDs
-        public static Dictionary<string, string> OIDs = new Dictionary<string, string>()
+        public static IReadOnlyDictionary<string, string> OIDs = new Dictionary<string, string>()
         {
             { "06072B120004010105", "IOCA FS10" },
             { "06072B12000401010B", "IOCA FS11" },
