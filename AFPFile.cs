@@ -258,6 +258,13 @@ namespace AFPParser
             return rType;
         }
 
+        #region File/Field Manipulation
+
+        /// <summary>
+        /// Inserts a field at the specified index in the existing list of Structured Fields
+        /// </summary>
+        /// <param name="newField"></param> The field that will be inserted
+        /// <param name="index"></param> The index at which to insert the new field. Will push existing items down from index position and on.
         public void AddField(StructuredField newField, int index)
         {
             // Insert at specified index
@@ -267,6 +274,11 @@ namespace AFPParser
             SetupContainers(_fields);
         }
 
+        /// <summary>
+        /// Inserts a List of fields at a specified index.
+        /// </summary>
+        /// <param name="newFields"></param> The group of fields that will be inserted
+        /// <param name="index"></param> The index at which to insert the new fields. Will push existing items down from index position and on after all new fields.
         public void AddFields(List<StructuredField> newFields, int index)
         {
             // Insert all, starting at specified index
@@ -277,6 +289,10 @@ namespace AFPParser
             SetupContainers(_fields);
         }
 
+        /// <summary>
+        /// Removes a field from the list of structured fields
+        /// </summary>
+        /// <param name="field"></param> The field that will be removed from the list.
         public void DeleteField(StructuredField field)
         {
             _fields.Remove(field);
@@ -292,6 +308,10 @@ namespace AFPParser
             SetupContainers(_fields);
         }
 
+        /// <summary>
+        /// Encodes the existing list of Structured Fields back to a raw byte stream, complete with prefixes, introducers, and data for each line item.
+        /// </summary>
+        /// <returns>A byte stream containing the raw AFP data, able to be saved to a file</returns>
         public byte[] EncodeData()
         {
             List<byte> encoded = new List<byte>();
@@ -307,6 +327,19 @@ namespace AFPParser
             return encoded.ToArray();
         }
 
+        /// <summary>
+        /// Adds a string to the a location on a page, using a specific encoding.
+        /// </summary>
+        /// <param name="pageContainer"></param> The container of the page which will contain the specified text
+        /// <param name="fontCharacterSet"></param> The name of the Font Character Set resource file. Will create a new MCF record if needed.
+        /// <param name="inline"></param> The inline (relative horizontal) position offset of the text
+        /// <param name="baseline"></param> The baseline (relative vertical) position offset of the text
+        /// <param name="text"></param> The string to encode
+        /// <param name="encoding"></param> The type of encoding to map characters to. Must correspond to code page mapping parameter.
+        /// <param name="interCharSpacing"></param> If specified, overrides the default intercharacter spacing of 0
+        /// <param name="codePage"></param> The code page to use when decoding bytes to LIDs
+        /// <param name="inlineRotation"></param> The inline (relative horizontal) direction of the text. Must be parallel to baseline rotation.
+        /// <param name="baselineRotation"></param> The baseline (relative vertical) direction of the text. Must be parallel to inline rotation.
         public void AddText(Container pageContainer, string fontCharacterSet, short inline, short baseline,
         string text, Encoding encoding, short interCharSpacing = 0, string codePage = "T1DM1252",
         CommonMappings.eRotations inlineRotation = CommonMappings.eRotations.Zero,
@@ -347,6 +380,21 @@ namespace AFPParser
                 }
             AddFields(new List<StructuredField>() { new BPT(), new PTX(newSequences), new EPT() }, indexToInsert);
         }
+
+        /// <summary>
+        /// Will throw an exception if any Structured Field in the file is in a place (container) that it should not be, architecturally.
+        /// Object and container heirarchy can be found in the MO:DCA documentation
+        /// </summary>
+        private void ValidateHeirarchy()
+        {
+            // TODO
+
+            // Ensure all containers have open/close tags
+
+            // Validate each field's positioning
+        }
+
+        #endregion
 
         public class Resource
         {
