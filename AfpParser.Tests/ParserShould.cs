@@ -66,7 +66,7 @@ namespace AFPParser.Tests
             file.LoadData(testFilePath, false);
 
             // Delete all presentation text containers
-            List<StructuredField> textFields = file.Fields.Where(f => f.LowestLevelContainer != null 
+            List<StructuredField> textFields = file.Fields.Where(f => f.LowestLevelContainer != null
                 && f.LowestLevelContainer.Structures[0].GetType() == typeof(BPT)).ToList();
             Assert.IsTrue(textFields.Any());
             foreach (StructuredField f in textFields)
@@ -164,10 +164,20 @@ namespace AFPParser.Tests
             Assert.IsTrue(file.Validates());
 
             // Try adding a TLE field to the top of the file
-            file.AddField(StructuredField.New<TLE>(), 0);
+            TLE newTLE = StructuredField.New<TLE>();
+            file.AddField(newTLE, 0);
 
             // Ensure it does not validate
             Assert.IsFalse(file.Validates());
+
+            // Delete that field, and add it in a place where it is allowed to be (in this case, after a BPG)
+            file.DeleteField(newTLE);
+            int newIndex = 0;
+            for (int i = 0; i < file.Fields.Count; i++)
+                if (file.Fields[i] is BPG) { newIndex = i + 1; break; }
+            file.AddField(newTLE, newIndex);
+
+            Assert.IsTrue(file.Validates());
         }
     }
 }

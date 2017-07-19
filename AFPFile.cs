@@ -155,7 +155,13 @@ namespace AFPParser
 
                 // Add this field (if new) to each active container's list of fields
                 foreach (Container c in activeContainers.Where(c => !c.Structures.Contains(sf)))
-                    c.Structures.Add(sf);
+                {
+                    // Make sure it is added BEFORE any end tags
+                    if (c.DirectStructures.Any(s => s.HexID[1] == 0xA9))
+                        c.Structures.Insert(c.Structures.Count - 1, sf);
+                    else
+                        c.Structures.Add(sf);
+                }
 
                 // Set the field's container list to the currently active ones
                 sf.Containers = new List<Container>(activeContainers);
