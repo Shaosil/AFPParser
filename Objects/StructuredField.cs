@@ -51,6 +51,8 @@ namespace AFPParser
 
         public static T New<T>() where T : StructuredField
         {
+            // Be careful calling this function - as it creates no data, mandatory semantic information can easily be mistakenly left out for certain fields
+
             // Pass the byte array ID, no flag, no sequence, and no data
             T newField = (T)Activator.CreateInstance(typeof(T), Lookups.StructuredFieldID<T>(), (byte)0, (ushort)0, new byte[0]);
 

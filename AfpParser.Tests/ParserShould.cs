@@ -135,5 +135,39 @@ namespace AFPParser.Tests
             // Ensure the new field has the expected container
             Assert.AreEqual(NOPContainer, newNOP.LowestLevelContainer);
         }
+
+        [TestMethod]
+        public void Validate()
+        {
+            // Load the sample file data
+            file.LoadData(testFilePath, false);
+
+            // Ensure it validates
+            Assert.IsTrue(file.Validates());
+
+            // Remove the first container information from all fields it contains
+            Container c = file.Fields.First(f => f.LowestLevelContainer != null).LowestLevelContainer;
+            foreach (DataStructure s in c.Structures)
+                s.Containers.Remove(c);
+
+            // it should no longer validate
+            Assert.IsFalse(file.Validates());
+
+            // Reload data
+            file.LoadData(testFilePath, false);
+
+            // Surround the file with BPF/EPF tags
+            file.AddField(StructuredField.New<BPF>(), 0);
+            file.AddField(StructuredField.New<EPF>(), file.Fields.Count);
+
+            // Check it still validates (container info should have been updated)
+            Assert.IsTrue(file.Validates());
+
+            // Try adding a TLE field to the top of the file
+            file.AddField(StructuredField.New<TLE>(), 0);
+
+            // Ensure it does not validate
+            Assert.IsFalse(file.Validates());
+        }
     }
 }

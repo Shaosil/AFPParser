@@ -396,7 +396,7 @@ namespace AFPParser
             _validationMessages = new List<string>();
 
             // Ensure all containers have open/close tags
-            foreach (Container c in Fields.Select(f => f.LowestLevelContainer).Distinct())
+            foreach (Container c in Fields.Where(f => f.LowestLevelContainer != null).Select(f => f.LowestLevelContainer).Distinct())
                 if (c.Structures.Any() && (c.Structures[0].HexID[1] != 0xA8 || c.Structures.Last().HexID[1] != 0xA9))
                 {
                     _validationMessages.Add("One or more containers are missing a proper begin and/or end tag.");
