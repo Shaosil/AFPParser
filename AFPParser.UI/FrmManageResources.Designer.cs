@@ -66,7 +66,7 @@
             // 
             // lstDirectories
             // 
-            this.lstDirectories.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lstDirectories.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lstDirectories.FormattingEnabled = true;
             this.lstDirectories.Location = new System.Drawing.Point(12, 12);
@@ -123,7 +123,7 @@
             // 
             // resourceBindingSource
             // 
-            this.resourceBindingSource.DataSource = typeof(AFPParser.AFPFile.Resource);
+            this.resourceBindingSource.DataSource = typeof(AFPParser.UI.Resource);
             // 
             // lblResources
             // 

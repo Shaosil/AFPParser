@@ -1,9 +1,7 @@
-using AFPParser.Containers;
 using System.Collections.Generic;
 
 namespace AFPParser.StructuredFields
 {
-    [ContainerType(typeof(FontObjectContainer))]
     public class BFN : StructuredField
     {
         private static string _abbr = "BFN";

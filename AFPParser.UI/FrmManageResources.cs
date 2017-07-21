@@ -1,18 +1,17 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
-using System.ComponentModel;
-using System.Collections.Generic;
 
 namespace AFPParser.UI
 {
     public partial class FrmManageResources : Form
     {
         private BindingList<string> resourceDirectories;
-        private AFPFile File;
+        private RenderableAFPFile File;
         private Options options;
 
-        public FrmManageResources(AFPFile file, Options opts)
+        public FrmManageResources(RenderableAFPFile file, Options opts)
         {
             InitializeComponent();
             File = file;

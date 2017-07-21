@@ -1,5 +1,4 @@
-﻿using AFPParser.Containers;
-using AFPParser.StructuredFields;
+﻿using AFPParser.StructuredFields;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -16,7 +15,7 @@ namespace AFPParser.UI
 
         private readonly string optionsFile = Environment.CurrentDirectory + "\\Options.xml";
         private Options opts;
-        private AFPFile afpFile;
+        private RenderableAFPFile afpFile;
         private PrintParser printParser;
         private eFileType DocType;
 
@@ -27,7 +26,7 @@ namespace AFPParser.UI
             // Store things like last opened directory
             opts = Options.LoadSettings(optionsFile);
 
-            afpFile = new AFPFile();
+            afpFile = new RenderableAFPFile();
             if (opts.ResourceDirectories.Any()) afpFile.ResourceDirectories = opts.ResourceDirectories;
             afpFile.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
         }
@@ -186,10 +185,7 @@ namespace AFPParser.UI
                 case eFileType.IMImage:
                     int fileCounter = 1;
 
-                    List<IOCAImageContainer> iocs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<IOCAImageContainer>().Distinct().ToList();
-                    List<IMImageContainer> imcs = afpFile.Fields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().Distinct().ToList();
-
-                    if (iocs.Any() || imcs.Any())
+                    if (afpFile.ParsedImages.Any() || afpFile.ParsedIMImages.Any())
                     {
                         Cursor = Cursors.WaitCursor;
 
@@ -201,14 +197,14 @@ namespace AFPParser.UI
                         // Generate a .png from the image data and save it to the exe directory
                         if (DocType == eFileType.IOCAImage)
                         {
-                            foreach (IOCAImageContainer ioc in iocs)
+                            foreach (KeyValuePair<Container, IReadOnlyList<ImageInfo>> kvp in afpFile.ParsedImages)
                             {
-                                foreach (ImageContentContainer.ImageInfo image in ioc.Images)
+                                foreach (ImageInfo image in kvp.Value)
                                 {
                                     Bitmap png = new Bitmap(new MemoryStream(image.Data));
 
                                     // Get resolution from descriptor
-                                    IDD descriptor = ioc.GetStructure<IDD>();
+                                    IDD descriptor = kvp.Key.GetStructure<IDD>();
                                     float xScale = (float)Converters.GetInches(png.Width, descriptor.HResolution, descriptor.BaseUnit);
                                     float yScale = (float)Converters.GetInches(png.Height, descriptor.VResolution, descriptor.BaseUnit);
                                     png.SetResolution(png.Width / xScale, png.Height / yScale);
@@ -219,8 +215,9 @@ namespace AFPParser.UI
                             }
                         }
                         else
-                            foreach (IMImageContainer imc in imcs)
-                                imc.GenerateBitmap().Save($"{Environment.CurrentDirectory}\\Image {fileCounter++}.png", System.Drawing.Imaging.ImageFormat.Png);
+                            foreach (KeyValuePair<Container, IReadOnlyList<IMImageCell>> kvp in afpFile.ParsedIMImages)
+                                IMImageCell.GenerateBitmap(kvp.Key.GetStructure<IID>(), kvp.Value.ToList())
+                                    .Save($"{Environment.CurrentDirectory}\\Image {fileCounter++}.png", System.Drawing.Imaging.ImageFormat.Png);
 
                         btnPreview.Enabled = false;
                         Cursor = Cursors.Default;

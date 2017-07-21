@@ -1,5 +1,4 @@
-﻿using AFPParser.Containers;
-using AFPParser.PTXControlSequences;
+﻿using AFPParser.PTXControlSequences;
 using AFPParser.StructuredFields;
 using AFPParser.Triplets;
 using System;
@@ -16,7 +15,7 @@ namespace AFPParser.UI
 {
     public class PrintParser
     {
-        private AFPFile afpFile;
+        private RenderableAFPFile afpFile;
         private List<Container> pageContainers;
         private int curPageIndex = 0;
 
@@ -33,12 +32,12 @@ namespace AFPParser.UI
         private Converters.eMeasurement measurement = Converters.eMeasurement.Inches;
         private string curCodePage = string.Empty;
         private string curFontCharSet = string.Empty;
-        private AFPFile.Resource curFontCharSetResource = null;
+        private Resource curFontCharSetResource = null;
         private Color curColor = Color.Black;
         private int curIOrient = 0;
         private int curBOrient = 0;
 
-        public PrintParser(AFPFile file)
+        public PrintParser(RenderableAFPFile file)
         {
             afpFile = file;
 
@@ -73,7 +72,7 @@ namespace AFPParser.UI
                             // If we have a coded font, we need to load that resource. Otherwise, get the values from here
                             if (mcfData != null)
                             {
-                                AFPFile.Resource codedFontResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodedFont, mcfData.CodedFontName);
+                                Resource codedFontResource = afpFile.Resources.OfTypeAndName(Resource.eResourceType.CodedFont, mcfData.CodedFontName);
                                 CFI resourceCFI = codedFontResource != null && codedFontResource.IsLoaded ? codedFontResource.Fields.OfType<CFI>().FirstOrDefault() : null;
 
                                 if (resourceCFI != null && resourceCFI.FontInfoList.Any())
@@ -103,8 +102,8 @@ namespace AFPParser.UI
             curCodePage = "";
             curFontCharSet = "";
             Dictionary<byte, string> cpMappings = CodePages.C1252;
-            AFPFile.Resource fontResource = null;
-            FontObjectContainer foc = null;
+            Resource fontResource = null;
+            Container foc = null;
             float emInchSize = 0;
             byte vsc = 0;
             foreach (FontCache fc in fontCaches.OrderBy(f => f.CodePage).ThenBy(f => f.FontCharSet))
@@ -115,7 +114,7 @@ namespace AFPParser.UI
                     cpMappings = new Dictionary<byte, string>();
 
                     // If the code page is a resource, generate from scratch
-                    AFPFile.Resource cp = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodePage, fc.CodePage);
+                    Resource cp = afpFile.Resources.OfTypeAndName(Resource.eResourceType.CodePage, fc.CodePage);
                     if (cp != null && cp.IsLoaded)
                     {
                         foreach (CPI.Info info in cp.Fields.OfType<CPI>().First().CPIInfos)
@@ -145,18 +144,18 @@ namespace AFPParser.UI
                 // Lookup new font character set if needed
                 if (fc.FontCharSet != curFontCharSet)
                 {
-                    fontResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, fc.FontCharSet);
+                    fontResource = afpFile.Resources.OfTypeAndName(Resource.eResourceType.FontCharacterSet, fc.FontCharSet);
                     curFontCharSet = fc.FontCharSet;
-                    foc = (FontObjectContainer)fontResource.Fields[0].LowestLevelContainer;
+                    foc = fontResource.Fields[0].LowestLevelContainer;
                     emInchSize = foc.GetStructure<FND>().EmInches;
                 }
 
                 // Generate a bitmap for this code point by looking up the raster pattern of the FCS by current code page
                 string gid = cpMappings.ContainsKey(fc.CodePoint) ? cpMappings[fc.CodePoint] : string.Empty;
-                if (!string.IsNullOrEmpty(gid) && fontResource != null && fontResource.IsLoaded)
+                if (!string.IsNullOrEmpty(gid) && fontResource != null && fontResource.IsLoaded && afpFile.ParsedFontPatterns.ContainsKey(foc))
                 {
                     // Get raster pattern info of GID
-                    KeyValuePair<FNI.Info, bool[,]> pattern = foc.RasterPatterns.FirstOrDefault(p => p.Key.GCGID == gid);
+                    KeyValuePair<FNI.Info, bool[,]> pattern = afpFile.ParsedFontPatterns[foc].FirstOrDefault(p => p.Key.GCGID == gid);
 
                     // Build bitmap
                     if (pattern.Key != null)
@@ -193,19 +192,21 @@ namespace AFPParser.UI
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 
             // Draw each embedded IM image in the current page. Positional information is stored inside the IID field of each image container
-            foreach (IMImageContainer imc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct().OfType<IMImageContainer>())
-                DrawIMImage(imc, 0, 0, e);
+            foreach (Container imc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct()
+            .Where(c => c.Structures[0] is BII && afpFile.ParsedIMImages.ContainsKey(c)))
+                DrawIMImage(imc, afpFile.ParsedIMImages[imc].ToList(), 0, 0, e);
 
             // Draw each embedded IOCA image in the current page. Positional information is stored inside of the OBD/OBP fields of each image container
-            foreach (IOCAImageContainer ioc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct().OfType<IOCAImageContainer>())
-                DrawIOCAImage(ioc, 0, 0, e);
+            foreach (Container ioc in pageContainers[curPageIndex].Structures.Select(f => f.LowestLevelContainer).Distinct()
+            .Where(c => c.Structures[0] is BIM && afpFile.ParsedImages.ContainsKey(c)))
+                DrawIOCAImage(ioc, afpFile.ParsedImages[ioc].ToList(), 0, 0, e);
 
             // Include each IM and IOCA image in IPS by looking up the loaded resource
             foreach (IPS pageSegment in pageContainers[curPageIndex].GetStructures<IPS>())
             {
                 // Find the first loaded image resource of the indicated name
-                AFPFile.Resource loadedResource = afpFile.Resources.FirstOrDefault(r => r.ResourceName == pageSegment.SegmentName.ToUpper().Trim()
-                     && r.IsLoaded && r.ResourceType == AFPFile.Resource.eResourceType.PageSegment);
+                Resource loadedResource = afpFile.Resources.FirstOrDefault(r => r.ResourceName == pageSegment.SegmentName.ToUpper().Trim()
+                     && r.IsLoaded && r.ResourceType == Resource.eResourceType.PageSegment);
 
                 if (loadedResource != null)
                 {
@@ -215,17 +216,12 @@ namespace AFPParser.UI
                     float xInch = (float)Converters.GetInches(pageSegment.XOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
                     float yInch = (float)Converters.GetInches(pageSegment.YOrigin, pageDescriptor.UnitsPerYBase, pageDescriptor.BaseUnit) * 100;
 
-                    if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IMImageContainer)))
-                    {
-
-                        IMImageContainer imc = loadedResource.Fields.Select(f => f.LowestLevelContainer).OfType<IMImageContainer>().FirstOrDefault();
-                        DrawIMImage(imc, xInch, yInch, e);
-                    }
-                    else if (loadedResource.Fields.Any(f => f.LowestLevelContainer.GetType() == typeof(IOCAImageContainer)))
-                    {
-                        IOCAImageContainer ioc = loadedResource.Fields.Select(f => f.LowestLevelContainer).OfType<IOCAImageContainer>().FirstOrDefault();
-                        DrawIOCAImage(ioc, xInch, yInch, e);
-                    }
+                    Container imc = loadedResource.Fields.Select(f => f.LowestLevelContainer).FirstOrDefault(c => c.Structures[0] is BII);
+                    Container ioc = loadedResource.Fields.Select(f => f.LowestLevelContainer).FirstOrDefault(c => c.Structures[0] is BIM);
+                    if (imc != null && afpFile.ParsedIMImages.ContainsKey(imc))
+                        DrawIMImage(imc, afpFile.ParsedIMImages[imc].ToList(), xInch, yInch, e);
+                    else if (ioc != null && afpFile.ParsedImages.ContainsKey(ioc))
+                        DrawIOCAImage(ioc, afpFile.ParsedImages[ioc].ToList(), xInch, yInch, e);
                 }
             }
 
@@ -237,23 +233,23 @@ namespace AFPParser.UI
             if (!e.HasMorePages) curPageIndex = 0;
         }
 
-        private void DrawIMImage(IMImageContainer imc, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
+        private void DrawIMImage(Container imc, List<IMImageCell> cells, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
         {
-            Bitmap png = imc.GenerateBitmap();
+            Bitmap png = IMImageCell.GenerateBitmap(imc.GetStructure<IID>(), cells);
             IID descriptor = imc.GetStructure<IID>();
 
-            int xPos = imc.Cells.Min(c => c.CellPosition.XOffset);
-            int yPos = imc.Cells.Min(c => c.CellPosition.YOffset);
+            int xPos = cells.Min(c => c.CellPosition.XOffset);
+            int yPos = cells.Min(c => c.CellPosition.YOffset);
             float xInchPos = xStartingInch + (float)(Converters.GetInches(xPos, descriptor.XUnitsPerBase, descriptor.BaseUnit) * 100);
             float yInchPos = yStartingInch + (float)(Converters.GetInches(yPos, descriptor.YUnitsPerBase, descriptor.BaseUnit) * 100);
 
             e.Graphics.DrawImage(png, xInchPos, yInchPos);
         }
 
-        private void DrawIOCAImage(IOCAImageContainer imc, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
+        private void DrawIOCAImage(Container imc, List<ImageInfo> images, float xStartingInch, float yStartingInch, PrintPageEventArgs e)
         {
             // Each container may hold one image or several, as tiles. Draw each one with consideration to its offset from the original draw point
-            foreach (ImageContentContainer.ImageInfo image in imc.Images)
+            foreach (ImageInfo image in images)
             {
                 // Get the positioning and scaling info based on the current object environment container
                 OBD oaDescriptor = imc.GetStructure<OBD>();
@@ -468,8 +464,8 @@ namespace AFPParser.UI
 
                     // Determine corner positions based on current rotation
                     float leftX = 0, rightX = 0, topY = 0, bottomY = 0;
-                    float widthInches = (float)Math.Ceiling((characterImage.Width / characterImage.HorizontalResolution) * 100f);
-                    float heightInches = (float)Math.Ceiling((characterImage.Height / characterImage.VerticalResolution) * 100f);
+                    float widthInches = (characterImage.Width / characterImage.HorizontalResolution) * 100f;
+                    float heightInches = (characterImage.Height / characterImage.VerticalResolution) * 100f;
                     if (curIOrient == 0)
                     {
                         // Left - Right
@@ -563,7 +559,7 @@ namespace AFPParser.UI
                     else
                     {
                         // Otherwise, we need to load it from the coded font resource
-                        AFPFile.Resource codedFont = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.CodedFont, mcfData.CodedFontName);
+                        Resource codedFont = afpFile.Resources.OfTypeAndName(Resource.eResourceType.CodedFont, mcfData.CodedFontName);
 
                         if (codedFont.IsLoaded)
                         {
@@ -579,7 +575,7 @@ namespace AFPParser.UI
             }
 
             if (!string.IsNullOrWhiteSpace(curFontCharSet))
-                curFontCharSetResource = afpFile.Resources.OfTypeAndName(AFPFile.Resource.eResourceType.FontCharacterSet, curFontCharSet);
+                curFontCharSetResource = afpFile.Resources.OfTypeAndName(Resource.eResourceType.FontCharacterSet, curFontCharSet);
         }
 
         [DebuggerDisplay("0x{CodePoint.ToString(\"X\"),nq} / {CodePage,nq} / {FontCharSet,nq}")]

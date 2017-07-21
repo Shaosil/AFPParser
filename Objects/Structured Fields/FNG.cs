@@ -1,4 +1,3 @@
-using AFPParser.Containers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,32 +24,33 @@ namespace AFPParser.StructuredFields
 
         protected override string GetOffsetDescriptions()
         {
-            FontObjectContainer fontContainer = (FontObjectContainer)LowestLevelContainer;
-            StringBuilder sb = new StringBuilder();
+            return "UNDER CONSTRUCTION...";
+            //FontObjectContainer fontContainer = (FontObjectContainer)LowestLevelContainer;
+            //StringBuilder sb = new StringBuilder();
 
-            // Outline and raster data are handled much differently. If we have a patterns map, it's raster
-            bool isRaster = LowestLevelContainer.GetStructure<FNM>() != null;
+            //// Outline and raster data are handled much differently. If we have a patterns map, it's raster
+            //bool isRaster = LowestLevelContainer.GetStructure<FNM>() != null;
 
-            if (isRaster)
-            {
-                foreach (KeyValuePair<FNI.Info, bool[,]> kvp in fontContainer.RasterPatterns)
-                {
-                    sb.AppendLine($"GID: {kvp.Key.GCGID}");
-                    for (int y = 0; y <= kvp.Value.GetUpperBound(1); y++)
-                    {
-                        for (int x = 0; x <= kvp.Value.GetUpperBound(0); x++)
-                            sb.Append((kvp.Value[x, y] ? "#" : ".") + " ");
+            //if (isRaster)
+            //{
+            //    foreach (KeyValuePair<FNI.Info, bool[,]> kvp in fontContainer.RasterPatterns)
+            //    {
+            //        sb.AppendLine($"GID: {kvp.Key.GCGID}");
+            //        for (int y = 0; y <= kvp.Value.GetUpperBound(1); y++)
+            //        {
+            //            for (int x = 0; x <= kvp.Value.GetUpperBound(0); x++)
+            //                sb.Append((kvp.Value[x, y] ? "#" : ".") + " ");
 
-                        sb.AppendLine(); // Move to the next row of bits
-                    }
+            //            sb.AppendLine(); // Move to the next row of bits
+            //        }
 
-                    sb.AppendLine(); sb.AppendLine(); // Double space between characters
-                }
-            }
-            else
-                sb.AppendLine("Outline fonts not yet implemented...");
+            //        sb.AppendLine(); sb.AppendLine(); // Double space between characters
+            //    }
+            //}
+            //else
+            //    sb.AppendLine("Outline fonts not yet implemented...");
 
-            return sb.ToString();
+            //return sb.ToString();
         }
 
         private string GetOutlineData()

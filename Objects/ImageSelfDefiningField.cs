@@ -65,7 +65,7 @@ namespace AFPParser
 
                 // If this is a begin tag, add a new container to our active list
                 if (beginCodes.Contains(id))
-                    activeContainers.Add(sdf.NewContainer);
+                    activeContainers.Add(new Container());
 
                 // Sync active containers
                 sdf.Containers = new List<Container>(activeContainers);
@@ -79,7 +79,6 @@ namespace AFPParser
                 {
                     Container c = activeContainers.Last();
                     activeContainers.Remove(c);
-                    c.ParseContainerData();
                 }
 
                 sdfList.Add(sdf);

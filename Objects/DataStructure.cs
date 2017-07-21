@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace AFPParser
@@ -70,19 +69,6 @@ namespace AFPParser
             {
                 int parentIndex = Containers.Count - 2;
                 return parentIndex >= 0 ? Containers[parentIndex] : null;
-            }
-        }
-        public Container NewContainer
-        {
-            get
-            {
-                // Returns either a generic container, or custom typed container by specific attribute
-                Container c = new Container();
-                ContainerTypeAttribute containerAttribyte = GetType().GetCustomAttribute<ContainerTypeAttribute>();
-                if (containerAttribyte != null)
-                    c = (Container)Activator.CreateInstance(containerAttribyte.AssignedType);
-
-                return c;
             }
         }
 

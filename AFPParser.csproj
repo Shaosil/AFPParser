@@ -49,11 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Objects\Container.cs" />
-    <Compile Include="Objects\ContainerAttribute.cs" />
-    <Compile Include="Objects\Containers\FontObjectContainer.cs" />
-    <Compile Include="Objects\Containers\IMImageContainer.cs" />
-    <Compile Include="Objects\Containers\IOCAImageContainer.cs" />
-    <Compile Include="Objects\Containers\ImageContentContainer.cs" />
     <Compile Include="Objects\Helpers\Code Page GIDs\1140.cs" />
     <Compile Include="Objects\Helpers\Code Page GIDs\1252.cs" />
     <Compile Include="Objects\Helpers\Converters.cs" />

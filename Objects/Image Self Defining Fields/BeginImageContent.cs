@@ -1,9 +1,7 @@
-using AFPParser.Containers;
 using System.Collections.Generic;
 
 namespace AFPParser.ImageSelfDefiningFields
 {
-    [ContainerType(typeof(ImageContentContainer))]
     public class BeginImageContent : ImageSelfDefiningField
     {
         private static string _desc = "";
