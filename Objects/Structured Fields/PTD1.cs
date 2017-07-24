@@ -27,21 +27,80 @@ namespace AFPParser.StructuredFields
         public override IReadOnlyList<Offset> Offsets => _oSets;
 
         // Parsed Data
-        public Converters.eMeasurement BaseUnit { get; private set; }
-        public ushort UnitsPerXBase { get; private set; }
-        public ushort UnitsPerYBase { get; private set; }
-        public ushort XSize { get; private set; }
-        public ushort YSize { get; private set; }
+        private Converters.eMeasurement _baseUnit;
+        private ushort _unitsPerXBase;
+        private ushort _unitsPerYBase;
+        private ushort _xSize;
+        private ushort _ySize;
+
+        public Converters.eMeasurement BaseUnit
+        {
+            get { return _baseUnit; }
+            private set
+            {
+                _baseUnit = value;
+
+                // Sync both X and Y unit bases
+                Data[0] = (byte)value;
+                Data[1] = (byte)value;
+            }
+        }
+        public ushort UnitsPerXBase
+        {
+            get { return _unitsPerXBase; }
+            private set
+            {
+                _unitsPerXBase = value;
+                PutNumberInData(value, 2);
+            }
+        }
+        public ushort UnitsPerYBase
+        {
+            get { return _unitsPerYBase; }
+            private set
+            {
+                _unitsPerYBase = value;
+                PutNumberInData(value, 4);
+            }
+        }
+        public ushort XSize
+        {
+            get { return _xSize; }
+            private set
+            {
+                _xSize = value;
+                PutNumberInData(value, 6);
+            }
+        }
+        public ushort YSize
+        {
+            get { return _ySize; }
+            private set
+            {
+                _ySize = value;
+                PutNumberInData(value, 8);
+            }
+        }
 
         public PTD1(byte[] id, byte flag, ushort sequence, byte[] data) : base(id, flag, sequence, data) { }
 
+        public PTD1(ushort unitsPerXBase, ushort unitsPerYBase, ushort xSize, ushort ySize) : base(Lookups.StructuredFieldID<PTD1>(), 0, 0, null)
+        {
+            Data = new byte[10];
+            BaseUnit = Converters.eMeasurement.Inches;
+            UnitsPerXBase = unitsPerXBase;
+            UnitsPerYBase = unitsPerYBase;
+            XSize = xSize;
+            YSize = ySize;
+        }
+
         public override void ParseData()
         {
-            BaseUnit = Converters.GetBaseUnit(Data[0]);
-            UnitsPerXBase = GetNumericValueFromData<ushort>(2, 2);
-            UnitsPerYBase = GetNumericValueFromData<ushort>(4, 2);
-            XSize = GetNumericValueFromData<ushort>(6, 2);
-            YSize = GetNumericValueFromData<ushort>(8, 2);
+            _baseUnit = (Converters.eMeasurement)Data[0];
+            _unitsPerXBase = GetNumericValueFromData<ushort>(2, 2);
+            _unitsPerYBase = GetNumericValueFromData<ushort>(4, 2);
+            _xSize = GetNumericValueFromData<ushort>(6, 2);
+            _ySize = GetNumericValueFromData<ushort>(8, 2);
         }
 
         public override string GetFullDescription()

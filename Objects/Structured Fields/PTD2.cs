@@ -51,7 +51,7 @@ namespace AFPParser.StructuredFields
 
         public override void ParseData()
         {
-            BaseUnit = Converters.GetBaseUnit(Data[0]);
+            BaseUnit = (Converters.eMeasurement)Data[0];
             UnitsPerXBase = GetNumericValueFromData<ushort>(2, 2);
             UnitsPerYBase = GetNumericValueFromData<ushort>(4, 2);
             XSize = GetNumericValueFromData<uint>(6, 3);

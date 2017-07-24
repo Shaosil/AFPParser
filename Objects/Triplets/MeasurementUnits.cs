@@ -25,7 +25,7 @@ namespace AFPParser.Triplets
 
         public override void ParseData()
         {
-            BaseUnit = Converters.GetBaseUnit(Data[0]);
+            BaseUnit = (Converters.eMeasurement)Data[0];
             XUnitsPerBase = GetNumericValueFromData<ushort>(2, 2);
             YUnitsPerBase = GetNumericValueFromData<ushort>(4, 2);
         }

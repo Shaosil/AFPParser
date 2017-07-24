@@ -144,6 +144,85 @@ namespace AFPParser
         #region File/Field Manipulation
 
         /// <summary>
+        /// Adds a new document encapsulation (BDT/EDT tags) to the end of the print file. Will automatically handle nesting if print file tags exist
+        /// </summary>
+        /// <param name="docName">The optional 8 character name of the document</param>
+        /// <returns>The resulting document's container</returns>
+        public Container AddDocument(string docName = "")
+        {
+            Container newContainer = null;
+            int indexToInsert = Fields.Count;
+
+            // If BPF/EPF tags exist, make sure the document goes inside them
+            if (Fields.Last() is EPF) indexToInsert--;
+
+            // Add the only two required fields for a document - BDT and EDT
+            BDT newBDT = new BDT(docName);
+            EDT newEDT = new EDT(docName);
+            AddFields(new List<StructuredField>() { newBDT, newEDT }, indexToInsert);
+
+            // Set and return the new container
+            newContainer = newBDT.LowestLevelContainer;
+            return newContainer;
+        }
+
+        /// <summary>
+        /// Adds a new page container with its required fields to an existing document container
+        /// </summary>
+        /// <param name="docContainer">The container of the existing document in the AFP to add the page to</param>
+        /// <param name="pageName">The optional 8 character name of the new page</param>
+        /// <param name="groupName">The optional 8 character name of the new active environment group</param>
+        /// <param name="xUnitsPer10Inches">The number of horizontal measurement units on a page/presentation space for every 10 inches</param>
+        /// <param name="yUnitsPer10Inches">The number of vertical units on a page/presentation space for every 10 inches</param>
+        /// <param name="pageUnitWidth">The number of units that represent the page's width. To convert to inches: (pageUnitWidth / xUnitsPer10Inches) * 10</param>
+        /// <param name="pageUnitHeight">The number of units that represent the page's height. To convert to inches: (pageUnitHeight / yUnitsPer10Inches) * 10</param>
+        /// <returns>The resulting page's container</returns>
+        public Container AddPageToDocument(Container docContainer, string pageName = "", string groupName = "", ushort xUnitsPer10Inches = 3000,
+        ushort yUnitsPer10Inches = 3000, ushort pageUnitWidth = 2550, ushort pageUnitHeight = 3300)
+        {
+            Container pageContainer = null;
+
+            // Verify the container parameter is truly a document
+            if (!(docContainer.Structures[0] is BDT && docContainer.Structures.Last() is EDT))
+                throw new Exception("The passed container parameter does not appear to be a Document container.");
+
+            // Verify the document exists in the container (and store index to insert if it's ok)
+            int indexToInsert = 0;
+            for (int i = 0; i < Fields.Count; i++)
+            {
+                // As soon as we find the begin tag, verify each field in the container matches and break
+                if (Fields[i] == docContainer.Structures[0])
+                {
+                    for (int j = 0; j < docContainer.Structures.Count; j++)
+                        if (Fields[i + j] != docContainer.Structures[j])
+                            throw new Exception("Invalid container - does not exist in list of fields.");
+                    indexToInsert = (i + docContainer.Structures.Count) - 1;
+                    break;
+                }
+            }
+
+            // Create page tags
+            BPG newBPG = new BPG(pageName);
+            EPG newEPG = new EPG(pageName);
+
+            // A page needs an active environment group
+            BAG newBAG = new BAG(groupName);
+            EAG newAEG = new EAG(groupName);
+
+            // An active environment group in a page needs both page and presentation text descriptor fields
+            PGD newPGD = new PGD(xUnitsPer10Inches, yUnitsPer10Inches, pageUnitWidth, pageUnitHeight);
+            PTD1 newPTD = new PTD1(xUnitsPer10Inches, yUnitsPer10Inches, pageUnitWidth, pageUnitHeight);
+
+            // Build the list of new fields and add them to the end of the document
+            List<StructuredField> newFields = new List<StructuredField>() { newBPG, newBAG, newPGD, newPTD, newAEG, newEPG };
+            AddFields(newFields, indexToInsert);
+
+            // Set and return the created page's container
+            pageContainer = newBPG.LowestLevelContainer;
+            return pageContainer;
+        }
+
+        /// <summary>
         /// Inserts a field at the specified index in the existing list of Structured Fields
         /// </summary>
         /// <param name="newField"></param> The field that will be inserted

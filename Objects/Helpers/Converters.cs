@@ -7,11 +7,7 @@ namespace AFPParser
     {
         public static Encoding EBCDIC => Encoding.GetEncoding("IBM037");
 
-        public enum eMeasurement { Inches, Centimeters }
-        public static eMeasurement GetBaseUnit(byte b)
-        {
-            return CommonMappings.UnitBase[b] == CommonMappings.UnitBase[0] ? eMeasurement.Inches : eMeasurement.Centimeters;
-        }
+        public enum eMeasurement { Inches = 0, Centimeters = 1 }
         public static double GetMeasurement(int units, int unitsPerBase)
         {
             return Math.Round(units / (unitsPerBase / 10.0), 3);

@@ -103,6 +103,32 @@ namespace AFPParser.Tests
         }
 
         [TestMethod]
+        public void AddDocumentAndPage()
+        {
+            // Load sample file data (no need to parse data)
+            file = new AFPFile();
+            file.LoadData(testFilePath);
+
+            // Add a new document to the file and store the resulting container
+            Container docContainer = file.AddDocument("TEST DOC");
+
+            // Ensure the new container exists already and has the required fields
+            Assert.IsTrue(file.Fields.Any(f => f.Containers.Any(c => c == docContainer)));
+            Assert.IsTrue(docContainer.Structures[0] is BDT);
+            Assert.IsTrue(docContainer.Structures.Last() is EDT);
+
+            // Add a new page to the newly created document
+            Container pageContainer = file.AddPageToDocument(docContainer, "NEW PAGE");
+
+            // Ensure the new page exists and has the expected fields (active environment group, PGD, PTD)
+            Assert.IsTrue(file.Fields.Any(f => f.Containers.Any(c => c == pageContainer)));
+            Assert.IsTrue(pageContainer.Structures[0] is BPG);
+            Assert.IsTrue(pageContainer.Structures.Any(s => s is BAG));
+            Assert.IsTrue(pageContainer.Structures.Any(s => s is PGD));
+            Assert.IsTrue(pageContainer.Structures.Any(s => s is PTD1 || s is PTD2));
+        }
+
+        [TestMethod]
         public void UpdateContainerInfo_WhenFieldIsAddedOrDeleted()
         {
             // Load a file (ignore data), check the first NOP field

@@ -201,8 +201,9 @@ namespace AFPParser.UI
 
             // IM IMAGES
             Dictionary<Container, IReadOnlyList<IMImageCell>> imImages = new Dictionary<Container, IReadOnlyList<IMImageCell>>();
-            foreach (Container c in Resources.Where(r => r.ResourceType == Resource.eResourceType.IMImage && r.IsLoaded)
-                .Select(r => r.Fields[0].LowestLevelContainer))
+            foreach (Container c in Resources
+                .Where(r => r.IsLoaded && (r.ResourceType == Resource.eResourceType.IMImage || (r.ResourceType == Resource.eResourceType.PageSegment && r.Fields[1] is BII)))
+                .Select(r => r.ResourceType == Resource.eResourceType.PageSegment ? r.Fields[1].LowestLevelContainer : r.Fields[0].LowestLevelContainer))
             {
                 IID imageDescriptor = c.GetStructure<IID>();
                 List<IMImageCell> cellList = new List<IMImageCell>();
@@ -238,8 +239,9 @@ namespace AFPParser.UI
 
             // IOCA IMAGES
             Dictionary<Container, IReadOnlyList<ImageInfo>> iocaImages = new Dictionary<Container, IReadOnlyList<ImageInfo>>();
-            foreach (Container c in Resources.Where(r => r.ResourceType == Resource.eResourceType.IOCAImage && r.IsLoaded)
-                .Select(r => r.Fields[0].LowestLevelContainer))
+            foreach (Container c in Resources
+                .Where(r => r.IsLoaded && (r.ResourceType == Resource.eResourceType.IMImage || (r.ResourceType == Resource.eResourceType.PageSegment && r.Fields[1] is BIM)))
+                .Select(r => r.ResourceType == Resource.eResourceType.PageSegment ? r.Fields[1].LowestLevelContainer : r.Fields[0].LowestLevelContainer))
             {
                 // Combine all self defining fields from zero or more IPD fields
                 byte[] allIPDData = c.GetStructures<IPD>().SelectMany(f => f.Data).ToArray();
