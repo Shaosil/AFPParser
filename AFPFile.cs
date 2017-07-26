@@ -11,15 +11,15 @@ namespace AFPParser
     public class AFPFile
     {
         private List<StructuredField> _fields;
-        private List<string> _validationMessages;
+        protected List<string> _messages;
 
-        public event Action<string> ErrorEvent;
         public IReadOnlyList<StructuredField> Fields => _fields;
-        public IReadOnlyList<string> ValidationMessages => _validationMessages;
+        public IReadOnlyList<string> Messages => _messages;
 
         public AFPFile()
         {
             _fields = new List<StructuredField>();
+            _messages = new List<string>();
         }
 
         public virtual bool LoadData(string path, bool parseData = false)
@@ -31,7 +31,7 @@ namespace AFPParser
             }
             catch (Exception ex)
             {
-                InvokeErrorEvent($"Error: {ex.Message}");
+                _messages.Add($"Error: {ex.Message}");
                 return false;
             }
 
@@ -134,11 +134,6 @@ namespace AFPParser
                     if (matchingBegin != null) activeContainers.Remove(matchingBegin);
                 }
             }
-        }
-
-        protected void InvokeErrorEvent(string message)
-        {
-            ErrorEvent?.Invoke(message);
         }
 
         #region File/Field Manipulation
@@ -351,13 +346,13 @@ namespace AFPParser
         /// <returns>True if all validation passes</returns>
         public bool Validates()
         {
-            _validationMessages = new List<string>();
+            _messages = new List<string>();
 
             // Ensure all containers have open/close tags
             foreach (Container c in Fields.Where(f => f.LowestLevelContainer != null).Select(f => f.LowestLevelContainer).Distinct())
                 if (c.Structures.Any() && (c.Structures[0].HexID[1] != 0xA8 || c.Structures.Last().HexID[1] != 0xA9))
                 {
-                    _validationMessages.Add("One or more containers are missing a proper begin and/or end tag.");
+                    _messages.Add("One or more containers are missing a proper begin and/or end tag.");
                     break;
                 }
 
@@ -368,7 +363,7 @@ namespace AFPParser
                 || (beginOrEnd.HexID[1] == 0xA9 && beginOrEnd.LowestLevelContainer.Structures.Last() != beginOrEnd) // If end, last structure is itself
                 || beginOrEnd.LowestLevelContainer.Structures[0].HexID[2] != beginOrEnd.LowestLevelContainer.Structures.Last().HexID[2]) // Begin/end are same type
                 {
-                    _validationMessages.Add($"One or more begin/end tags are not enveloped in a proper container.");
+                    _messages.Add($"One or more begin/end tags are not enveloped in a proper container.");
                     break;
                 }
 
@@ -385,7 +380,7 @@ namespace AFPParser
                     List<Type> subPFTypes = Lookups.FieldsParentOptions.Where(f => f.Value.Contains(typeof(BPF))).Select(f => f.Key).ToList();
 
                     if (fieldType != typeof(BPF) && !subPFTypes.Contains(fieldType))
-                        _validationMessages.Add($"A {field.Abbreviation} field has no parent container.");
+                        _messages.Add($"A {field.Abbreviation} field has no parent container.");
                 }
                 else
                 {
@@ -393,7 +388,7 @@ namespace AFPParser
                     if (Lookups.FieldsParentOptions.ContainsKey(fieldType))
                     {
                         if (!Lookups.FieldsParentOptions[fieldType].Contains(parentType))
-                            _validationMessages.Add($"A {field.Abbreviation} field has an incorrect parent container of type {parentField.Abbreviation}. " +
+                            _messages.Add($"A {field.Abbreviation} field has an incorrect parent container of type {parentField.Abbreviation}. " +
                                 $"Accepted types are: {string.Join(", ", Lookups.FieldsParentOptions[fieldType].Select(t => t.Name))}.");
                     }
 
@@ -403,7 +398,7 @@ namespace AFPParser
                 }
             }
 
-            return !_validationMessages.Any();
+            return !_messages.Any();
         }
 
         #endregion

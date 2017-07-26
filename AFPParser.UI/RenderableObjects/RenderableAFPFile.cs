@@ -67,7 +67,7 @@ namespace AFPParser.UI
                 }
                 catch (Exception ex)
                 {
-                    InvokeErrorEvent($"Error: {ex.Message}");
+                    _messages.Add($"Error: {ex.Message}");
                     success = false;
                 }
             }
@@ -240,7 +240,7 @@ namespace AFPParser.UI
             // IOCA IMAGES
             Dictionary<Container, IReadOnlyList<ImageInfo>> iocaImages = new Dictionary<Container, IReadOnlyList<ImageInfo>>();
             foreach (Container c in Resources
-                .Where(r => r.IsLoaded && (r.ResourceType == Resource.eResourceType.IMImage || (r.ResourceType == Resource.eResourceType.PageSegment && r.Fields[1] is BIM)))
+                .Where(r => r.IsLoaded && (r.ResourceType == Resource.eResourceType.IOCAImage || (r.ResourceType == Resource.eResourceType.PageSegment && r.Fields[1] is BIM)))
                 .Select(r => r.ResourceType == Resource.eResourceType.PageSegment ? r.Fields[1].LowestLevelContainer : r.Fields[0].LowestLevelContainer))
             {
                 // Combine all self defining fields from zero or more IPD fields

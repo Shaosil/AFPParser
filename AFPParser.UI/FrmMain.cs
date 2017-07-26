@@ -28,7 +28,6 @@ namespace AFPParser.UI
 
             afpFile = new RenderableAFPFile();
             if (opts.ResourceDirectories.Any()) afpFile.ResourceDirectories = opts.ResourceDirectories;
-            afpFile.ErrorEvent += (string message) => { MessageBox.Show(message, "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error); };
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -69,6 +68,12 @@ namespace AFPParser.UI
 
                         // Create new print parser object for this file
                         printParser = new PrintParser(afpFile);
+                    }
+                    else if (afpFile.Messages.Any())
+                    {
+                        // Something may have went wrong - display any messages
+                        string concattedMessages = string.Join($"{Environment.NewLine}* ", afpFile.Messages);
+                        MessageBox.Show($"* {concattedMessages}", "Parser Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 finally

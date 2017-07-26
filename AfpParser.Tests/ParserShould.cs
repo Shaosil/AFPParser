@@ -23,7 +23,15 @@ namespace AFPParser.Tests
         public void TestInitialize()
         {
             file = new AFPFile();
-            file.ErrorEvent += (string msg) => { Console.WriteLine(msg); };
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            // Print any informational messages in the afp file object
+            if (file != null)
+                foreach (string msg in file.Messages)
+                    Console.WriteLine(msg);
         }
 
         [TestMethod]
