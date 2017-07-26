@@ -29,7 +29,6 @@ namespace AFPParser
             { typeof(BCF), new[] { typeof(BRS) } },
             { typeof(BCP), new[] { typeof(BRS) } },
             { typeof(BFN), new[] { typeof(BRS) } },
-            { typeof(BII), new[] { typeof(BRS) } },
             
             // Document index
             { typeof(IEL), new[] { typeof(BDI) } },
@@ -104,7 +103,8 @@ namespace AFPParser
             { typeof(BDT), new[] { typeof(BPF), typeof(BRG) } }, // Document container
             { typeof(BBC), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // Barcode container
             { typeof(BGR), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // Graphics container
-            { typeof(BIM), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // Image container
+            { typeof(BII), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // IM Image Container
+            { typeof(BIM), new[] { typeof(BRS), typeof(BPG), typeof(BMO), typeof(BPS) } }, // IOCA Image container
             { typeof(BOC), new[] { typeof(BRS), typeof(BPG), typeof(BMO) } }, // Object container
             { typeof(BMM), new[] { typeof(BDT), typeof(BNG), typeof(BFM) } }, // Medium map container
             { typeof(BSG), new[] { typeof(BDT), typeof(BNG) } }, // Resource Environment group container
