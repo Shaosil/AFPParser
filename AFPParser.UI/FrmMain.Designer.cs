@@ -31,16 +31,16 @@
             this.components = new System.ComponentModel.Container();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.dgvFields = new System.Windows.Forms.DataGridView();
-            this.IdentifierAbbr = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.IdentifierHexCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.IdentifierTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.lblParsedData = new System.Windows.Forms.Label();
             this.btnPreview = new System.Windows.Forms.Button();
             this.btnManageResources = new System.Windows.Forms.Button();
+            this.IdentifierAbbr = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.IdentifierHexCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.IdentifierTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.flagDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sequenceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.afpFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFields)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.afpFileBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -61,7 +61,7 @@
             this.dgvFields.AllowUserToDeleteRows = false;
             this.dgvFields.AllowUserToOrderColumns = true;
             this.dgvFields.AllowUserToResizeRows = false;
-            this.dgvFields.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.dgvFields.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.dgvFields.AutoGenerateColumns = false;
             this.dgvFields.BackgroundColor = System.Drawing.SystemColors.Control;
@@ -84,37 +84,14 @@
             this.dgvFields.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFields_CellDoubleClick);
             this.dgvFields.SelectionChanged += new System.EventHandler(this.dgvFields_SelectionChanged);
             // 
-            // IdentifierAbbr
+            // afpFileBindingSource
             // 
-            this.IdentifierAbbr.DataPropertyName = "Abbreviation";
-            this.IdentifierAbbr.FillWeight = 5F;
-            this.IdentifierAbbr.HeaderText = "Identifier";
-            this.IdentifierAbbr.Name = "IdentifierAbbr";
-            this.IdentifierAbbr.ReadOnly = true;
-            this.IdentifierAbbr.Width = 60;
-            // 
-            // IdentifierHexCode
-            // 
-            this.IdentifierHexCode.DataPropertyName = "ID";
-            this.IdentifierHexCode.FillWeight = 8F;
-            this.IdentifierHexCode.HeaderText = "Hex Code";
-            this.IdentifierHexCode.Name = "IdentifierHexCode";
-            this.IdentifierHexCode.ReadOnly = true;
-            this.IdentifierHexCode.Width = 97;
-            // 
-            // IdentifierTitle
-            // 
-            this.IdentifierTitle.DataPropertyName = "Title";
-            this.IdentifierTitle.FillWeight = 25F;
-            this.IdentifierTitle.HeaderText = "Description";
-            this.IdentifierTitle.Name = "IdentifierTitle";
-            this.IdentifierTitle.ReadOnly = true;
-            this.IdentifierTitle.Width = 302;
+            this.afpFileBindingSource.DataSource = typeof(StructuredField);
             // 
             // txtDescription
             // 
-            this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtDescription.BackColor = System.Drawing.SystemColors.Window;
             this.txtDescription.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -158,6 +135,33 @@
             this.btnManageResources.UseVisualStyleBackColor = true;
             this.btnManageResources.Click += new System.EventHandler(this.btnManageResources_Click);
             // 
+            // IdentifierAbbr
+            // 
+            this.IdentifierAbbr.DataPropertyName = "Abbreviation";
+            this.IdentifierAbbr.FillWeight = 5F;
+            this.IdentifierAbbr.HeaderText = "Identifier";
+            this.IdentifierAbbr.Name = "IdentifierAbbr";
+            this.IdentifierAbbr.ReadOnly = true;
+            this.IdentifierAbbr.Width = 60;
+            // 
+            // IdentifierHexCode
+            // 
+            this.IdentifierHexCode.DataPropertyName = "HexIDStr";
+            this.IdentifierHexCode.FillWeight = 8F;
+            this.IdentifierHexCode.HeaderText = "Hex Code";
+            this.IdentifierHexCode.Name = "IdentifierHexCode";
+            this.IdentifierHexCode.ReadOnly = true;
+            this.IdentifierHexCode.Width = 97;
+            // 
+            // IdentifierTitle
+            // 
+            this.IdentifierTitle.DataPropertyName = "Title";
+            this.IdentifierTitle.FillWeight = 25F;
+            this.IdentifierTitle.HeaderText = "Description";
+            this.IdentifierTitle.Name = "IdentifierTitle";
+            this.IdentifierTitle.ReadOnly = true;
+            this.IdentifierTitle.Width = 302;
+            // 
             // flagDataGridViewTextBoxColumn
             // 
             this.flagDataGridViewTextBoxColumn.DataPropertyName = "Flag";
@@ -176,10 +180,6 @@
             this.sequenceDataGridViewTextBoxColumn.ReadOnly = true;
             this.sequenceDataGridViewTextBoxColumn.Width = 85;
             // 
-            // afpFileBindingSource
-            // 
-            this.afpFileBindingSource.DataSource = typeof(AFPParser.StructuredField);
-            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -194,7 +194,7 @@
             this.MinimumSize = new System.Drawing.Size(1250, 700);
             this.Name = "FrmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "AFP Parser";
+            this.Text = "AFP Core UI";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFields)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.afpFileBindingSource)).EndInit();
@@ -210,12 +210,12 @@
         private System.Windows.Forms.BindingSource afpFileBindingSource;
         private System.Windows.Forms.TextBox txtDescription;
         private System.Windows.Forms.Label lblParsedData;
+        private System.Windows.Forms.Button btnPreview;
+        private System.Windows.Forms.Button btnManageResources;
         private System.Windows.Forms.DataGridViewTextBoxColumn IdentifierAbbr;
         private System.Windows.Forms.DataGridViewTextBoxColumn IdentifierHexCode;
         private System.Windows.Forms.DataGridViewTextBoxColumn IdentifierTitle;
         private System.Windows.Forms.DataGridViewTextBoxColumn flagDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn sequenceDataGridViewTextBoxColumn;
-        private System.Windows.Forms.Button btnPreview;
-        private System.Windows.Forms.Button btnManageResources;
     }
 }

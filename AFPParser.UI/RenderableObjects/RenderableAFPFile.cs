@@ -21,12 +21,12 @@ namespace AFPParser.UI
             Resources = new List<Resource>();
         }
 
-        public override bool LoadData(string path, bool parseData = false)
+        public bool LoadData(string path, bool parseData = false)
         {
-            bool success = base.LoadData(path, parseData);
+            _fields = DecodeStream(File.ReadAllBytes(path), parseData);
 
             // Only load resources if we have parsed the data
-            if (success && parseData)
+            if (Fields.Any() && parseData)
             {
                 try
                 {
@@ -68,11 +68,11 @@ namespace AFPParser.UI
                 catch (Exception ex)
                 {
                     _messages.Add($"Error: {ex.Message}");
-                    success = false;
+                    return false;
                 }
             }
 
-            return success;
+            return Fields.Any();
         }
 
         private List<Resource> LoadReferencedResources(IEnumerable<StructuredField> fileFields)
@@ -127,7 +127,7 @@ namespace AFPParser.UI
                 FileInfo matchingFile = allFiles.FirstOrDefault(f => f.Name.ToUpper().Trim() == r.ResourceName);
                 if (matchingFile != null)
                 {
-                    r.Fields = LoadFields(matchingFile.FullName, true);
+                    r.Fields = DecodeStream(File.ReadAllBytes(matchingFile.FullName), true);
 
                     // Also see if there are any additional resources to load from within those fields
                     List<Resource> extraResources = LoadReferencedResources(r.Fields);

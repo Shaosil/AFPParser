@@ -19,12 +19,6 @@ namespace AFPParser.Tests
             testFilePath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\Sample Files\Sample 1.afp");
         }
 
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            file = new AFPFile();
-        }
-
         [TestCleanup]
         public void TestCleanup()
         {
@@ -38,7 +32,7 @@ namespace AFPParser.Tests
         public void DecodeSuccessfully_WithoutParsingData()
         {
             // Load an AFP file without exceptions
-            Assert.IsTrue(file.LoadData(testFilePath, false));
+            file = new AFPFile(testFilePath, false);
             Assert.IsNotNull(file.Fields);
             Assert.AreNotEqual(0, file.Fields.Count);
         }
@@ -47,7 +41,7 @@ namespace AFPParser.Tests
         public void DecodeAndParseDataSuccessfully()
         {
             // Load an AFP file, and parse its data into custom properties and objects without exceptions
-            Assert.IsTrue(file.LoadData(testFilePath, true));
+            file = new AFPFile(testFilePath, true);
             Assert.IsNotNull(file.Fields);
             Assert.AreNotEqual(0, file.Fields.Count);
         }
@@ -58,7 +52,7 @@ namespace AFPParser.Tests
             byte[] rawFile = File.ReadAllBytes(testFilePath);
 
             // Load an AFP file, parse its data, and save it to an in-memory byte stream
-            Assert.IsTrue(file.LoadData(testFilePath, true));
+            file = new AFPFile(rawFile, true);
             Assert.IsNotNull(file.Fields);
             Assert.AreNotEqual(0, file.Fields.Count);
 
@@ -70,8 +64,8 @@ namespace AFPParser.Tests
         [TestMethod]
         public void DeleteFieldsSuccessfully()
         {
-            // Load file
-            file.LoadData(testFilePath, false);
+            // Load file (ignore data)
+            file = new AFPFile(testFilePath, false);
 
             // Delete all presentation text containers
             List<StructuredField> textFields = file.Fields.Where(f => f.LowestLevelContainer != null
@@ -87,8 +81,8 @@ namespace AFPParser.Tests
         [TestMethod]
         public void AddFieldsSuccessfully()
         {
-            // Load data
-            file.LoadData(testFilePath, false);
+            // Load file (ignore data)
+            file = new AFPFile(testFilePath, false);
 
             int oldCount = file.Fields.Count;
             int numNew = 0;
@@ -103,7 +97,7 @@ namespace AFPParser.Tests
                 numNew++;
             }
 
-            // Ensure they exist
+            // Ensure they actually exist
             int newCount = oldCount + numNew;
             Assert.AreEqual(newCount, file.Fields.Count);
             foreach (NOP n in newFields)
@@ -113,9 +107,8 @@ namespace AFPParser.Tests
         [TestMethod]
         public void AddDocumentAndPage()
         {
-            // Load sample file data (no need to parse data)
-            file = new AFPFile();
-            file.LoadData(testFilePath);
+            // Load file (ignore data)
+            file = new AFPFile(testFilePath, false);
 
             // Add a new document to the file and store the resulting container
             Container docContainer = file.AddDocument("TEST DOC");
@@ -140,7 +133,7 @@ namespace AFPParser.Tests
         public void UpdateContainerInfo_WhenFieldIsAddedOrDeleted()
         {
             // Load a file (ignore data), check the first NOP field
-            file.LoadData(testFilePath, false);
+            file = new AFPFile(testFilePath, false);
             NOP foundNOP = file.Fields.OfType<NOP>().First();
 
             // Get the container of this field for future assertions, and delete the field
@@ -174,10 +167,10 @@ namespace AFPParser.Tests
         public void Validate()
         {
             // Load the sample file data
-            file.LoadData(testFilePath, false);
+            file = new AFPFile(testFilePath, false);
 
             // Ensure it validates
-            Assert.IsTrue(file.Validates());
+            Assert.IsTrue(file.EncodeData().Any());
 
             // Remove the first container information from all fields it contains
             Container c = file.Fields.First(f => f.LowestLevelContainer != null).LowestLevelContainer;
@@ -185,24 +178,24 @@ namespace AFPParser.Tests
                 s.Containers.Remove(c);
 
             // it should no longer validate
-            Assert.IsFalse(file.Validates());
+            Assert.IsFalse(file.EncodeData().Any());
 
             // Reload data
-            file.LoadData(testFilePath, false);
+            file = new AFPFile(testFilePath, false);
 
             // Surround the file with BPF/EPF tags
             file.AddField(StructuredField.New<BPF>(), 0);
             file.AddField(StructuredField.New<EPF>(), file.Fields.Count);
 
             // Check it still validates (container info should have been updated)
-            Assert.IsTrue(file.Validates());
+            Assert.IsTrue(file.EncodeData().Any());
 
             // Try adding a TLE field to the top of the file
             TLE newTLE = StructuredField.New<TLE>();
             file.AddField(newTLE, 0);
 
             // Ensure it does not validate
-            Assert.IsFalse(file.Validates());
+            Assert.IsFalse(file.EncodeData().Any());
 
             // Delete that field, and add it in a place where it is allowed to be (in this case, after a BPG)
             file.DeleteField(newTLE);
@@ -211,7 +204,7 @@ namespace AFPParser.Tests
                 if (file.Fields[i] is BPG) { newIndex = i + 1; break; }
             file.AddField(newTLE, newIndex);
 
-            Assert.IsTrue(file.Validates());
+            Assert.IsTrue(file.EncodeData().Any());
         }
     }
 }

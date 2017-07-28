@@ -152,7 +152,7 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FrmManageResources";
+            this.Text = "Manage Resources";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmManageResources_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dgvResources)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.resourceBindingSource)).EndInit();

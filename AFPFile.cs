@@ -10,59 +10,65 @@ namespace AFPParser
 {
     public class AFPFile
     {
-        private List<StructuredField> _fields;
-        protected List<string> _messages;
+        protected List<StructuredField> _fields = new List<StructuredField>();
+        protected List<string> _messages = new List<string>();
 
         public IReadOnlyList<StructuredField> Fields => _fields;
         public IReadOnlyList<string> Messages => _messages;
 
-        public AFPFile()
-        {
-            _fields = new List<StructuredField>();
-            _messages = new List<string>();
-        }
+        public AFPFile() { }
 
-        public virtual bool LoadData(string path, bool parseData = false)
+        public AFPFile(string path, bool parseData = false)
         {
             try
             {
-                // Load all data into main fields property
-                _fields = LoadFields(path, parseData);
+                // First, read all AFP file bytes into memory
+                byte[] byteList = File.ReadAllBytes(path);
+
+                // Then call DecodeStream with our byte list
+                _fields = DecodeStream(byteList, parseData);
             }
             catch (Exception ex)
             {
                 _messages.Add($"Error: {ex.Message}");
-                return false;
             }
-
-            return true;
         }
 
-        protected List<StructuredField> LoadFields(string path, bool parseData)
+        public AFPFile(byte[] stream, bool parseData = false)
+        {
+            try
+            {
+                // Then call DecodeStream with our byte list
+                _fields = DecodeStream(stream, parseData);
+            }
+            catch (Exception ex)
+            {
+                _messages.Add($"Error: {ex.Message}");
+            }
+        }
+
+        protected List<StructuredField> DecodeStream(byte[] stream, bool parseData)
         {
             List<StructuredField> fields = new List<StructuredField>();
 
-            // First, read all AFP file bytes into memory
-            byte[] byteList = File.ReadAllBytes(path);
-
             // Next, loop through each 5A block and store a StructuredField object
             int curIdx = 0;
-            while (curIdx < byteList.Length - 1)
+            while (curIdx < stream.Length - 1)
             {
                 byte[] lengthBytes = new byte[2], identifierBytes = new byte[3], introducer = new byte[8], sequenceBytes = new byte[2];
                 byte flag;
                 string curOffsetHex = $"0x{curIdx.ToString("X8")}";
 
                 // Check for 0x5A prefix on each field
-                if (byteList[curIdx] != 0x5A)
+                if (stream[curIdx] != 0x5A)
                     throw new Exception($"Unexpected byte at offset {curOffsetHex}. Is it a true AFP file?");
 
                 // Check for expected length of data
-                if (curIdx + 9 > byteList.Length)
+                if (curIdx + 9 > stream.Length)
                     throw new Exception($"No room for SFI at offset {curOffsetHex}. Is it a true AFP file?");
 
                 // Read the introducer
-                Array.ConstrainedCopy(byteList, curIdx + 1, introducer, 0, 8);
+                Array.ConstrainedCopy(stream, curIdx + 1, introducer, 0, 8);
                 Array.ConstrainedCopy(introducer, 0, lengthBytes, 0, 2);
                 Array.ConstrainedCopy(introducer, 2, identifierBytes, 0, 3);
                 flag = introducer[5];
@@ -73,12 +79,12 @@ namespace AFPParser
                 ushort sequence = DataStructure.GetNumericValue<ushort>(sequenceBytes);
 
                 // Check the length isn't over what we can read
-                if (curIdx + 1 + length > byteList.Length)
+                if (curIdx + 1 + length > stream.Length)
                     throw new Exception($"Invalid field length of {length} at offset {curOffsetHex}. Is it a true AFP file?");
 
                 // Get the data
                 byte[] data = new byte[length - 8];
-                Array.ConstrainedCopy(byteList, curIdx + 9, data, 0, length - 8);
+                Array.ConstrainedCopy(stream, curIdx + 9, data, 0, length - 8);
 
                 // Lookup what type of field we need by the structured fields hex dictionary
                 Type fieldType = typeof(StructuredFields.UNKNOWN);
@@ -344,7 +350,7 @@ namespace AFPParser
         /// Object and container heirarchy can be found in the MO:DCA documentation
         /// </summary>
         /// <returns>True if all validation passes</returns>
-        public bool Validates()
+        private bool Validates()
         {
             _messages = new List<string>();
 
